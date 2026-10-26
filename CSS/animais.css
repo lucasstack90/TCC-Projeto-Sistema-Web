@@ -1,0 +1,367 @@
+/* =========================================================
+   PAWSAFE — módulo de Animais (Pages/animais.html)
+   Menu, cabeçalho, botões, formulários e cores de status
+   ficam em base.css / sidebar.css.
+   ========================================================= */
+
+/* ---------- Busca e filtros ---------- */
+.filter-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 13px;
+  padding: 13px;
+  margin-bottom: 19px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.search { position: relative; flex: 1; min-width: 180px; }
+.search > i { position: absolute; top: 50%; left: 13px; transform: translateY(-50%); color: #789087; }
+.search .form-control { padding-left: 37px; background-color: #fff; }
+
+.filter-controls { display: flex; gap: 8px; }
+.filter-controls .form-select { width: 165px; background-color: #fff; }
+
+.results {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 2px 13px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.view {
+  width: 32px;
+  height: 31px;
+  color: #6e8279;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+}
+.view.active { color: var(--green-700); background: #fff; box-shadow: 0 1px 4px rgba(35, 61, 53, .08); }
+
+/* ---------- Cartões ---------- */
+.animal-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+
+.animal-card {
+  min-width: 0;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.animal-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+
+.animal-image-wrap {
+  position: relative;
+  height: 155px;
+  overflow: hidden;
+  background: #e4e9e0;
+  cursor: pointer;
+}
+
+.animal-image { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; }
+.animal-card:hover .animal-image { transform: scale(1.035); }
+
+.image-fallback {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: #86a195;
+  background: linear-gradient(135deg, #e6eee6, #d2e2d7);
+  font-size: 42px;
+}
+
+/* Selo de status sobre a foto */
+.card-status { position: absolute; top: 10px; left: 10px; box-shadow: 0 2px 8px rgba(32, 61, 53, .07); }
+
+.card-content { padding: 13px 14px 14px; }
+.animal-card h3 { margin: 0 0 4px; font-size: 16px; font-weight: 800; letter-spacing: -.3px; }
+.animal-meta { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+
+.health-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 11px; }
+.health-tag { padding: 4px 7px; border-radius: 20px; color: #39705e; background: #e2eee5; font-size: 9px; }
+.health-tag.blue { color: #46758b; background: #e0edf3; }
+.health-tag.purple { color: #71639a; background: #eae5f4; }
+
+.card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #edf0e9;
+}
+.card-id { color: #899a91; font-size: 10px; }
+.card-details { color: var(--green-700); background: transparent; border: 0; font-size: 11px; font-weight: 700; }
+
+/* ---------- Lista ---------- */
+.animal-list { display: grid; gap: 8px; }
+
+.animal-list-row {
+  display: grid;
+  grid-template-columns: 58px minmax(140px, 1fr) minmax(100px, .7fr) minmax(125px, .8fr) auto;
+  align-items: center;
+  gap: 15px;
+  padding: 10px 15px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+}
+
+.list-photo,
+.list-placeholder { width: 58px; height: 52px; border-radius: 8px; object-fit: cover; }
+.list-placeholder { display: grid; place-items: center; color: var(--green-700); background: #e3eee5; font-size: 20px; }
+
+.animal-list-row strong,
+.animal-list-row small { display: block; }
+.animal-list-row strong { font-size: 12px; }
+.animal-list-row small { color: var(--muted); font-size: 10px; }
+
+/* ---------- Nenhum resultado ---------- */
+.empty {
+  padding: 65px 20px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px dashed #cbd8cc;
+  border-radius: 14px;
+}
+.empty > i {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  color: var(--green-700);
+  background: var(--green-100);
+  border-radius: 50%;
+  font-size: 21px;
+}
+.empty h2 { font-size: 18px; font-weight: 800; }
+.empty p { color: var(--muted); font-size: 12px; }
+
+/* ---------- Modais ---------- */
+.modal-content {
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-header { align-items: flex-start; padding: 20px 23px 15px; border-bottom: 1px solid var(--border); }
+.modal-header h2 { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -.4px; }
+.modal-header p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+.modal-body { padding: 22px 23px; }
+.modal-footer { gap: 8px; padding: 14px 23px 18px; border-top: 1px solid var(--border); }
+
+/* O <form> fica entre .modal-content e .modal-body/.modal-footer.
+   Sem estas regras, no modal com rolagem o formulário passa da altura da tela
+   e o rodapé (com o botão de salvar) fica cortado. Assim, só o corpo rola
+   e os botões Cancelar / Salvar ficam sempre visíveis. */
+.modal-content > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.modal-content > form > .modal-body { overflow-y: auto; }
+.modal-content > form > .modal-footer { flex-shrink: 0; }
+
+.section-title {
+  margin-bottom: 13px;
+  color: var(--green-700);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+/* Vacinado / Castrado / Microchip como botões de marcar */
+.health-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.health-options input { position: absolute; opacity: 0; }
+
+.health-options span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  color: #5c766a;
+  background: #f5f7f1;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.health-options input:checked + span { color: #28674f; background: var(--green-100); border-color: #9dc2ad; font-weight: 700; }
+.health-options input:focus-visible + span { outline: 3px solid #9fc7b1; outline-offset: 2px; }
+
+/* Foto no cadastro */
+.photo-preview-wrap { padding: 12px; background: #f7f9f5; border: 1px dashed var(--border); border-radius: 12px; }
+.photo-preview-wrap img {
+  display: block;
+  width: 100%;
+  max-height: 240px;
+  object-fit: contain;
+  background: #eef2ec;
+  border-radius: 8px;
+}
+
+/* ---------- Ficha do animal ---------- */
+.detail-hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 210px;
+  padding: 22px 25px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--green-700), var(--green-950)) center 40% / cover;
+}
+.detail-hero > div { margin-top: auto; }
+.detail-hero h2 { margin: 8px 0 3px; color: #fff; font-size: 28px; font-weight: 800; letter-spacing: -.8px; }
+.detail-hero p { margin: 0; color: #f1f7f1; font-size: 11px; }
+
+.detail-close {
+  align-self: flex-end;
+  width: 34px;
+  height: 34px;
+  color: #fff;
+  background: rgba(255, 255, 255, .22);
+  border: 1px solid rgba(255, 255, 255, .38);
+  border-radius: 50%;
+}
+
+.tabs { display: flex; gap: 4px; padding: 0 17px; overflow-x: auto; border-bottom: 1px solid var(--border); }
+
+.tab {
+  padding: 13px 11px 11px;
+  color: #71857b;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.tab i { margin-right: 6px; }
+.tab.active { color: var(--green-700); border-bottom-color: var(--green-700); font-weight: 700; }
+
+.detail-body { padding: 17px; background: var(--surface-soft); }
+
+.profile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+.info-tile { padding: 13px; background: var(--surface-muted); border-radius: var(--radius-sm); }
+.info-tile small {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.info-tile strong { font-size: 12px; }
+.info-tile p { color: var(--muted); font-size: 11px; }
+
+.panel-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 0 12px; }
+.panel-toolbar h3 { margin: 0; font-size: 14px; font-weight: 700; }
+.panel-toolbar .btn,
+.detail-body .btn { padding: 8px 11px; font-size: 11px; }
+
+/* Vacinas, pesagens */
+.record-list { display: grid; gap: 8px; margin-bottom: 17px; }
+
+.record-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 13px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.record-item strong { display: block; font-size: 11px; }
+.record-item p { margin: 4px 0 0; color: var(--muted); font-size: 10px; }
+.record-item small { color: var(--muted); font-size: 9px; white-space: nowrap; }
+
+.alert-soft {
+  margin-bottom: 12px;
+  padding: 12px;
+  color: #467665;
+  background: #e0eee8;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+}
+.alert-soft.warning { color: #a65d43; background: #f8e8dc; }
+
+/* Histórico */
+.timeline { display: grid; gap: 16px; margin: 6px 0 18px 7px; padding-left: 17px; border-left: 2px solid #d9e5dc; }
+.timeline-item { position: relative; }
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: -23px;
+  width: 10px;
+  height: 10px;
+  background: #57917d;
+  border: 2px solid #f5f8f1;
+  border-radius: 50%;
+}
+.timeline-item p { margin: 4px 0; font-size: 11px; }
+
+/* Peso */
+.weight-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 13px; }
+.weight-card { padding: 13px 8px; text-align: center; background: var(--surface-muted); border-radius: var(--radius-sm); }
+.weight-card small { display: block; color: var(--muted); font-size: 9px; text-transform: uppercase; }
+.weight-card strong { display: block; margin: 5px 0 2px; font-size: 18px; }
+.weight-card span { color: var(--muted); font-size: 9px; }
+
+/* ---------- Aviso (toast) ---------- */
+.toast {
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  font-size: 12px;
+}
+.toast-body i { color: var(--green-700); }
+
+/* ---------- Responsividade ---------- */
+@media (max-width: 1200px) {
+  .animal-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+  .animal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .filter-panel { flex-direction: column; align-items: stretch; }
+  .filter-controls .form-select { flex: 1; width: auto; }
+}
+
+@media (max-width: 600px) {
+  .filter-controls { display: grid; grid-template-columns: 1fr 1fr; }
+  .filter-controls .btn { grid-column: span 2; }
+
+  .animal-grid { grid-template-columns: 1fr; }
+  .animal-image-wrap { height: 190px; }
+
+  .animal-list-row { grid-template-columns: 50px 1fr auto; gap: 10px; }
+  .list-species,
+  .list-status { display: none; }
+  .list-photo,
+  .list-placeholder { width: 50px; height: 47px; }
+
+  .modal-header { padding: 17px 16px 13px; }
+  .modal-body { padding: 18px 16px; }
+  .modal-footer { padding: 13px 16px 16px; }
+
+  .health-options { grid-template-columns: 1fr; }
+  .profile-grid { grid-template-columns: repeat(2, 1fr); }
+  .weight-summary { grid-template-columns: 1fr 1fr; }
+  .weight-card:last-child { grid-column: span 2; }
+  .tabs { padding: 0 8px; }
+  .tab { padding-left: 9px; padding-right: 9px; }
+}

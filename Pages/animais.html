@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#244438">
+  <title>PAWSAFE | Animais</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../CSS/base.css">
+  <link rel="stylesheet" href="../CSS/sidebar.css">
+  <link rel="stylesheet" href="../CSS/animais.css">
+</head>
+<body>
+<div id="sidebarMount"></div>
+
+<main class="main-content">
+  <header class="topbar">
+    <button class="mobile-menu" id="menuToggle" type="button" aria-label="Abrir menu" aria-expanded="false"><i class="bi bi-list"></i></button>
+    <div class="topbar-title">
+      <div class="eyebrow">Gestão e cuidado</div>
+      <h1>Animais</h1>
+      <p class="page-subtitle"><span id="countText"></span> <span class="subtitle-dot">•</span> <span id="availableText"></span></p>
+    </div>
+    <button class="btn btn-green" id="addAnimal" type="button"><i class="bi bi-plus-lg me-2"></i>Cadastrar animal</button>
+  </header>
+
+  <section class="filter-panel">
+    <div class="search"><i class="bi bi-search"></i><input id="search" type="search" class="form-control" placeholder="Buscar por nome, raça ou código (PAW-0001)..." aria-label="Buscar animais"></div>
+    <div class="filter-controls">
+      <select id="statusFilter" class="form-select" aria-label="Filtrar por status">
+        <option value="Todos">Todos os status</option>
+        <option>Disponível</option><option>Adotado</option><option>Em Tratamento</option><option>Resgatado</option><option>Em Lar Temporário</option>
+      </select>
+      <select id="speciesFilter" class="form-select" aria-label="Filtrar por espécie">
+        <option value="Todas">Todas as espécies</option>
+        <option>Cão</option><option>Gato</option><option>Outros</option>
+      </select>
+      <button class="btn btn-outline-green" id="clearFilters" type="button"><i class="bi bi-arrow-counterclockwise me-1"></i>Limpar</button>
+    </div>
+  </section>
+
+  <div class="results">
+    <span id="resultsText"></span>
+    <div>
+      <button id="gridMode" class="view active" type="button" aria-label="Visualizar cartões"><i class="bi bi-grid"></i></button>
+      <button id="listMode" class="view" type="button" aria-label="Visualizar lista"><i class="bi bi-list-ul"></i></button>
+    </div>
+  </div>
+
+  <section id="animalGrid" class="animal-grid"></section>
+  <section id="animalList" class="animal-list d-none"></section>
+  <div id="empty" class="empty d-none">
+    <i class="bi bi-search"></i>
+    <h2>Nenhum animal encontrado</h2>
+    <p>Tente alterar os filtros ou buscar por outro termo.</p>
+    <button class="btn btn-outline-green" id="emptyClear" type="button">Limpar filtros</button>
+  </div>
+
+  <footer class="page-footer"><span><i class="bi bi-shield-check me-1"></i> PAWSAFE · Cuidado, proteção e novas oportunidades.</span><span>Protótipo com dados demonstrativos</span></footer>
+</main>
+
+<!-- Cadastro / edição -->
+<div class="modal fade" id="animalModal" tabindex="-1" aria-labelledby="formTitle" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header"><div><h2 id="formTitle">Cadastrar animal</h2><p>Preencha os dados para manter a ficha atualizada.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+  <form id="animalForm">
+    <div class="modal-body">
+      <input type="hidden" id="animalId">
+      <div class="section-title">IDENTIFICAÇÃO</div>
+      <div class="row g-3">
+        <div class="col-md-6"><label class="form-label" for="name">Nome *</label><input id="name" class="form-control" required maxlength="60" placeholder="Ex.: Thor"></div>
+        <div class="col-md-6"><label class="form-label" for="species">Espécie *</label><select id="species" class="form-select" required><option value="">Selecione</option><option>Cão</option><option>Gato</option><option>Outros</option></select></div>
+        <div class="col-md-6"><label class="form-label" for="breed">Raça / tipo *</label><input id="breed" class="form-control" required maxlength="60" placeholder="Ex.: Labrador, vira-lata..."></div>
+        <div class="col-md-6"><label class="form-label" for="color">Cor / pelagem *</label><input id="color" class="form-control" required maxlength="60" placeholder="Ex.: dourado, preto e branco"></div>
+        <div class="col-md-6"><label class="form-label" for="age">Idade estimada</label><input id="age" class="form-control" maxlength="30" placeholder="Ex.: 2 anos, 4 meses"></div>
+        <div class="col-md-6"><label class="form-label" for="arrival">Data de chegada *</label><input id="arrival" type="date" class="form-control" required></div>
+        <div class="col-md-6"><label class="form-label" for="sex">Sexo</label><select id="sex" class="form-select"><option>Macho</option><option>Fêmea</option><option>Não identificado</option></select></div>
+        <div class="col-md-6"><label class="form-label" for="size">Porte</label><select id="size" class="form-select"><option>Pequeno</option><option selected>Médio</option><option>Grande</option></select></div>
+        <div class="col-md-6"><label class="form-label" for="status">Status atual</label><select id="status" class="form-select"><option>Disponível</option><option>Adotado</option><option>Em Tratamento</option><option>Resgatado</option><option>Em Lar Temporário</option></select></div>
+        <div class="col-md-6"><label class="form-label" for="weight">Peso atual (kg)</label><input id="weight" type="number" min="0.01" step="0.01" class="form-control" placeholder="Ex.: 12.5"></div>
+        <div class="col-12">
+          <label class="form-label" for="photoFile">Foto do animal (opcional)</label>
+          <input id="photoFile" type="file" class="form-control" accept="image/png,image/jpeg,image/webp,image/gif">
+          <small class="text-secondary d-block mt-1">JPG, PNG, WEBP ou GIF. A imagem é reduzida automaticamente.</small>
+          <div id="photoPreviewWrap" class="photo-preview-wrap d-none mt-2"><img id="photoPreview" alt="Pré-visualização da foto selecionada"><button type="button" id="removePhoto" class="btn btn-sm btn-outline-green mt-2"><i class="bi bi-trash me-1"></i>Remover foto</button></div>
+        </div>
+      </div>
+
+      <div class="section-title mt-4">STATUS E SAÚDE</div>
+      <div class="health-options">
+        <label><input id="vaccinated" type="checkbox"><span><i class="bi bi-eyedropper"></i> Vacinado</span></label>
+        <label><input id="neutered" type="checkbox"><span><i class="bi bi-check-circle"></i> Castrado</span></label>
+        <label><input id="chip" type="checkbox"><span><i class="bi bi-cpu"></i> Microchip</span></label>
+      </div>
+      <label class="form-label mt-3" for="notes">Observações de saúde</label>
+      <textarea id="notes" class="form-control" rows="3" maxlength="1000" placeholder="Condições de saúde, tratamentos em andamento, comportamento..."></textarea>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-outline-green" data-bs-dismiss="modal">Cancelar</button><button id="saveAnimalButton" type="submit" class="btn btn-green"><i class="bi bi-check2 me-2"></i>Cadastrar animal</button></div>
+  </form>
+</div></div></div>
+
+<!-- Ficha do animal -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailName" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content detail-modal">
+  <div id="detailHero" class="detail-hero">
+    <button type="button" class="detail-close" data-bs-dismiss="modal" aria-label="Fechar"><i class="bi bi-x-lg"></i></button>
+    <div><span id="detailStatus" class="status-badge"></span><h2 id="detailName"></h2><p id="detailMeta"></p></div>
+  </div>
+  <div class="tabs" role="tablist">
+    <button type="button" class="tab active" data-tab="profile"><i class="bi bi-info-circle"></i> Ficha</button>
+    <button type="button" class="tab" data-tab="vaccines"><i class="bi bi-eyedropper"></i> Vacinas <span id="vaccineCount"></span></button>
+    <button type="button" class="tab" data-tab="history"><i class="bi bi-journal-text"></i> Histórico <span id="historyCount"></span></button>
+    <button type="button" class="tab" data-tab="weight"><i class="bi bi-speedometer2"></i> Peso</button>
+  </div>
+  <div class="detail-body">
+    <section id="panel-profile"></section>
+    <section id="panel-vaccines" class="d-none"></section>
+    <section id="panel-history" class="d-none"></section>
+    <section id="panel-weight" class="d-none"></section>
+  </div>
+</div></div></div>
+
+<!-- Novo registro (vacina / histórico / peso) -->
+<div class="modal fade" id="recordModal" tabindex="-1" aria-labelledby="recordTitle" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header"><div><h2 id="recordTitle">Novo registro</h2><p>Este registro será adicionado à ficha do animal.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+  <form id="recordForm"><div class="modal-body" id="recordFields"></div><div class="modal-footer"><button type="button" class="btn btn-outline-green" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-green">Salvar registro</button></div></form>
+</div></div></div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3"><div id="toast" class="toast" role="status" aria-live="polite"><div class="toast-body"><i class="bi bi-check-circle-fill me-2"></i><span id="toastText"></span></div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/dados.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/animais.js"></script>
+</body>
+</html>

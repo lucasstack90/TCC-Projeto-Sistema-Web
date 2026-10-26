@@ -1,0 +1,152 @@
+/* =========================================================
+   PAWSAFE — menu lateral (gerado por js/sidebar.js)
+   Único lugar com estilos do menu. Usa as variáveis do base.css.
+   ========================================================= */
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 1040;
+  display: flex;
+  flex-direction: column;
+  width: var(--sidebar-width);
+  padding: 25px 16px 16px;
+  overflow-y: auto;
+  color: #e7f0e9;
+  background: linear-gradient(180deg, var(--green-950), var(--green-900));
+}
+
+/* Marca */
+.sidebar .brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 52px;
+  padding: 0 8px;
+  margin-bottom: 30px;
+  color: #fff;
+}
+
+.sidebar .brand-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 43px;
+  width: 43px;
+  height: 43px;
+  color: #fff;
+  background: rgba(255, 255, 255, .12);
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 14px;
+  font-size: 22px;
+}
+
+.sidebar .brand-copy { display: flex; flex-direction: column; line-height: 1.3; }
+.sidebar .brand-copy strong { color: #fff; font: 800 19px var(--font-title); letter-spacing: -.5px; }
+.sidebar .brand-copy small { margin-top: 3px; color: #b5c8bc; font-size: 10px; }
+
+.sidebar-label {
+  padding: 0 12px;
+  margin-bottom: 10px;
+  color: #8eaaa0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+
+/* Links (menu principal e parte de baixo) */
+.sidebar-nav { display: flex; flex-direction: column; gap: 5px; }
+
+.sidebar .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 43px;
+  padding: 0 12px;
+  color: #c5d6cc;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  text-align: left;
+  font-size: 12px;
+  transition: background .18s ease, color .18s ease;
+}
+
+.sidebar .nav-link > i:first-child { flex-shrink: 0; width: 17px; font-size: 16px; text-align: center; }
+.sidebar .nav-link:hover { color: #fff; background: rgba(255, 255, 255, .08); }
+
+.sidebar .nav-link.active {
+  color: #fff;
+  background: var(--green-700);
+  box-shadow: inset 3px 0 #8fd1b5;
+  font-weight: 700;
+}
+
+.sidebar-count {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 20px;
+  color: #2e6557;
+  background: #e2eee6;
+  font-size: 10px;
+}
+
+.sidebar-bottom {
+  display: grid;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, .12);
+}
+
+.sidebar .volunteer-link { color: #e9a184; }
+
+/* Perfil */
+.profile-mini {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .06);
+}
+
+.profile-mini .avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--green-800);
+  background: #d9e8de;
+}
+
+.profile-text { display: flex; flex-direction: column; min-width: 0; }
+.profile-text strong { color: #fff; font-size: 10px; }
+.profile-text small { margin-top: 3px; color: #b5c8bc; font-size: 9px; }
+
+/* Fundo escuro quando o menu abre no celular */
+.sidebar-backdrop { display: none; }
+
+@media (max-width: 900px) {
+  .sidebar {
+    width: 252px;
+    transform: translateX(-105%);
+    transition: transform .24s ease;
+  }
+
+  .sidebar.is-open {
+    transform: translateX(0);
+    box-shadow: 15px 0 35px rgba(0, 0, 0, .14);
+  }
+
+  .sidebar-backdrop.is-visible {
+    position: fixed;
+    inset: 0;
+    z-index: 1030;
+    display: block;
+    background: rgba(18, 36, 29, .42);
+  }
+}

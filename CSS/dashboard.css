@@ -1,0 +1,299 @@
+/* =========================================================
+   PAWSAFE — Dashboard (index.html)
+   Menu, cabeçalho, botões e status ficam em base.css / sidebar.css.
+   ========================================================= */
+
+/* ---------- Indicadores ---------- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  min-height: 112px;
+  padding: 19px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(36, 68, 56, .08); }
+
+.stat-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 47px;
+  width: 47px;
+  height: 47px;
+  border-radius: 14px;
+  font-size: 21px;
+}
+
+.icon-green  { color: var(--green-700); background: var(--green-100); }
+.icon-sage   { color: #5e8266; background: #eaf2e8; }
+.icon-orange { color: #b96a42; background: var(--terra-light); }
+.icon-lilac  { color: var(--lilac); background: var(--lilac-light); }
+.icon-blue   { color: var(--blue); background: var(--blue-light); }
+
+.stat-content { display: flex; flex-direction: column; min-width: 0; }
+
+.stat-label {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: .35px;
+  text-transform: uppercase;
+}
+
+.stat-value {
+  margin-top: 5px;
+  color: var(--text);
+  font: 800 27px/1.1 var(--font-title);
+  letter-spacing: -.7px;
+}
+
+.stat-foot { margin-top: 6px; color: #7c8a81; font-size: 10px; }
+
+/* Faixa colorida na lateral do cartão */
+.stat-accent { position: absolute; top: 0; right: 0; width: 4px; height: 100%; opacity: .7; }
+.accent-green  { background: var(--green-700); }
+.accent-sage   { background: var(--sage); }
+.accent-orange { background: var(--terra); }
+.accent-lilac  { background: var(--lilac); }
+.accent-blue   { background: var(--blue); }
+
+/* ---------- Painéis e gráficos ---------- */
+.charts-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(300px, 1fr);
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.panel {
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.chart-panel { padding: 21px 22px 18px; }
+
+.panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.panel-heading h2 { margin: 0; font-size: 15px; font-weight: 800; letter-spacing: -.25px; }
+.panel-heading p { margin: 5px 0 0; color: #87938b; font-size: 11px; }
+
+.chart-wrap { position: relative; height: 240px; margin-top: 16px; }
+
+.species-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 14px;
+  min-height: 240px;
+  padding-top: 8px;
+}
+
+.donut-wrap { position: relative; width: min(180px, 48%); height: 180px; }
+
+.donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.donut-center strong { color: var(--text); font: 800 27px var(--font-title); }
+.donut-center span { margin-top: 2px; color: var(--muted); font-size: 11px; }
+
+.legend-list { display: flex; flex-direction: column; gap: 16px; min-width: 100px; }
+
+.legend-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 12px;
+}
+
+.legend-label { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+.legend-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; }
+.dot-primary { background: var(--green-700); }
+.dot-sage    { background: var(--sage); }
+.dot-terra   { background: var(--terra); }
+
+/* ---------- Distribuição por status ----------
+   As cores vêm das classes .status-* do base.css. */
+.status-panel { padding: 20px 22px; margin-bottom: 18px; }
+.section-icon { color: var(--green-700); font-size: 17px; }
+
+.status-list { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 16px; }
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 11px;
+  border-radius: 9px;
+  font-size: 11px;
+}
+.status-pill i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.status-pill strong { margin-left: 2px; }
+
+/* ---------- Tabelas recentes ---------- */
+.recent-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.recent-panel { overflow: hidden; }
+
+.recent-heading {
+  align-items: center;
+  padding: 19px 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.recent-heading h2 { font-size: 14px; }
+.recent-heading p { margin-top: 4px; }
+
+.heading-with-icon { display: flex; align-items: center; gap: 10px; }
+
+.table-heading-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: var(--green-700);
+  background: var(--green-100);
+  border-radius: 11px;
+  font-size: 17px;
+}
+.terra-icon { color: #b96a42; background: var(--terra-light); }
+
+.view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--green-700);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.view-all:hover { color: var(--green-950); }
+
+.dashboard-table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--text);
+  --bs-table-border-color: #edf1ed;
+  font-size: 11px;
+}
+
+.dashboard-table thead th {
+  padding: 12px 13px;
+  color: #859188;
+  background: var(--surface-soft);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dashboard-table tbody td { padding: 12px 13px; color: var(--muted); white-space: nowrap; }
+.dashboard-table tbody tr:last-child td { border-bottom: 0; }
+.dashboard-table tbody tr:hover { background: var(--surface-soft); }
+
+.animal-cell { display: flex; align-items: center; gap: 9px; }
+.animal-cell span:last-child { display: flex; flex-direction: column; gap: 3px; }
+.animal-cell strong { color: var(--text); font-size: 11px; }
+.animal-cell small { color: #8a968e; font-size: 9px; }
+
+.animal-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 16px;
+}
+.animal-dog { color: var(--green-700); background: #e6f0e9; }
+.animal-cat { color: #8a704d; background: #f4ede2; }
+
+/* Situação das adoções e prioridade dos resgates */
+.badge-status { display: inline-block; padding: 5px 8px; border-radius: 7px; font-size: 9px; font-weight: 700; }
+.badge-done      { color: #2f7057; background: #e7f3eb; }
+.badge-review,
+.badge-high      { color: #a65c31; background: #fbefe8; }
+.badge-critical  { color: var(--danger); background: var(--danger-light); }
+.badge-treatment { color: #705d9a; background: #f1eef8; }
+
+/* ---------- Responsividade ---------- */
+@media (min-width: 1600px) {
+  .main-content { padding: 36px 42px 20px; }
+  .stats-grid { gap: 18px; }
+  .stat-card { min-height: 124px; padding: 22px; }
+  .chart-wrap { height: 270px; }
+}
+
+@media (max-width: 1200px) {
+  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .charts-grid { grid-template-columns: minmax(0, 1.3fr) minmax(270px, 1fr); }
+  .stat-card { min-height: 104px; }
+  .stat-value { font-size: 25px; }
+}
+
+@media (max-width: 900px) {
+  .charts-grid,
+  .recent-grid { grid-template-columns: 1fr; }
+  .species-content { min-height: 210px; }
+  .donut-wrap { width: 180px; }
+}
+
+@media (max-width: 600px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .stat-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    min-height: 150px;
+    padding: 14px;
+  }
+
+  .stat-icon { flex-basis: 38px; width: 38px; height: 38px; border-radius: 12px; font-size: 18px; }
+  .stat-label { font-size: 9px; }
+  .stat-value { font-size: 23px; }
+  .stat-foot { font-size: 9px; line-height: 1.3; }
+
+  .chart-panel,
+  .status-panel { padding: 17px 14px; }
+  .chart-wrap { height: 220px; }
+
+  .species-content { flex-direction: column; padding: 18px 0 4px; }
+  .donut-wrap { width: 165px; height: 165px; }
+  .legend-list { flex-direction: row; justify-content: space-around; gap: 8px; width: 100%; }
+  .legend-list > div { flex-direction: column; gap: 5px; }
+  .legend-label { gap: 5px; font-size: 10px; }
+
+  .status-list { gap: 7px; }
+  .status-pill { padding: 7px 8px; font-size: 10px; }
+
+  .recent-heading { padding: 16px 13px; }
+  .dashboard-table thead th,
+  .dashboard-table tbody td { padding: 10px; }
+}
