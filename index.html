@@ -66,7 +66,7 @@
       <section class="charts-grid" aria-label="Gráficos do dashboard">
         <article class="panel chart-panel adoption-chart-panel">
           <div class="panel-heading">
-            <div><h2>Adoções por mês</h2><p>Dados ilustrativos até o módulo de Adoções</p></div>
+            <div><h2>Adoções concluídas</h2><p>Últimos 6 meses</p></div>
           </div>
           <div class="chart-wrap"><canvas id="adoptionsChart" aria-label="Gráfico de adoções por mês" role="img"></canvas></div>
         </article>
@@ -96,17 +96,13 @@
       <section class="recent-grid">
         <article class="panel recent-panel">
           <div class="panel-heading recent-heading">
-            <div class="heading-with-icon"><span class="table-heading-icon"><i class="bi bi-heart"></i></span><div><h2>Últimas adoções</h2><p>Movimentações recentes</p></div></div>
+            <div class="heading-with-icon"><span class="table-heading-icon"><i class="bi bi-heart"></i></span><div><h2>Últimas adoções</h2><p>Processos abertos mais recentes</p></div></div>
             <a href="Pages/adocoes.html" class="view-all">Ver todas <i class="bi bi-arrow-right"></i></a>
           </div>
           <div class="table-responsive">
             <table class="table dashboard-table align-middle mb-0">
-              <thead><tr><th>Animal</th><th>Adotante</th><th>Data</th><th>Status</th></tr></thead>
-              <tbody>
-                <tr><td><div class="animal-cell"><span class="animal-avatar animal-dog"><i class="bi bi-paw-fill"></i></span><span><strong>Rex</strong><small>Macho · 5 anos</small></span></div></td><td>Carlos Mendes</td><td>20/12/2025</td><td><span class="badge-status badge-done">Concluída</span></td></tr>
-                <tr><td><div class="animal-cell"><span class="animal-avatar animal-dog"><i class="bi bi-paw-fill"></i></span><span><strong>Thor</strong><small>Macho · 3 anos</small></span></div></td><td>Fernanda Lima</td><td>02/10/2026</td><td><span class="badge-status badge-review">Em análise</span></td></tr>
-                <tr><td><div class="animal-cell"><span class="animal-avatar animal-cat"><i class="bi bi-paw-fill"></i></span><span><strong>Simba</strong><small>Macho · 3 anos</small></span></div></td><td>Juliana Alves</td><td>15/10/2026</td><td><span class="badge-status badge-review">Em análise</span></td></tr>
-              </tbody>
+              <thead><tr><th>Animal</th><th>Adotante</th><th>Aberto em</th><th>Etapa</th></tr></thead>
+              <tbody id="recentAdoptions"></tbody>
             </table>
           </div>
         </article>
@@ -135,6 +131,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <script src="js/dados.js"></script>
+  <script src="js/utils.js"></script>
   <script src="js/sidebar.js"></script>
   <script src="js/dashboard.js"></script>
 </body>

@@ -223,6 +223,17 @@ h1 {
 .status-resgatado  { color: #685a91; background: #e5e0f1; }
 .status-temporario { color: #984c6d; background: #f4dfe8; }
 
+/* ---------- Etapas do processo de adoção (usam o mesmo formato .status-badge) ---------- */
+.stage-novo      { color: #386b86; background: #dceaf1; }
+.stage-analise   { color: #9a642a; background: #f6e8cb; }
+.stage-aprovada  { color: #685a91; background: #e5e0f1; }
+.stage-concluida { color: #2d6c4c; background: #dceee0; }
+.stage-recusada  { color: var(--danger); background: var(--danger-light); }
+.stage-cancelada { color: #6b7570; background: #e9ecea; }
+
+/* Área com mais de um botão no cabeçalho */
+.topbar-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
 /* ---------- Ícone de pata ----------
    O Bootstrap Icons não tem pata; "bi-paw" e "bi-paw-fill" ficariam em branco. */
 .bi-paw::before,
@@ -241,6 +252,195 @@ h1 {
   --paw-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cellipse cx='3.2' cy='7' rx='1.5' ry='1.9'/%3E%3Cellipse cx='6' cy='3.6' rx='1.6' ry='2'/%3E%3Cellipse cx='10' cy='3.6' rx='1.6' ry='2'/%3E%3Cellipse cx='12.8' cy='7' rx='1.5' ry='1.9'/%3E%3Cpath d='M8 7.6c-2.2 0-4.6 3-4.6 5.2 0 1.3 1 1.9 2.2 1.9 1 0 1.5-.5 2.4-.5s1.4.5 2.4.5c1.2 0 2.2-.6 2.2-1.9 0-2.2-2.4-5.2-4.6-5.2z'/%3E%3C/svg%3E");
 }
 
+/* =========================================================
+   Componentes compartilhados pelos módulos (Animais, Adoções...)
+   ========================================================= */
+
+/* ---------- Busca e filtros ---------- */
+.filter-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 13px;
+  padding: 13px;
+  margin-bottom: 19px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.search { position: relative; flex: 1; min-width: 180px; }
+.search > i { position: absolute; top: 50%; left: 13px; transform: translateY(-50%); color: #789087; }
+.search .form-control { padding-left: 37px; background-color: #fff; }
+
+.filter-controls { display: flex; gap: 8px; }
+.filter-controls .form-select { width: 165px; background-color: #fff; }
+
+/* ---------- Nenhum resultado ---------- */
+.empty {
+  padding: 65px 20px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px dashed #cbd8cc;
+  border-radius: 14px;
+}
+.empty > i {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  color: var(--green-700);
+  background: var(--green-100);
+  border-radius: 50%;
+  font-size: 21px;
+}
+.empty h2 { font-size: 18px; font-weight: 800; }
+.empty p { color: var(--muted); font-size: 12px; }
+
+/* ---------- Modais ---------- */
+.modal-content {
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-header { align-items: flex-start; padding: 20px 23px 15px; border-bottom: 1px solid var(--border); }
+.modal-header h2 { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -.4px; }
+.modal-header p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+.modal-body { padding: 22px 23px; }
+.modal-footer { gap: 8px; padding: 14px 23px 18px; border-top: 1px solid var(--border); }
+
+/* O <form> fica entre .modal-content e .modal-body/.modal-footer.
+   Sem estas regras, no modal com rolagem o formulário passa da altura da tela
+   e o rodapé (com o botão de salvar) fica cortado. Assim, só o corpo rola
+   e os botões Cancelar / Salvar ficam sempre visíveis. */
+.modal-content > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.modal-content > form > .modal-body { overflow-y: auto; }
+.modal-content > form > .modal-footer { flex-shrink: 0; }
+
+.section-title {
+  margin-bottom: 13px;
+  color: var(--green-700);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+/* Opções de marcar (Vacinado, Possui quintal...) */
+.choice-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.choice-options input { position: absolute; opacity: 0; }
+
+.choice-options span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  color: #5c766a;
+  background: #f5f7f1;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.choice-options input:checked + span { color: #28674f; background: var(--green-100); border-color: #9dc2ad; font-weight: 700; }
+.choice-options input:focus-visible + span { outline: 3px solid #9fc7b1; outline-offset: 2px; }
+
+/* ---------- Abas ---------- */
+.tabs { display: flex; gap: 4px; padding: 0 17px; overflow-x: auto; border-bottom: 1px solid var(--border); }
+
+.tab {
+  padding: 13px 11px 11px;
+  color: #71857b;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.tab i { margin-right: 6px; }
+.tab.active { color: var(--green-700); border-bottom-color: var(--green-700); font-weight: 700; }
+
+/* ---------- Blocos de informação ---------- */
+.info-tile { padding: 13px; background: var(--surface-muted); border-radius: var(--radius-sm); }
+.info-tile small {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.info-tile strong { font-size: 12px; }
+.info-tile p { color: var(--muted); font-size: 11px; }
+
+.panel-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 0 12px; }
+.panel-toolbar h3 { margin: 0; font-size: 14px; font-weight: 700; }
+.panel-toolbar .btn,
+.detail-body .btn { padding: 8px 11px; font-size: 11px; }
+
+/* ---------- Avisos ---------- */
+.alert-soft {
+  margin-bottom: 12px;
+  padding: 12px;
+  color: #467665;
+  background: #e0eee8;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+}
+.alert-soft.warning { color: #a65d43; background: #f8e8dc; }
+
+/* Linha do tempo (histórico) */
+.timeline { display: grid; gap: 16px; margin: 6px 0 18px 7px; padding-left: 17px; border-left: 2px solid #d9e5dc; }
+.timeline-item { position: relative; }
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: -23px;
+  width: 10px;
+  height: 10px;
+  background: #57917d;
+  border: 2px solid #f5f8f1;
+  border-radius: 50%;
+}
+.timeline-item p { margin: 4px 0; font-size: 11px; }
+
+/* ---------- Aviso (toast) ---------- */
+.toast {
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  font-size: 12px;
+}
+.toast-body i { color: var(--green-700); }
+
+@media (max-width: 900px) {
+  .filter-panel { flex-direction: column; align-items: stretch; }
+  .filter-controls .form-select { flex: 1; width: auto; }
+}
+
+@media (max-width: 600px) {
+  .filter-controls { display: grid; grid-template-columns: 1fr 1fr; }
+  .filter-controls .btn { grid-column: span 2; }
+  .modal-header { padding: 17px 16px 13px; }
+  .modal-body { padding: 18px 16px; }
+  .modal-footer { padding: 13px 16px 16px; }
+  .choice-options { grid-template-columns: 1fr; }
+  .tabs { padding: 0 8px; }
+  .tab { padding-left: 9px; padding-right: 9px; }
+}
+
 /* ---------- Responsividade ---------- */
 @media (max-width: 1200px) {
   :root { --sidebar-width: 230px; }
@@ -256,7 +456,9 @@ h1 {
 @media (max-width: 600px) {
   .main-content { padding: 18px 13px 12px; }
   .topbar { flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
-  .topbar > .btn { width: 100%; }
+  .topbar > .btn,
+  .topbar-actions { width: 100%; }
+  .topbar-actions .btn { flex: 1; }
   h1 { font-size: 25px; }
   .page-subtitle { font-size: 11px; }
   .page-footer { flex-direction: column; gap: 5px; }

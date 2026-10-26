@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#244438">
+  <title>PAWSAFE | Adoções</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../CSS/base.css">
+  <link rel="stylesheet" href="../CSS/sidebar.css">
+  <link rel="stylesheet" href="../CSS/adocoes.css">
+</head>
+<body>
+<div id="sidebarMount"></div>
+
+<main class="main-content">
+  <header class="topbar">
+    <button class="mobile-menu" id="menuToggle" type="button" aria-label="Abrir menu" aria-expanded="false"><i class="bi bi-list"></i></button>
+    <div class="topbar-title">
+      <div class="eyebrow">Processo de adoção</div>
+      <h1>Adoções</h1>
+      <p class="page-subtitle"><span id="activeText"></span> <span class="subtitle-dot">•</span> <span id="adopterText"></span></p>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline-green" id="addAdopter" type="button"><i class="bi bi-person-plus me-2"></i>Cadastrar adotante</button>
+      <button class="btn btn-green" id="addAdoption" type="button"><i class="bi bi-plus-lg me-2"></i>Novo processo</button>
+    </div>
+  </header>
+
+  <!-- Etapas do processo: cada botão filtra a lista -->
+  <section class="stage-summary" id="stageSummary" aria-label="Filtrar por etapa"></section>
+
+  <nav class="tabs view-tabs" aria-label="Visualização">
+    <button type="button" class="tab active" data-view="processes"><i class="bi bi-diagram-3"></i>Processos</button>
+    <button type="button" class="tab" data-view="adopters"><i class="bi bi-people"></i>Adotantes</button>
+  </nav>
+
+  <!-- Processos -->
+  <section id="processesView">
+    <div class="filter-panel">
+      <div class="search"><i class="bi bi-search"></i><input id="processSearch" type="search" class="form-control" placeholder="Buscar por animal, adotante ou código (ADO-0001)..." aria-label="Buscar processos"></div>
+    </div>
+    <div id="processList" class="process-list"></div>
+    <div id="processEmpty" class="empty d-none">
+      <i class="bi bi-heart"></i>
+      <h2>Nenhum processo encontrado</h2>
+      <p>Abra um novo processo ou altere a busca e o filtro de etapa.</p>
+    </div>
+  </section>
+
+  <!-- Adotantes -->
+  <section id="adoptersView" class="d-none">
+    <div class="filter-panel">
+      <div class="search"><i class="bi bi-search"></i><input id="adopterSearch" type="search" class="form-control" placeholder="Buscar por nome, e-mail, telefone ou bairro..." aria-label="Buscar adotantes"></div>
+    </div>
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="table adopter-table align-middle mb-0">
+          <thead><tr><th>Adotante</th><th>CPF</th><th>Telefone</th><th>Bairro</th><th>Processos</th><th></th></tr></thead>
+          <tbody id="adopterRows"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="adopterEmpty" class="empty d-none">
+      <i class="bi bi-person"></i>
+      <h2>Nenhum adotante encontrado</h2>
+      <p>Cadastre um adotante ou altere a busca.</p>
+    </div>
+  </section>
+
+  <footer class="page-footer"><span><i class="bi bi-shield-lock me-1"></i> Dados pessoais tratados conforme a LGPD — CPF parcialmente oculto nas listas.</span><span>Protótipo com dados demonstrativos</span></footer>
+</main>
+
+<!-- Cadastro / edição de adotante -->
+<div class="modal fade" id="adopterModal" tabindex="-1" aria-labelledby="adopterTitle" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header"><div><h2 id="adopterTitle">Cadastrar adotante</h2><p>Dados do interessado e avaliação da residência.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+  <form id="adopterForm" novalidate>
+    <div class="modal-body">
+      <input type="hidden" id="adopterId">
+
+      <div class="section-title">DADOS PESSOAIS</div>
+      <div class="row g-3">
+        <div class="col-md-8"><label class="form-label" for="adName">Nome completo *</label><input id="adName" class="form-control" required maxlength="80"></div>
+        <div class="col-md-4"><label class="form-label" for="adBirth">Data de nascimento *</label><input id="adBirth" type="date" class="form-control" required></div>
+        <div class="col-md-4"><label class="form-label" for="adCpf">CPF *</label><input id="adCpf" class="form-control" required inputmode="numeric" maxlength="14" placeholder="000.000.000-00"></div>
+        <div class="col-md-4"><label class="form-label" for="adPhone">Telefone *</label><input id="adPhone" type="tel" class="form-control" required inputmode="tel" maxlength="15" placeholder="(42) 99999-9999"></div>
+        <div class="col-md-4"><label class="form-label" for="adEmail">E-mail *</label><input id="adEmail" type="email" class="form-control" required maxlength="80" placeholder="nome@email.com"></div>
+      </div>
+
+      <div class="section-title mt-4">ENDEREÇO</div>
+      <div class="row g-3">
+        <div class="col-md-8"><label class="form-label" for="adStreet">Rua *</label><input id="adStreet" class="form-control" required maxlength="80"></div>
+        <div class="col-md-4"><label class="form-label" for="adNumber">Número *</label><input id="adNumber" class="form-control" required maxlength="10"></div>
+        <div class="col-md-6"><label class="form-label" for="adDistrict">Bairro *</label><input id="adDistrict" class="form-control" required maxlength="60"></div>
+        <div class="col-md-6"><label class="form-label" for="adCity">Cidade *</label><input id="adCity" class="form-control" required maxlength="60"></div>
+      </div>
+
+      <div class="section-title mt-4">RESIDÊNCIA E FAMÍLIA</div>
+      <div class="row g-3">
+        <div class="col-md-4"><label class="form-label" for="adHousing">Tipo de moradia *</label><select id="adHousing" class="form-select" required><option value="">Selecione</option><option>Casa</option><option>Apartamento</option><option>Chácara / sítio</option></select></div>
+        <div class="col-md-4"><label class="form-label" for="adOwnership">Imóvel *</label><select id="adOwnership" class="form-select" required><option value="">Selecione</option><option>Própria</option><option>Alugada</option><option>Cedida</option></select></div>
+        <div class="col-md-2"><label class="form-label" for="adResidents">Moradores *</label><input id="adResidents" type="number" min="1" max="20" class="form-control" required></div>
+        <div class="col-md-2"><label class="form-label" for="adHoursAlone">Horas sozinho</label><input id="adHoursAlone" type="number" min="0" max="24" class="form-control" title="Horas por dia que o animal ficaria sozinho"></div>
+        <div class="col-12">
+          <div class="choice-options">
+            <label><input id="adYard" type="checkbox"><span><i class="bi bi-tree"></i> Possui quintal</span></label>
+            <label><input id="adScreens" type="checkbox"><span><i class="bi bi-grid-3x3"></i> Telas de proteção</span></label>
+            <label><input id="adChildren" type="checkbox"><span><i class="bi bi-balloon"></i> Crianças na casa</span></label>
+          </div>
+        </div>
+        <div class="col-md-6"><label class="form-label" for="adOtherPets">Outros animais na casa</label><input id="adOtherPets" class="form-control" maxlength="120" placeholder="Ex.: uma gata castrada"></div>
+        <div class="col-md-6"><label class="form-label" for="adExperience">Experiência com animais</label><input id="adExperience" class="form-control" maxlength="120" placeholder="Ex.: já teve cães"></div>
+        <div class="col-12"><label class="form-label" for="adMotivation">Por que deseja adotar? *</label><textarea id="adMotivation" class="form-control" rows="2" required maxlength="500"></textarea></div>
+      </div>
+
+      <div class="section-title mt-4">DOCUMENTOS</div>
+      <label class="form-label" for="adDocs">Fotos de documentos (RG, comprovante de residência...) — até 3 imagens</label>
+      <input id="adDocs" type="file" class="form-control" accept="image/png,image/jpeg,image/webp" multiple>
+      <div id="docPreview" class="doc-preview"></div>
+
+      <div class="section-title mt-4">CONSENTIMENTO</div>
+      <label class="consent">
+        <input id="adConsent" type="checkbox" required>
+        <span>O adotante autorizou o armazenamento destes dados pela organização, apenas para o processo de adoção (LGPD). *</span>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="deleteAdopter" class="btn btn-outline-danger me-auto d-none"><i class="bi bi-trash me-1"></i>Excluir</button>
+      <button type="button" class="btn btn-outline-green" data-bs-dismiss="modal">Cancelar</button>
+      <button type="submit" id="saveAdopterButton" class="btn btn-green"><i class="bi bi-check2 me-2"></i>Cadastrar adotante</button>
+    </div>
+  </form>
+</div></div></div>
+
+<!-- Novo processo -->
+<div class="modal fade" id="adoptionModal" tabindex="-1" aria-labelledby="adoptionTitle" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header"><div><h2 id="adoptionTitle">Novo processo de adoção</h2><p>Liga um adotante a um animal disponível.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+  <form id="adoptionForm">
+    <div class="modal-body">
+      <div class="mb-3"><label class="form-label" for="newAdopter">Adotante *</label><select id="newAdopter" class="form-select" required></select>
+        <small class="text-secondary d-block mt-1">Não está na lista? Use “Cadastrar adotante” primeiro.</small></div>
+      <div class="mb-3"><label class="form-label" for="newAnimal">Animal *</label><select id="newAnimal" class="form-select" required></select>
+        <small class="text-secondary d-block mt-1">Aparecem animais com status Disponível ou Em Lar Temporário.</small></div>
+      <div id="animalWarning" class="alert-soft warning d-none"></div>
+      <div class="mb-3"><label class="form-label" for="newDate">Data de abertura *</label><input id="newDate" type="date" class="form-control" required></div>
+      <div><label class="form-label" for="newNotes">Observação</label><textarea id="newNotes" class="form-control" rows="2" maxlength="300" placeholder="Ex.: interessado entrou em contato pelo Instagram"></textarea></div>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-outline-green" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-green"><i class="bi bi-check2 me-2"></i>Abrir processo</button></div>
+  </form>
+</div></div></div>
+
+<!-- Ficha do processo -->
+<div class="modal fade" id="processModal" tabindex="-1" aria-labelledby="processCode" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header">
+    <div><h2><span id="processCode"></span> <span id="processStage" class="status-badge"></span></h2><p id="processOpened"></p></div>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+  </div>
+  <div class="modal-body">
+    <div id="processSummary" class="process-summary"></div>
+    <ol id="processStepper" class="stepper" aria-label="Etapas do processo"></ol>
+    <div id="processClosed" class="alert-soft d-none"></div>
+
+    <div class="row g-4">
+      <div class="col-md-6">
+        <h3 class="block-title">Verificação da equipe</h3>
+        <div id="processChecklist" class="checklist"></div>
+      </div>
+      <div class="col-md-6" id="processActionArea">
+        <h3 class="block-title">Próximo passo</h3>
+        <label class="form-label" for="stageNote">Observação desta etapa</label>
+        <textarea id="stageNote" class="form-control" rows="2" maxlength="300" placeholder="Obrigatória para recusar ou cancelar"></textarea>
+        <div id="processActions" class="process-actions"></div>
+        <small id="processHint" class="process-hint"></small>
+      </div>
+    </div>
+
+    <h3 class="block-title mt-4">Histórico do processo</h3>
+    <div id="processLog" class="timeline"></div>
+  </div>
+</div></div></div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3"><div id="toast" class="toast" role="status" aria-live="polite"><div class="toast-body"><i class="bi bi-check-circle-fill me-2"></i><span id="toastText"></span></div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/dados.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/adocoes.js"></script>
+</body>
+</html>

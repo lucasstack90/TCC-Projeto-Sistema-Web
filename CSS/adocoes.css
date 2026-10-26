@@ -1,0 +1,225 @@
+/* =========================================================
+   PAWSAFE — módulo de Adoções (Pages/adocoes.html)
+   Busca, modais, abas, avisos, linha do tempo e cores das
+   etapas (.stage-*) ficam em base.css.
+   ========================================================= */
+
+/* ---------- Filtro por etapa ---------- */
+.stage-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+
+.stage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-size: 11px;
+  transition: background .18s ease, border-color .18s ease;
+}
+.stage-chip:hover { background: var(--green-100); }
+.stage-chip.active { color: var(--green-950); background: var(--green-100); border-color: #9dc2ad; font-weight: 700; }
+.stage-chip strong { color: var(--text); }
+.stage-chip i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+.view-tabs { padding: 0; margin-bottom: 16px; }
+.view-tabs .tab { font-size: 12px; }
+
+/* ---------- Lista de processos ---------- */
+.process-list { display: grid; gap: 8px; }
+
+.process-card {
+  display: grid;
+  grid-template-columns: minmax(170px, 1.3fr) minmax(120px, 1fr) minmax(90px, .7fr) minmax(110px, .8fr) 110px auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 15px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: box-shadow .18s ease;
+}
+.process-card:hover { box-shadow: var(--shadow-lg); }
+.process-card .status-badge { justify-self: start; }
+
+.process-animal { display: flex; align-items: center; gap: 11px; min-width: 0; }
+.process-animal strong,
+.process-field strong { display: block; font-size: 12px; }
+.process-animal small,
+.process-field small { display: block; color: var(--muted); font-size: 10px; }
+.process-field small { margin-bottom: 3px; }
+
+.process-photo { flex: 0 0 46px; width: 46px; height: 46px; border-radius: 10px; object-fit: cover; }
+.process-photo.placeholder,
+.summary-photo.placeholder {
+  display: grid;
+  place-items: center;
+  color: var(--green-700);
+  background: var(--green-100);
+  font-size: 20px;
+}
+
+.mini-progress { height: 6px; overflow: hidden; background: #e6ece6; border-radius: 6px; }
+.mini-progress span { display: block; height: 100%; background: var(--green-700); border-radius: 6px; }
+
+/* ---------- Tabela de adotantes ---------- */
+.table-card { overflow: hidden; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+
+.adopter-table {
+  --bs-table-bg: transparent;
+  --bs-table-border-color: #edf1ed;
+  font-size: 12px;
+}
+.adopter-table thead th {
+  padding: 12px 14px;
+  color: #859188;
+  background: var(--surface-soft);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.adopter-table td { padding: 11px 14px; color: var(--muted); }
+.adopter-table td strong { display: block; color: var(--text); }
+.adopter-table td small { color: #8a968e; font-size: 10px; }
+.adopter-table tbody tr:last-child td { border-bottom: 0; }
+.adopter-table .btn-sm { padding: 6px 10px; font-size: 11px; }
+.adopter-table .status-badge { margin-left: 4px; font-size: 9px; }
+
+/* ---------- Formulário do adotante ---------- */
+.doc-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 10px; }
+.doc-preview:empty { display: none; }
+
+.doc-item { position: relative; margin: 0; padding: 6px; background: var(--surface-muted); border-radius: var(--radius-sm); }
+.doc-item img { display: block; width: 100%; height: 90px; object-fit: cover; border-radius: 7px; }
+.doc-item figcaption { margin-top: 4px; overflow: hidden; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+
+.doc-remove {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  color: #fff;
+  background: rgba(25, 55, 46, .75);
+  border: 0;
+  border-radius: 50%;
+}
+
+.consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  color: var(--text);
+  background: var(--surface-muted);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  cursor: pointer;
+}
+.consent input { margin-top: 3px; accent-color: var(--green-700); }
+
+/* ---------- Ficha do processo ---------- */
+#processModal .modal-header h2 { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+
+.process-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+
+.summary-card { display: flex; gap: 12px; padding: 13px; background: var(--surface-muted); border-radius: 12px; }
+.summary-card small { display: block; color: var(--muted); font-size: 9px; letter-spacing: .5px; text-transform: uppercase; }
+.summary-card strong { display: block; margin: 2px 0 3px; font-size: 15px; }
+.summary-card p { margin: 0 0 4px; color: var(--muted); font-size: 11px; }
+
+.summary-photo { flex: 0 0 64px; width: 64px; height: 64px; border-radius: 12px; object-fit: cover; }
+.summary-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 64px;
+  height: 64px;
+  color: var(--lilac);
+  background: var(--lilac-light);
+  border-radius: 12px;
+  font-size: 26px;
+}
+
+.link-button { padding: 0; color: var(--green-700); background: none; border: 0; font-size: 11px; font-weight: 700; }
+.link-button:hover { color: var(--green-950); text-decoration: underline; }
+
+/* Etapas: Novo → Em análise → Aprovada → Concluída */
+.stepper { display: flex; gap: 6px; margin: 0 0 18px; padding: 0; list-style: none; }
+
+.step {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  color: #8a968e;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+}
+.step span {
+  display: grid;
+  place-items: center;
+  flex: 0 0 22px;
+  height: 22px;
+  color: #8a968e;
+  background: #e9eee9;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+}
+.step.done { color: var(--green-800); background: var(--green-100); border-color: #c4dccd; }
+.step.done span { color: #fff; background: var(--green-700); }
+.step.current { color: var(--green-950); border-color: var(--green-700); font-weight: 700; }
+.step.current span { color: #fff; background: var(--green-950); }
+
+.block-title { margin: 0 0 10px; font-size: 13px; font-weight: 800; }
+
+/* Verificação da equipe */
+.checklist { display: grid; gap: 7px; }
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  cursor: pointer;
+}
+.check-item input { width: 16px; height: 16px; accent-color: var(--green-700); }
+.check-item.checked { color: var(--green-800); background: var(--green-100); border-color: #c4dccd; }
+.check-item:has(input:disabled) { cursor: default; opacity: .8; }
+
+.process-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.process-hint { display: block; margin-top: 8px; color: #a65d43; font-size: 11px; }
+.process-hint:empty { display: none; }
+
+#processLog .status-badge { font-size: 9px; }
+
+/* ---------- Responsividade ---------- */
+@media (max-width: 1200px) {
+  .process-card { grid-template-columns: minmax(160px, 1.3fr) minmax(110px, 1fr) minmax(100px, .8fr) 100px auto; }
+  .process-card > div:nth-of-type(3) { display: none; } /* esconde a coluna de data */
+}
+
+@media (max-width: 900px) {
+  .process-card { grid-template-columns: 1fr auto; gap: 10px 14px; }
+  .process-card .process-field { display: none; }
+  .process-card .status-badge { grid-row: 1; grid-column: 2; justify-self: end; }
+  .process-card .btn { grid-column: 1 / -1; }
+}
+
+@media (max-width: 600px) {
+  .process-summary { grid-template-columns: 1fr; }
+  .stepper { flex-direction: column; }
+}

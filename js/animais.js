@@ -1,5 +1,5 @@
 /* PAWSAFE — módulo de Animais
-   Depende de: Bootstrap 5 (modais e toast), js/dados.js (PawData) e js/sidebar.js. */
+   Depende de: Bootstrap 5 (modais e toast), js/dados.js (PawData), js/utils.js (PawUtils) e js/sidebar.js. */
 
 const $ = (id) => document.getElementById(id);
 
@@ -16,15 +16,9 @@ const recordModal = new bootstrap.Modal($('recordModal'));
 const toast = new bootstrap.Toast($('toast'), { delay: 2500 });
 
 // ================= Utilitários =================
-const today = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-};
-const formatDate = (iso) => (iso ? new Date(`${iso}T12:00:00`).toLocaleDateString('pt-BR') : '—');
-const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, c =>
-  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-const animalCode = (id) => `PAW-${String(id).padStart(4, '0')}`;
+const { today, formatDate, escapeHtml, plural, compressImage } = PawUtils;
+const animalCode = (id) => PawUtils.code('PAW', id);
+const photoHtml = PawUtils.animalPhoto;
 const findAnimal = (id) => animals.find(a => a.id === id);
 
 const statusClass = PawData.statusClass;
@@ -39,19 +33,6 @@ function save() {
   notify('Não foi possível salvar. A imagem pode ser muito grande; escolha uma menor.');
   return false;
 }
-
-// Foto com substituto: se a imagem falhar (sem internet, link quebrado), mostra a pata.
-function photoHtml(animal, imgClass, fallbackClass) {
-  const fallback = `<div class="${fallbackClass}"><i class="bi bi-paw"></i></div>`;
-  if (!animal.photo) return fallback;
-  return `<img class="${imgClass}" src="${escapeHtml(animal.photo)}" alt="Foto de ${escapeHtml(animal.name)}" data-fallback="${fallbackClass}">`;
-}
-document.addEventListener('error', (event) => {
-  const img = event.target;
-  if (img.tagName === 'IMG' && img.dataset.fallback) {
-    img.outerHTML = `<div class="${img.dataset.fallback}"><i class="bi bi-paw"></i></div>`;
-  }
-}, true);
 
 // ================= Listagem =================
 function getFilteredAnimals() {
@@ -171,31 +152,11 @@ function openForm(animal = null) {
   animalModal.show();
 }
 
-// Reduz a foto para no máximo 1000 px antes de salvar (o localStorage tem ~5 MB).
-function readAndCompressImage(file) {
-  return new Promise((resolve, reject) => {
-    if (!file.type.startsWith('image/')) return reject(new Error('Selecione um arquivo de imagem válido.'));
-    const image = new Image();
-    const url = URL.createObjectURL(file);
-    image.onerror = () => reject(new Error('Não foi possível abrir essa imagem.'));
-    image.onload = () => {
-      const scale = Math.min(1, 1000 / Math.max(image.width, image.height));
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(image.width * scale);
-      canvas.height = Math.round(image.height * scale);
-      canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
-      URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL('image/jpeg', 0.78));
-    };
-    image.src = url;
-  });
-}
-
 $('photoFile').addEventListener('change', async (event) => {
   const file = event.target.files[0];
   if (!file) return;
   try {
-    selectedPhoto = await readAndCompressImage(file);
+    selectedPhoto = await compressImage(file);
     setPhotoPreview(selectedPhoto);
   } catch (error) {
     selectedPhoto = null;
@@ -242,7 +203,7 @@ $('animalForm').addEventListener('submit', (event) => {
     Object.assign(existing, data);
   } else {
     animals.unshift({
-      id: Math.max(0, ...animals.map(a => a.id)) + 1,
+      id: PawUtils.nextId(animals),
       photo: '',
       ...data,
       vaccines: [],
