@@ -1,8 +1,11 @@
 /* PAWSAFE — Dashboard
-   Indicadores de animais vêm de js/dados.js (mesma fonte do módulo de Animais).
-   O gráfico de adoções por mês continua ilustrativo até o módulo de Adoções existir. */
+   Animais e adoções vêm de js/dados.js — a mesma fonte dos módulos de Animais e Adoções.
+   Os cartões de resgates, voluntários e doações seguem ilustrativos até esses módulos existirem. */
 
 const animals = PawData.loadAnimals();
+const adopters = PawData.loadAdopters();
+const adoptions = PawData.loadAdoptions();
+const { escapeHtml, formatDate } = PawUtils;
 const countBy = (test) => animals.filter(test).length;
 
 const speciesCount = {
@@ -31,6 +34,36 @@ document.getElementById('statusList').innerHTML = PawData.STATUS.map(status =>
   `<span class="status-pill ${PawData.statusClass(status)}"><i></i>${status} <strong>${countBy(a => a.status === status)}</strong></span>`
 ).join('');
 
+// ---------- Últimas adoções ----------
+const recent = [...adoptions].sort((a, b) => b.openedAt.localeCompare(a.openedAt)).slice(0, 4);
+document.getElementById('recentAdoptions').innerHTML = recent.length
+  ? recent.map(o => {
+    const animal = animals.find(a => a.id === o.animalId);
+    const adopter = adopters.find(p => p.id === o.adopterId);
+    const avatar = animal?.species === 'Gato' ? 'animal-cat' : 'animal-dog';
+    return `<tr class="clickable-row" data-href="Pages/adocoes.html?processo=${o.id}">
+      <td><div class="animal-cell"><span class="animal-avatar ${avatar}"><i class="bi bi-paw-fill"></i></span>
+        <span><strong>${escapeHtml(animal?.name ?? 'Animal removido')}</strong><small>${escapeHtml(animal ? `${animal.sex} · ${animal.age || 'idade não informada'}` : '')}</small></span></div></td>
+      <td>${escapeHtml(adopter?.name ?? '—')}</td>
+      <td>${formatDate(o.openedAt)}</td>
+      <td><span class="status-badge ${PawData.stageClass(o.stage)}">${o.stage}</span></td>
+    </tr>`;
+  }).join('')
+  : '<tr><td colspan="4" class="text-center py-4">Nenhum processo de adoção registrado.</td></tr>';
+
+document.getElementById('recentAdoptions').addEventListener('click', (event) => {
+  const row = event.target.closest('[data-href]');
+  if (row) window.location.href = row.dataset.href;
+});
+
+// ---------- Adoções concluídas por mês (últimos 6 meses) ----------
+const months = Array.from({ length: 6 }, (_, i) => {
+  const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
+  return { key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, label: d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '') };
+});
+const adoptionsPerMonth = months.map(m =>
+  adoptions.filter(o => o.stage === 'Concluída' && o.closedAt.startsWith(m.key)).length);
+
 // ---------- Gráficos (Chart.js) ----------
 if (typeof Chart === 'undefined') {
   console.warn('Chart.js não foi carregado. Verifique sua conexão com a internet.');
@@ -42,9 +75,9 @@ if (typeof Chart === 'undefined') {
   new Chart(document.getElementById('adoptionsChart'), {
     type: 'bar',
     data: {
-      labels: ['Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out'],
+      labels: months.map(m => m.label),
       datasets: [{
-        data: [3, 5, 4, 7, 6, 2],
+        data: adoptionsPerMonth,
         backgroundColor: '#397665',
         hoverBackgroundColor: '#244438',
         borderRadius: 6,
@@ -60,7 +93,7 @@ if (typeof Chart === 'undefined') {
       },
       scales: {
         x: { grid: { display: false }, border: { display: false } },
-        y: { beginAtZero: true, ticks: { stepSize: 2 }, grid: { color: 'rgba(44, 77, 62, 0.08)' }, border: { display: false } }
+        y: { beginAtZero: true, suggestedMax: 4, ticks: { stepSize: 1, precision: 0 }, grid: { color: 'rgba(44, 77, 62, 0.08)' }, border: { display: false } }
       }
     }
   });

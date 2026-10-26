@@ -216,6 +216,8 @@
 .dashboard-table tbody td { padding: 12px 13px; color: var(--muted); white-space: nowrap; }
 .dashboard-table tbody tr:last-child td { border-bottom: 0; }
 .dashboard-table tbody tr:hover { background: var(--surface-soft); }
+.clickable-row { cursor: pointer; }
+.dashboard-table .status-badge { font-size: 9px; }
 
 .animal-cell { display: flex; align-items: center; gap: 9px; }
 .animal-cell span:last-child { display: flex; flex-direction: column; gap: 3px; }
@@ -234,10 +236,8 @@
 .animal-dog { color: var(--green-700); background: #e6f0e9; }
 .animal-cat { color: #8a704d; background: #f4ede2; }
 
-/* Situação das adoções e prioridade dos resgates */
+/* Prioridade dos resgates (ilustrativo até o módulo de Resgates) */
 .badge-status { display: inline-block; padding: 5px 8px; border-radius: 7px; font-size: 9px; font-weight: 700; }
-.badge-done      { color: #2f7057; background: #e7f3eb; }
-.badge-review,
 .badge-high      { color: #a65c31; background: #fbefe8; }
 .badge-critical  { color: var(--danger); background: var(--danger-light); }
 .badge-treatment { color: #705d9a; background: #f1eef8; }
