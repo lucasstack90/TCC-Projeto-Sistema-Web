@@ -13,6 +13,7 @@ PAWSAFE/
 │   ├── dashboard.css   # index.html
 │   ├── animais.css     # Pages/animais.html
 │   ├── adocoes.css     # Pages/adocoes.html
+│   ├── resgates.css    # Pages/resgates.html
 │   └── login.css       # Pages/Pg_Login.html
 ├── Img/
 ├── js/
@@ -22,11 +23,13 @@ PAWSAFE/
 │   ├── dashboard.js
 │   ├── animais.js
 │   ├── adocoes.js
+│   ├── resgates.js
 │   └── login.js
 ├── Pages/
 │   ├── Pg_Login.html
 │   ├── animais.html
-│   └── adocoes.html
+│   ├── adocoes.html
+│   └── resgates.html
 └── index.html          # dashboard
 ```
 
@@ -36,9 +39,9 @@ Abra a pasta no VS Code e rode `Pages/Pg_Login.html` (ou `index.html`) com o Liv
 
 ## Como os dados funcionam no protótipo
 
-- Animais, adotantes e processos de adoção ficam no `localStorage` do navegador (`js/dados.js`). Todas as páginas leem a mesma fonte.
+- Animais, adotantes, processos de adoção e resgates ficam no `localStorage` do navegador (`js/dados.js`). Todas as páginas leem a mesma fonte.
 - Para voltar aos dados de exemplo: no console do navegador, rode `PawData.resetAll()` e recarregue a página.
-- Os indicadores de resgates, voluntários e doações são ilustrativos até esses módulos existirem.
+- Os indicadores de voluntários e doações são ilustrativos até esses módulos existirem.
 
 ## Nova página do sistema
 
@@ -48,7 +51,7 @@ Para manter o padrão nas páginas de `Pages/`:
 2. No `<body>`: `<div id="sidebarMount"></div>` e `<main class="main-content">` com o cabeçalho `<header class="topbar">` (botão `class="mobile-menu" id="menuToggle"` + `<div class="topbar-title">`).
 3. Antes do JS da página: `../js/dados.js`, `../js/utils.js` e `../js/sidebar.js`, nesta ordem.
 
-Páginas do menu ainda não criadas: `resgates.html`, `voluntarios.html`, `doacoes.html`, `estoque.html`, `relatorios.html`.
+Páginas do menu ainda não criadas: `voluntarios.html`, `doacoes.html`, `estoque.html`, `relatorios.html`.
 
 ## Padrão do CSS
 
@@ -63,3 +66,11 @@ Páginas do menu ainda não criadas: `resgates.html`, `voluntarios.html`, `doaco
 - **Verificação da equipe:** entrevista, visita, documentos e termo. Aprovar exige os três primeiros; concluir exige o termo.
 - **Ao concluir:** o animal passa para "Adotado", ganha o registro no histórico e os outros processos do mesmo animal são cancelados.
 - Todo passo fica no histórico do processo. O dashboard abre um processo direto por `adocoes.html?processo=ID`.
+
+## Módulo de Resgates
+
+- **Ocorrência:** data do ocorrido, endereço (rua, número, bairro, cidade e referência), descrição da situação, responsável pelo resgate, prioridade, espécie, quantidade e quem informou.
+- **Situação:** `Pendente → Em atendimento → Concluído` ou `Sem sucesso` (com motivo). Dá para reabrir e adicionar observações; tudo fica no acompanhamento.
+- **Período:** filtro por mês, 30/90 dias, ano ou datas livres, com total de ocorrências, concluídos, em aberto, animais acolhidos e quantos resgates cada responsável atendeu.
+- **Animal resgatado:** “Cadastrar animal resgatado” abre o formulário de Animais já preenchido (status Resgatado, data de chegada, espécie). O animal fica ligado ao resgate e a ficha dele mostra a origem.
+- Menu lateral e dashboard mostram as ocorrências em aberto. Links diretos: `resgates.html?resgate=ID`, `animais.html?animal=ID`.

@@ -222,6 +222,8 @@
 .animal-cell { display: flex; align-items: center; gap: 9px; }
 .animal-cell span:last-child { display: flex; flex-direction: column; gap: 3px; }
 .animal-cell strong { color: var(--text); font-size: 11px; }
+/* Descrição longa do resgate: corta com reticências */
+#recentRescues .animal-cell strong { max-width: 230px; overflow: hidden; text-overflow: ellipsis; }
 .animal-cell small { color: #8a968e; font-size: 9px; }
 
 .animal-avatar {
@@ -236,11 +238,6 @@
 .animal-dog { color: var(--green-700); background: #e6f0e9; }
 .animal-cat { color: #8a704d; background: #f4ede2; }
 
-/* Prioridade dos resgates (ilustrativo até o módulo de Resgates) */
-.badge-status { display: inline-block; padding: 5px 8px; border-radius: 7px; font-size: 9px; font-weight: 700; }
-.badge-high      { color: #a65c31; background: #fbefe8; }
-.badge-critical  { color: var(--danger); background: var(--danger-light); }
-.badge-treatment { color: #705d9a; background: #f1eef8; }
 
 /* ---------- Responsividade ---------- */
 @media (min-width: 1600px) {

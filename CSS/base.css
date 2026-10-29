@@ -231,6 +231,17 @@ h1 {
 .stage-recusada  { color: var(--danger); background: var(--danger-light); }
 .stage-cancelada { color: #6b7570; background: #e9ecea; }
 
+/* ---------- Situação e prioridade dos resgates ---------- */
+.rescue-pendente    { color: #9a642a; background: #f6e8cb; }
+.rescue-atendimento { color: #386b86; background: #dceaf1; }
+.rescue-concluido   { color: #2d6c4c; background: #dceee0; }
+.rescue-sem-sucesso { color: #6b7570; background: #e9ecea; }
+
+.priority-baixa   { color: #4f6b5d; background: #e8efe9; }
+.priority-media   { color: #8a6a1f; background: #f7efd4; }
+.priority-alta    { color: #a65c31; background: #fbefe8; }
+.priority-critica { color: var(--danger); background: var(--danger-light); }
+
 /* Área com mais de um botão no cabeçalho */
 .topbar-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 

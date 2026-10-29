@@ -9,6 +9,8 @@ let selectedId = null;     // animal aberto na ficha
 let recordType = null;     // 'vaccine' | 'history' | 'weight'
 let viewMode = 'grid';     // 'grid' | 'list'
 let selectedPhoto = null;  // null = manter a foto atual | '' = remover | dataURL = nova foto
+let rescues = PawData.loadRescues();
+let fromRescueId = null;   // resgate de origem quando o cadastro vem do módulo de Resgates
 
 const animalModal = new bootstrap.Modal($('animalModal'));
 const detailModal = new bootstrap.Modal($('detailModal'));
@@ -106,7 +108,7 @@ function render() {
   $('resultsText').textContent = `Exibindo ${list.length} de ${plural(animals.length, 'animal', 'animais')}`;
   $('countText').textContent = `${plural(animals.length, 'animal cadastrado', 'animais cadastrados')}`;
   $('availableText').textContent = `${plural(available, 'disponível', 'disponíveis')} para adoção`;
-  const navCount = $('navCount');
+  const navCount = document.querySelector('[data-count="animais"]');
   if (navCount) navCount.textContent = animals.length;
 }
 
@@ -134,12 +136,19 @@ function setPhotoPreview(src) {
   else $('photoPreview').removeAttribute('src');
 }
 
-function openForm(animal = null) {
+function openForm(animal = null, rescue = null) {
   $('animalForm').reset();
   $('animalId').value = animal ? animal.id : '';
+  fromRescueId = rescue ? rescue.id : null;
   if (animal) {
     TEXT_FIELDS.forEach(f => { $(f).value = animal[f] ?? ''; });
     CHECK_FIELDS.forEach(f => { $(f).checked = Boolean(animal[f]); });
+  } else if (rescue) {
+    // Já preenchido com os dados da ocorrência
+    $('status').value = 'Resgatado';
+    $('arrival').value = rescue.date;
+    if (PawData.SPECIES.includes(rescue.species)) $('species').value = rescue.species;
+    $('notes').value = `Resgatado em ${rescue.district}: ${rescue.description}`;
   } else {
     $('arrival').value = today();
   }
@@ -147,7 +156,8 @@ function openForm(animal = null) {
   setPhotoPreview(animal?.photo || null);
 
   const label = animal ? 'Salvar alterações' : 'Cadastrar animal';
-  $('formTitle').textContent = animal ? 'Editar animal' : 'Cadastrar animal';
+  $('formTitle').textContent = animal ? 'Editar animal'
+    : rescue ? `Cadastrar animal do resgate ${PawUtils.code('RES', rescue.id)}` : 'Cadastrar animal';
   $('saveAnimalButton').innerHTML = `<i class="bi bi-check2 me-2"></i>${label}`;
   animalModal.show();
 }
@@ -202,18 +212,36 @@ $('animalForm').addEventListener('submit', (event) => {
     }
     Object.assign(existing, data);
   } else {
-    animals.unshift({
+    const animal = {
       id: PawUtils.nextId(animals),
       photo: '',
       ...data,
       vaccines: [],
       history: [{ type: 'Cadastro', date: today(), description: 'Animal cadastrado no sistema', vet: 'Equipe PAWSAFE', notes: '' }],
       weights: weight ? [{ weight, date: data.arrival, note: 'Peso inicial' }] : []
-    });
+    };
+    animals.unshift(animal);
+
+    const rescue = rescues.find(r => r.id === fromRescueId);
+    if (rescue) {
+      // Liga o animal ao resgate nos dois sentidos: histórico do animal e acompanhamento do resgate
+      animal.history.push({
+        type: 'Resgate', date: rescue.date, description: `Resgate ${PawUtils.code('RES', rescue.id)} — ${rescue.district}`,
+        vet: rescue.responsible, notes: rescue.description
+      });
+      rescue.animalIds.push(animal.id);
+      rescue.log.unshift({ date: today(), stage: rescue.stage, text: `Animal ${animal.name} (${animalCode(animal.id)}) cadastrado.` });
+    }
   }
 
   if (!save()) {
     animals = JSON.parse(backup); // desfaz a alteração que não pôde ser salva
+    return;
+  }
+  if (!existing && fromRescueId) {
+    PawData.saveRescues(rescues);
+    // Volta para a ficha do resgate, que já mostra o animal cadastrado
+    window.location.href = `resgates.html?resgate=${fromRescueId}`;
     return;
   }
   animalModal.hide();
@@ -270,7 +298,11 @@ function setTab(tab) {
 const infoTile = (label, value) => `<div class="info-tile"><small>${label}</small><strong>${value}</strong></div>`;
 
 function renderProfile(a) {
+  const origin = rescues.find(r => r.animalIds.includes(a.id));
   $('panel-profile').innerHTML = `
+    ${origin ? `<div class="alert-soft"><i class="bi bi-house-heart me-2"></i>Chegou pelo resgate
+      <a class="fw-bold" href="resgates.html?resgate=${origin.id}">${PawUtils.code('RES', origin.id)}</a>
+      em ${formatDate(origin.date)} (${escapeHtml(origin.district)}).</div>` : ''}
     <div class="profile-grid">
       ${infoTile('Espécie / raça', `${escapeHtml(a.species)} · ${escapeHtml(a.breed)}`)}
       ${infoTile('Sexo / porte', `${escapeHtml(a.sex)} · ${escapeHtml(a.size)}`)}
@@ -453,3 +485,13 @@ $('listMode').addEventListener('click', () => setViewMode('list'));
 $('addAnimal').addEventListener('click', () => openForm());
 
 render();
+
+// Links vindos de outras páginas:
+//   animais.html?animal=3   → abre a ficha do animal
+//   animais.html?resgate=4  → abre o cadastro já preenchido com o resgate
+const params = new URLSearchParams(window.location.search);
+const linkedAnimal = findAnimal(Number(params.get('animal')));
+const linkedRescue = rescues.find(r => r.id === Number(params.get('resgate')));
+if (linkedAnimal) openDetail(linkedAnimal.id);
+else if (linkedRescue && linkedRescue.stage !== 'Sem sucesso') openForm(null, linkedRescue);
+if (params.toString()) history.replaceState(null, '', window.location.pathname); // recarregar não reabre

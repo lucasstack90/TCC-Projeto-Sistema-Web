@@ -1,0 +1,145 @@
+/* =========================================================
+   PAWSAFE — módulo de Resgates (Pages/resgates.html)
+   Busca, modais, avisos, linha do tempo e cores de situação
+   e prioridade (.rescue-*, .priority-*) ficam em base.css.
+   ========================================================= */
+
+/* ---------- Período e resumo ---------- */
+.period-panel {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.period-controls { display: grid; grid-template-columns: repeat(3, minmax(0, 200px)); gap: 10px; }
+
+.period-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+
+.period-stat {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px;
+  background: var(--surface-soft);
+  border: 1px solid #edf1ed;
+  border-radius: 12px;
+}
+.period-stat strong { display: block; font: 800 22px/1.1 var(--font-title); }
+.period-stat small { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; }
+
+.period-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 38px;
+  height: 38px;
+  border-radius: 11px;
+  font-size: 17px;
+}
+.icon-terra { color: #b96a42; background: var(--terra-light); }
+.icon-green { color: var(--green-700); background: var(--green-100); }
+.icon-blue  { color: var(--blue); background: var(--blue-light); }
+.icon-lilac { color: var(--lilac); background: var(--lilac-light); }
+
+.period-team { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 11px; }
+.period-team:empty { display: none; }
+.team-label { color: var(--muted); font-weight: 700; }
+.team-chip { padding: 4px 9px; color: var(--green-800); background: var(--green-100); border-radius: 20px; }
+
+.results { margin: 0 2px 12px; color: var(--muted); font-size: 11px; }
+
+/* ---------- Lista de ocorrências ---------- */
+.rescue-list { display: grid; gap: 9px; }
+
+.rescue-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid currentColor; /* faixa com a cor da prioridade */
+  border-radius: 12px;
+  transition: box-shadow .18s ease;
+}
+.rescue-card:hover { box-shadow: var(--shadow-lg); }
+/* A classe .priority-* do cartão só pinta a faixa; o fundo fica branco. */
+.rescue-card[class*="priority-"] { background: var(--surface); }
+
+.rescue-main { min-width: 0; color: var(--text); }
+
+.rescue-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 11px; }
+.rescue-meta strong { font-size: 12px; }
+.rescue-meta > span:not(.status-badge) { color: var(--muted); }
+.rescue-meta .status-badge { font-size: 9px; }
+
+.rescue-description {
+  display: -webkit-box;
+  margin: 7px 0 8px;
+  overflow: hidden;
+  font-size: 13px;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.rescue-details { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--muted); font-size: 11px; }
+.rescue-details i { margin-right: 5px; color: #8a9b91; }
+
+.rescue-side { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 10px; }
+.rescue-side .btn { padding: 7px 14px; }
+
+/* ---------- Ficha ---------- */
+.detail-title { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.detail-title .status-badge { font-size: 10px; }
+
+.rescue-info { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.info-wide { grid-column: 1 / -1; }
+.rescue-info .info-tile p { color: var(--text); font-size: 12px; }
+
+.map-link { display: inline-block; margin-top: 7px; color: var(--green-700); font-size: 11px; font-weight: 700; }
+.map-link:hover { color: var(--green-950); text-decoration: underline; }
+
+.rescued-animals { display: grid; gap: 8px; }
+
+.rescued-animal {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: background .18s ease;
+}
+a.rescued-animal:hover { background: var(--green-100); }
+.rescued-animal > div:not(.rescued-photo) { flex: 1; min-width: 0; }
+.rescued-animal strong,
+.rescued-animal small { display: block; }
+.rescued-animal strong { font-size: 12px; }
+.rescued-animal small { color: var(--muted); font-size: 10px; }
+.rescued-animal.removed { opacity: .7; }
+
+.rescued-photo { flex: 0 0 42px; width: 42px; height: 42px; border-radius: 9px; object-fit: cover; }
+.rescued-photo.placeholder { display: grid; place-items: center; color: var(--green-700); background: var(--green-100); font-size: 18px; }
+
+.stage-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+
+#detailLog .status-badge { font-size: 9px; }
+
+/* ---------- Responsividade ---------- */
+@media (max-width: 900px) {
+  .period-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rescue-info { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 600px) {
+  .period-controls { grid-template-columns: 1fr 1fr; }
+  .period-controls > div:first-child { grid-column: 1 / -1; }
+  .period-stat strong { font-size: 19px; }
+  .rescue-card { flex-direction: column; }
+  .rescue-side { flex-direction: row; align-items: center; }
+  .rescue-info { grid-template-columns: 1fr; }
+}
