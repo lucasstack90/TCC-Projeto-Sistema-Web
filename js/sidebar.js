@@ -10,14 +10,16 @@
   const currentPage = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase().replace('.html', '');
   const activeModule = currentPage === 'index' ? 'dashboard' : currentPage;
 
-  // Contador real de animais (js/dados.js precisa ser carregado antes deste arquivo).
-  const animalCount = typeof PawData !== 'undefined' ? PawData.loadAnimals().length : '';
+  // Contadores do menu (js/dados.js precisa ser carregado antes deste arquivo).
+  const hasData = typeof PawData !== 'undefined';
+  const animalCount = hasData ? PawData.loadAnimals().length : '';
+  const openRescues = hasData ? PawData.loadRescues().filter(r => PawData.OPEN_RESCUE_STAGES.includes(r.stage)).length : 0;
 
   const items = [
     { id: 'dashboard', label: 'Dashboard', icon: 'bi-grid-1x2-fill', href: home },
     { id: 'animais', label: 'Animais', icon: 'bi-paw', href: `${base}animais.html`, count: animalCount },
     { id: 'adocoes', label: 'Adoções', icon: 'bi-heart', href: `${base}adocoes.html` },
-    { id: 'resgates', label: 'Resgates', icon: 'bi-house-heart', href: `${base}resgates.html` },
+    { id: 'resgates', label: 'Resgates', icon: 'bi-house-heart', href: `${base}resgates.html`, count: openRescues, alert: true },
     { id: 'voluntarios', label: 'Voluntários & Equipe', icon: 'bi-people', href: `${base}voluntarios.html` },
     { id: 'doacoes', label: 'Doações / Financeiro', icon: 'bi-cash-coin', href: `${base}doacoes.html` },
     { id: 'estoque', label: 'Estoque', icon: 'bi-box-seam', href: `${base}estoque.html` },
@@ -26,7 +28,10 @@
 
   const navLinks = items.map(item => {
     const active = item.id === activeModule;
-    const count = item.count !== undefined ? `<span class="sidebar-count" id="navCount">${item.count}</span>` : '';
+    // "alert": contador de pendências, em destaque e escondido quando é zero
+    const hidden = item.alert && !item.count ? ' d-none' : '';
+    const count = item.count !== undefined
+      ? `<span class="sidebar-count${item.alert ? ' is-alert' : ''}${hidden}" data-count="${item.id}">${item.count}</span>` : '';
     return `<a class="nav-link${active ? ' active' : ''}" href="${item.href}"${active ? ' aria-current="page"' : ''}>
       <i class="bi ${item.icon}"></i><span>${item.label}</span>${count}</a>`;
   }).join('');

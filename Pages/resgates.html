@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#244438">
+  <title>PAWSAFE | Resgates</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../CSS/base.css">
+  <link rel="stylesheet" href="../CSS/sidebar.css">
+  <link rel="stylesheet" href="../CSS/resgates.css">
+</head>
+<body>
+<div id="sidebarMount"></div>
+
+<main class="main-content">
+  <header class="topbar">
+    <button class="mobile-menu" id="menuToggle" type="button" aria-label="Abrir menu" aria-expanded="false"><i class="bi bi-list"></i></button>
+    <div class="topbar-title">
+      <div class="eyebrow">Ocorrências da equipe</div>
+      <h1>Resgates</h1>
+      <p class="page-subtitle"><span id="openText"></span> <span class="subtitle-dot">•</span> <span id="totalText"></span></p>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline-green" id="printReport" type="button"><i class="bi bi-printer me-2"></i>Imprimir relatório</button>
+      <button class="btn btn-green" id="addRescue" type="button"><i class="bi bi-plus-lg me-2"></i>Registrar resgate</button>
+    </div>
+  </header>
+
+  <!-- Só aparece na impressão -->
+  <div class="print-header">
+    <strong>PAWSAFE — Relatório de resgates</strong>
+    <span id="printPeriod"></span>
+  </div>
+
+  <!-- Período: o artigo pede saber quais resgates a equipe fez em determinado período -->
+  <section class="period-panel" aria-label="Período">
+    <div class="period-controls">
+      <div>
+        <label class="form-label" for="periodPreset">Período</label>
+        <select id="periodPreset" class="form-select">
+          <option value="month">Este mês</option>
+          <option value="30">Últimos 30 dias</option>
+          <option value="90">Últimos 90 dias</option>
+          <option value="year">Este ano</option>
+          <option value="all" selected>Todo o período</option>
+          <option value="custom">Personalizado</option>
+        </select>
+      </div>
+      <div><label class="form-label" for="periodFrom">De</label><input id="periodFrom" type="date" class="form-control"></div>
+      <div><label class="form-label" for="periodTo">Até</label><input id="periodTo" type="date" class="form-control"></div>
+    </div>
+    <div class="period-stats" id="periodStats"></div>
+    <div class="period-team" id="periodTeam"></div>
+  </section>
+
+  <div class="filter-panel">
+    <div class="search"><i class="bi bi-search"></i><input id="search" type="search" class="form-control" placeholder="Buscar por bairro, rua, descrição, responsável ou código (RES-0001)..." aria-label="Buscar resgates"></div>
+    <div class="filter-controls">
+      <select id="stageFilter" class="form-select" aria-label="Filtrar por situação"><option value="Todas">Todas as situações</option></select>
+      <select id="priorityFilter" class="form-select" aria-label="Filtrar por prioridade"><option value="Todas">Todas as prioridades</option></select>
+      <button class="btn btn-outline-green" id="clearFilters" type="button"><i class="bi bi-arrow-counterclockwise me-1"></i>Limpar</button>
+    </div>
+  </div>
+
+  <div class="results"><span id="resultsText"></span></div>
+  <section id="rescueList" class="rescue-list"></section>
+  <div id="empty" class="empty d-none">
+    <i class="bi bi-house-heart"></i>
+    <h2>Nenhum resgate encontrado</h2>
+    <p>Altere o período, a busca ou os filtros, ou registre uma nova ocorrência.</p>
+  </div>
+
+  <footer class="page-footer"><span><i class="bi bi-shield-check me-1"></i> PAWSAFE · Cada ocorrência registrada é uma vida acompanhada.</span><span>Protótipo com dados demonstrativos</span></footer>
+</main>
+
+<!-- Registro / edição -->
+<div class="modal fade" id="rescueModal" tabindex="-1" aria-labelledby="rescueFormTitle" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header"><div><h2 id="rescueFormTitle">Registrar resgate</h2><p>Dados da ocorrência e da equipe responsável.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+  <form id="rescueForm">
+    <div class="modal-body">
+      <input type="hidden" id="rescueId">
+
+      <div class="section-title">OCORRÊNCIA</div>
+      <div class="row g-3">
+        <div class="col-md-4"><label class="form-label" for="rsDate">Data do ocorrido *</label><input id="rsDate" type="date" class="form-control" required></div>
+        <div class="col-md-4"><label class="form-label" for="rsPriority">Prioridade *</label><select id="rsPriority" class="form-select" required></select></div>
+        <div class="col-md-4"><label class="form-label" for="rsResponsible">Responsável pelo resgate *</label><input id="rsResponsible" class="form-control" required maxlength="80" list="responsibleList" placeholder="Nome de quem atende"><datalist id="responsibleList"></datalist></div>
+        <div class="col-12"><label class="form-label" for="rsDescription">Descrição da situação *</label><textarea id="rsDescription" class="form-control" rows="3" required maxlength="600" placeholder="Estado do animal, riscos, o que foi informado..."></textarea></div>
+        <div class="col-md-4"><label class="form-label" for="rsSpecies">Espécie</label><select id="rsSpecies" class="form-select"><option>Cão</option><option>Gato</option><option>Outros</option><option>Não identificado</option></select></div>
+        <div class="col-md-3"><label class="form-label" for="rsQuantity">Quantidade *</label><input id="rsQuantity" type="number" min="1" max="50" value="1" class="form-control" required></div>
+        <div class="col-md-5"><label class="form-label" for="rsReporter">Quem informou</label><input id="rsReporter" class="form-control" maxlength="80" placeholder="Ex.: vizinho, denúncia anônima"></div>
+      </div>
+
+      <div class="section-title mt-4">ENDEREÇO</div>
+      <div class="row g-3">
+        <div class="col-md-8"><label class="form-label" for="rsStreet">Rua / avenida *</label><input id="rsStreet" class="form-control" required maxlength="80"></div>
+        <div class="col-md-4"><label class="form-label" for="rsNumber">Número</label><input id="rsNumber" class="form-control" maxlength="10" placeholder="s/n"></div>
+        <div class="col-md-6"><label class="form-label" for="rsDistrict">Bairro *</label><input id="rsDistrict" class="form-control" required maxlength="60"></div>
+        <div class="col-md-6"><label class="form-label" for="rsCity">Cidade *</label><input id="rsCity" class="form-control" required maxlength="60"></div>
+        <div class="col-12"><label class="form-label" for="rsReference">Ponto de referência</label><input id="rsReference" class="form-control" maxlength="120" placeholder="Ex.: em frente à escola"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-green" data-bs-dismiss="modal">Cancelar</button>
+      <button type="submit" id="saveRescueButton" class="btn btn-green"><i class="bi bi-check2 me-2"></i>Registrar resgate</button>
+    </div>
+  </form>
+</div></div></div>
+
+<!-- Ficha do resgate -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailCode" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header">
+    <div><h2 class="detail-title"><span id="detailCode"></span> <span id="detailStage" class="status-badge"></span> <span id="detailPriority" class="status-badge"></span></h2><p id="detailSubtitle"></p></div>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+  </div>
+  <div class="modal-body">
+    <div id="detailInfo" class="rescue-info"></div>
+
+    <div class="panel-toolbar mt-4"><h3>Animais acolhidos</h3><button type="button" class="btn btn-green" id="registerAnimal"><i class="bi bi-plus-lg me-1"></i>Cadastrar animal resgatado</button></div>
+    <div id="detailAnimals" class="rescued-animals"></div>
+
+    <div id="stageArea">
+      <div class="panel-toolbar mt-4"><h3>Atualizar situação</h3></div>
+      <label class="form-label" for="stageNote">Observação</label>
+      <textarea id="stageNote" class="form-control" rows="2" maxlength="300" placeholder="Obrigatória para “sem sucesso” e para reabrir"></textarea>
+      <div id="stageActions" class="stage-actions"></div>
+    </div>
+
+    <div class="panel-toolbar mt-4"><h3>Acompanhamento</h3></div>
+    <div id="detailLog" class="timeline"></div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-danger me-auto" id="deleteRescue"><i class="bi bi-trash me-1"></i>Excluir</button>
+    <button type="button" class="btn btn-outline-green" id="editRescue"><i class="bi bi-pencil me-1"></i>Editar dados</button>
+  </div>
+</div></div></div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3"><div id="toast" class="toast" role="status" aria-live="polite"><div class="toast-body"><i class="bi bi-check-circle-fill me-2"></i><span id="toastText"></span></div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/dados.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/resgates.js"></script>
+</body>
+</html>

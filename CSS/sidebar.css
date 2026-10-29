@@ -90,6 +90,7 @@
   background: #e2eee6;
   font-size: 10px;
 }
+.sidebar-count.is-alert { color: #fff; background: var(--terra); font-weight: 700; }
 
 .sidebar-bottom {
   display: grid;

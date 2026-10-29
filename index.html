@@ -43,7 +43,7 @@
         </article>
         <article class="stat-card">
           <div class="stat-icon icon-orange"><i class="bi bi-house-heart"></i></div>
-          <div class="stat-content"><span class="stat-label">Resgates pendentes</span><strong class="stat-value">3</strong><span class="stat-foot">Dado ilustrativo</span></div>
+          <div class="stat-content"><span class="stat-label">Resgates em aberto</span><strong class="stat-value" data-stat="openRescues">–</strong><span class="stat-foot">Pendentes ou em atendimento</span></div>
           <span class="stat-accent accent-orange"></span>
         </article>
         <article class="stat-card">
@@ -109,17 +109,13 @@
 
         <article class="panel recent-panel">
           <div class="panel-heading recent-heading">
-            <div class="heading-with-icon"><span class="table-heading-icon terra-icon"><i class="bi bi-house-heart"></i></span><div><h2>Resgates recentes</h2><p>Ocorrências registradas</p></div></div>
+            <div class="heading-with-icon"><span class="table-heading-icon terra-icon"><i class="bi bi-house-heart"></i></span><div><h2>Resgates</h2><p>Em aberto primeiro, por prioridade</p></div></div>
             <a href="Pages/resgates.html" class="view-all">Ver todos <i class="bi bi-arrow-right"></i></a>
           </div>
           <div class="table-responsive">
             <table class="table dashboard-table align-middle mb-0">
-              <thead><tr><th>Animal / local</th><th>Data</th><th>Prioridade</th></tr></thead>
-              <tbody>
-                <tr><td><div class="animal-cell"><span class="animal-avatar animal-dog"><i class="bi bi-paw-fill"></i></span><span><strong>Cão sem identificação</strong><small>Bairro Boqueirão, Guarapuava</small></span></div></td><td>20/10/2026</td><td><span class="badge-status badge-high">Alta</span></td></tr>
-                <tr><td><div class="animal-cell"><span class="animal-avatar animal-cat"><i class="bi bi-paw-fill"></i></span><span><strong>Filhotes de gato</strong><small>Centro, Guarapuava</small></span></div></td><td>18/10/2026</td><td><span class="badge-status badge-critical">Crítica</span></td></tr>
-                <tr><td><div class="animal-cell"><span class="animal-avatar animal-dog"><i class="bi bi-paw-fill"></i></span><span><strong>Mel</strong><small>Bairro Primavera, Guarapuava</small></span></div></td><td>12/04/2026</td><td><span class="badge-status badge-treatment">Em tratamento</span></td></tr>
-              </tbody>
+              <thead><tr><th>Ocorrência / local</th><th>Data</th><th>Prioridade</th><th>Situação</th></tr></thead>
+              <tbody id="recentRescues"></tbody>
             </table>
           </div>
         </article>

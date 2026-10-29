@@ -1,6 +1,6 @@
 /* PAWSAFE — fonte única de dados do protótipo.
-   Enquanto o back-end (Laravel + MySQL) não existe, animais, adotantes e processos de
-   adoção ficam no localStorage. Todas as páginas leem daqui, então os números sempre batem.
+   Enquanto o back-end (Laravel + MySQL) não existe, animais, adotantes, processos de
+   adoção e resgates ficam no localStorage. Todas as páginas leem daqui, então os números sempre batem.
    Na integração com o back-end, troque as funções load/save por chamadas à API. */
 
 const PawData = (() => {
@@ -190,11 +190,84 @@ const PawData = (() => {
     }
   ];
 
+  // ================= Resgates =================
+  // Situação da ocorrência. As duas primeiras são "em aberto".
+  const RESCUE_STAGES = ['Pendente', 'Em atendimento', 'Concluído', 'Sem sucesso'];
+  const OPEN_RESCUE_STAGES = ['Pendente', 'Em atendimento'];
+  const PRIORITIES = ['Baixa', 'Média', 'Alta', 'Crítica'];
+
+  const RESCUE_CLASS = {
+    'Pendente': 'rescue-pendente',
+    'Em atendimento': 'rescue-atendimento',
+    'Concluído': 'rescue-concluido',
+    'Sem sucesso': 'rescue-sem-sucesso'
+  };
+  const rescueClass = (stage) => RESCUE_CLASS[stage] || 'rescue-pendente';
+  const priorityClass = (priority) => `priority-${String(priority).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()}`;
+
+  const SEED_RESCUES = [
+    {
+      id: 1, date: '2026-04-02', street: 'Rua Coronel Saldanha', number: '', district: 'Batel', city: 'Guarapuava - PR',
+      reference: 'Terreno baldio ao lado do mercado', species: 'Cão', quantity: 1, priority: 'Alta',
+      description: 'Cão abandonado em terreno baldio, com feridas na pele e muito magro.',
+      responsible: 'Marcos Ribeiro', reporter: 'Vizinha (ligação)', stage: 'Concluído', closedAt: '2026-04-02', animalIds: [3],
+      log: [
+        { date: '2026-04-02', stage: 'Concluído', text: 'Animal recolhido e levado para avaliação veterinária.' },
+        { date: '2026-04-02', stage: 'Pendente', text: 'Ocorrência registrada.' }
+      ]
+    },
+    {
+      id: 2, date: '2026-04-12', street: 'Avenida Manoel Ribas', number: '2100', district: 'Primavera', city: 'Guarapuava - PR',
+      reference: 'Próximo ao ponto de ônibus', species: 'Cão', quantity: 1, priority: 'Média',
+      description: 'Cadela assustada vagando em avenida movimentada, sem coleira.',
+      responsible: 'Renata Oliveira', reporter: '', stage: 'Concluído', closedAt: '2026-04-12', animalIds: [7],
+      log: [
+        { date: '2026-04-12', stage: 'Concluído', text: 'Cadela recolhida com segurança.' },
+        { date: '2026-04-12', stage: 'Pendente', text: 'Ocorrência registrada.' }
+      ]
+    },
+    {
+      id: 3, date: '2026-09-08', street: 'Rua Benjamin Constant', number: '455', district: 'Vila Carli', city: 'Guarapuava - PR',
+      reference: 'Telhado de uma loja', species: 'Gato', quantity: 1, priority: 'Média',
+      description: 'Gato preso no telhado de um comércio havia dois dias.',
+      responsible: 'Marcos Ribeiro', reporter: 'Dono da loja', stage: 'Sem sucesso', closedAt: '2026-09-09', animalIds: [],
+      log: [
+        { date: '2026-09-09', stage: 'Sem sucesso', text: 'O gato desceu sozinho antes da chegada da equipe.' },
+        { date: '2026-09-08', stage: 'Pendente', text: 'Ocorrência registrada.' }
+      ]
+    },
+    {
+      id: 4, date: '2026-10-18', street: 'Rua XV de Novembro', number: '980', district: 'Centro', city: 'Guarapuava - PR',
+      reference: 'Calçada em frente à farmácia', species: 'Gato', quantity: 4, priority: 'Crítica',
+      description: 'Ninhada de filhotes de gato abandonada em uma caixa de papelão.',
+      responsible: 'Ana Paula Souza', reporter: 'Post no Instagram', stage: 'Em atendimento', closedAt: '', animalIds: [],
+      log: [
+        { date: '2026-10-18', stage: 'Em atendimento', text: 'Equipe a caminho. Filhotes aparentam ter menos de um mês.' },
+        { date: '2026-10-18', stage: 'Pendente', text: 'Ocorrência registrada.' }
+      ]
+    },
+    {
+      id: 5, date: '2026-10-20', street: 'Rua Pedro Siqueira', number: '', district: 'Boqueirão', city: 'Guarapuava - PR',
+      reference: 'Perto da escola municipal', species: 'Cão', quantity: 1, priority: 'Alta',
+      description: 'Cão sem identificação, mancando da pata traseira.',
+      responsible: 'Renata Oliveira', reporter: '', stage: 'Pendente', closedAt: '', animalIds: [],
+      log: [{ date: '2026-10-20', stage: 'Pendente', text: 'Ocorrência registrada.' }]
+    },
+    {
+      id: 6, date: '2026-10-27', street: 'Rua das Hortênsias', number: '77', district: 'Morro Alto', city: 'Guarapuava - PR',
+      reference: '', species: 'Cão', quantity: 1, priority: 'Alta',
+      description: 'Denúncia de cão acorrentado sem água e sem abrigo.',
+      responsible: 'Ana Paula Souza', reporter: 'Denúncia anônima', stage: 'Pendente', closedAt: '', animalIds: [],
+      log: [{ date: '2026-10-27', stage: 'Pendente', text: 'Ocorrência registrada.' }]
+    }
+  ];
+
   // ================= Armazenamento (localStorage) =================
   const KEYS = {
     animals: STORAGE_KEY,
     adopters: 'pawsafe_adotantes_v1',
-    adoptions: 'pawsafe_adocoes_v1'
+    adoptions: 'pawsafe_adocoes_v1',
+    rescues: 'pawsafe_resgates_v1'
   };
 
   function load(key, seed) {
@@ -225,12 +298,15 @@ const PawData = (() => {
   return {
     STATUS, SPECIES, statusClass,
     ADOPTION_STAGES, ACTIVE_STAGES, CHECKLIST, stageClass,
+    RESCUE_STAGES, OPEN_RESCUE_STAGES, PRIORITIES, rescueClass, priorityClass,
     loadAnimals: () => load(KEYS.animals, SEED),
     saveAnimals: (list) => save(KEYS.animals, list),
     loadAdopters: () => load(KEYS.adopters, SEED_ADOPTERS),
     saveAdopters: (list) => save(KEYS.adopters, list),
     loadAdoptions: () => load(KEYS.adoptions, SEED_ADOPTIONS),
     saveAdoptions: (list) => save(KEYS.adoptions, list),
+    loadRescues: () => load(KEYS.rescues, SEED_RESCUES),
+    saveRescues: (list) => save(KEYS.rescues, list),
     resetAll,
     resetAnimals: resetAll // nome antigo, mantido por compatibilidade
   };
