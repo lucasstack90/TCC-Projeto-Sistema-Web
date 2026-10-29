@@ -55,14 +55,6 @@ function applyPreset(preset) {
 const inPeriod = (r) => (!$('periodFrom').value || r.date >= $('periodFrom').value)
   && (!$('periodTo').value || r.date <= $('periodTo').value);
 
-function periodLabel() {
-  const from = $('periodFrom').value, to = $('periodTo').value;
-  if (!from && !to) return 'Todo o período';
-  if (!from) return `Até ${formatDate(to)}`;
-  if (!to) return `A partir de ${formatDate(from)}`;
-  return `${formatDate(from)} a ${formatDate(to)}`;
-}
-
 function renderPeriod() {
   const list = rescues.filter(inPeriod);
   const sheltered = list.reduce((sum, r) => sum + r.animalIds.length, 0);
@@ -86,8 +78,6 @@ function renderPeriod() {
     ? `<span class="team-label"><i class="bi bi-people me-1"></i>Responsáveis:</span>${team
       .map(([name, count]) => `<span class="team-chip">${escapeHtml(name)} <strong>${count}</strong></span>`).join('')}`
     : '';
-
-  $('printPeriod').textContent = `Período: ${periodLabel()} · emitido em ${formatDate(today())}`;
 }
 
 // ================= Lista =================
@@ -379,7 +369,6 @@ $('stageFilter').addEventListener('change', render);
 $('priorityFilter').addEventListener('change', render);
 $('clearFilters').addEventListener('click', clearFilters);
 $('addRescue').addEventListener('click', () => openForm());
-$('printReport').addEventListener('click', () => window.print());
 
 // Opções dos filtros e do formulário vêm de dados.js
 $('stageFilter').innerHTML += PawData.RESCUE_STAGES.map(s => `<option>${s}</option>`).join('');

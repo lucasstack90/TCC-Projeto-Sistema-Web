@@ -129,27 +129,6 @@ a.rescued-animal:hover { background: var(--green-100); }
 
 #detailLog .status-badge { font-size: 9px; }
 
-/* ---------- Impressão do relatório do período ---------- */
-.print-header { display: none; }
-
-@media print {
-  #sidebarMount,
-  .mobile-menu,
-  .topbar-actions,
-  .filter-panel,
-  .period-controls,
-  .rescue-side .btn,
-  .page-footer,
-  .toast-container { display: none !important; }
-
-  body { background: #fff; font-size: 12px; }
-  .main-content { margin: 0; padding: 0; max-width: none; }
-  .print-header { display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #000; }
-  .period-panel,
-  .rescue-card { break-inside: avoid; box-shadow: none; }
-  .rescue-description { display: block; -webkit-line-clamp: unset; }
-}
-
 /* ---------- Responsividade ---------- */
 @media (max-width: 900px) {
   .period-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
