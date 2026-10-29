@@ -71,6 +71,6 @@ Páginas do menu ainda não criadas: `voluntarios.html`, `doacoes.html`, `estoqu
 
 - **Ocorrência:** data do ocorrido, endereço (rua, número, bairro, cidade e referência), descrição da situação, responsável pelo resgate, prioridade, espécie, quantidade e quem informou.
 - **Situação:** `Pendente → Em atendimento → Concluído` ou `Sem sucesso` (com motivo). Dá para reabrir e adicionar observações; tudo fica no acompanhamento.
-- **Período:** filtro por mês, 30/90 dias, ano ou datas livres, com total de ocorrências, concluídos, em aberto, animais acolhidos e quantos resgates cada responsável atendeu.
+- **Resumo:** total de ocorrências, concluídos, em aberto, animais acolhidos e quantos resgates cada responsável atendeu.
 - **Animal resgatado:** “Cadastrar animal resgatado” abre o formulário de Animais já preenchido (status Resgatado, data de chegada, espécie). O animal fica ligado ao resgate e a ficha dele mostra a origem.
 - Menu lateral e dashboard mostram as ocorrências em aberto. Links diretos: `resgates.html?resgate=ID`, `animais.html?animal=ID`.

@@ -1,6 +1,6 @@
 /* PAWSAFE — módulo de Resgates
    Registro das ocorrências (endereço, descrição da situação, data do ocorrido e responsável),
-   acompanhamento até a conclusão e resumo das ações da equipe em um período.
+   acompanhamento até a conclusão e resumo das ações da equipe.
    Depende de: Bootstrap 5, js/dados.js (PawData), js/utils.js (PawUtils) e js/sidebar.js. */
 
 const $ = (id) => document.getElementById(id);
@@ -35,46 +35,26 @@ function save() {
   return false;
 }
 
-// ================= Período =================
-const toIso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-function applyPreset(preset) {
-  const now = new Date();
-  const daysAgo = (n) => toIso(new Date(now.getFullYear(), now.getMonth(), now.getDate() - n + 1));
-  const ranges = {
-    month: [toIso(new Date(now.getFullYear(), now.getMonth(), 1)), today()],
-    30: [daysAgo(30), today()],
-    90: [daysAgo(90), today()],
-    year: [toIso(new Date(now.getFullYear(), 0, 1)), today()],
-    all: ['', '']
-  };
-  if (!ranges[preset]) return; // "personalizado": mantém as datas digitadas
-  [$('periodFrom').value, $('periodTo').value] = ranges[preset];
-}
-
-const inPeriod = (r) => (!$('periodFrom').value || r.date >= $('periodFrom').value)
-  && (!$('periodTo').value || r.date <= $('periodTo').value);
-
-function renderPeriod() {
-  const list = rescues.filter(inPeriod);
-  const sheltered = list.reduce((sum, r) => sum + r.animalIds.length, 0);
+// ================= Resumo =================
+function renderSummary() {
+  const sheltered = rescues.reduce((sum, r) => sum + r.animalIds.length, 0);
   const stats = [
-    ['Ocorrências', list.length, 'bi-flag', 'icon-terra'],
-    ['Concluídos', list.filter(r => r.stage === 'Concluído').length, 'bi-check2-circle', 'icon-green'],
-    ['Em aberto', list.filter(isOpen).length, 'bi-hourglass-split', 'icon-blue'],
+    ['Ocorrências', rescues.length, 'bi-flag', 'icon-terra'],
+    ['Concluídos', rescues.filter(r => r.stage === 'Concluído').length, 'bi-check2-circle', 'icon-green'],
+    ['Em aberto', rescues.filter(isOpen).length, 'bi-hourglass-split', 'icon-blue'],
     ['Animais acolhidos', sheltered, 'bi-paw', 'icon-lilac']
   ];
-  $('periodStats').innerHTML = stats.map(([label, value, icon, color]) => `
-    <div class="period-stat">
-      <span class="period-icon ${color}"><i class="bi ${icon}"></i></span>
+  $('summaryStats').innerHTML = stats.map(([label, value, icon, color]) => `
+    <div class="summary-stat">
+      <span class="summary-icon ${color}"><i class="bi ${icon}"></i></span>
       <div><strong>${value}</strong><small>${label}</small></div>
     </div>`).join('');
 
-  // Quantos resgates cada responsável atendeu no período
+  // Quantos resgates cada responsável atendeu
   const byPerson = {};
-  list.forEach(r => { byPerson[r.responsible] = (byPerson[r.responsible] || 0) + 1; });
+  rescues.forEach(r => { byPerson[r.responsible] = (byPerson[r.responsible] || 0) + 1; });
   const team = Object.entries(byPerson).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR'));
-  $('periodTeam').innerHTML = team.length
+  $('summaryTeam').innerHTML = team.length
     ? `<span class="team-label"><i class="bi bi-people me-1"></i>Responsáveis:</span>${team
       .map(([name, count]) => `<span class="team-chip">${escapeHtml(name)} <strong>${count}</strong></span>`).join('')}`
     : '';
@@ -89,7 +69,6 @@ function getFilteredRescues() {
   const priority = $('priorityFilter').value;
 
   return rescues
-    .filter(inPeriod)
     .filter(r => stage === 'Todas' || r.stage === stage)
     .filter(r => priority === 'Todas' || r.priority === priority)
     .filter(r => !term || normalize([r.street, r.district, r.description, r.responsible, r.reference, rescueCode(r.id)].join(' ')).includes(term))
@@ -132,8 +111,8 @@ function render() {
   $('rescueList').innerHTML = list.map(rescueCardHtml).join('');
   $('rescueList').classList.toggle('d-none', !list.length);
   $('empty').classList.toggle('d-none', list.length > 0);
-  $('resultsText').textContent = `Exibindo ${list.length} de ${plural(rescues.filter(inPeriod).length, 'ocorrência', 'ocorrências')} do período`;
-  renderPeriod();
+  $('resultsText').textContent = `Exibindo ${list.length} de ${plural(rescues.length, 'ocorrência', 'ocorrências')}`;
+  renderSummary();
 
   // Atualiza o número de pendências no menu lateral
   const badge = document.querySelector('[data-count="resgates"]');
@@ -203,8 +182,6 @@ $('rescueForm').addEventListener('submit', (event) => {
 
   if (!save()) { rescues = JSON.parse(backup); return; }
   rescueModal.hide();
-  // Um resgate novo fora do período escolhido ficaria escondido; volta para "Todo o período".
-  if (!inPeriod(rescue)) { $('periodPreset').value = 'all'; applyPreset('all'); }
   render();
   notify(existing ? 'Resgate atualizado.' : `Resgate ${rescueCode(rescue.id)} registrado.`);
 });
@@ -359,11 +336,6 @@ document.addEventListener('click', (event) => {
   if (actionButton) runAction(Number(actionButton.dataset.stageAction));
 });
 
-$('periodPreset').addEventListener('change', (e) => { applyPreset(e.target.value); render(); });
-['periodFrom', 'periodTo'].forEach(id => $(id).addEventListener('change', () => {
-  $('periodPreset').value = 'custom';
-  render();
-}));
 $('search').addEventListener('input', render);
 $('stageFilter').addEventListener('change', render);
 $('priorityFilter').addEventListener('change', render);
@@ -375,7 +347,6 @@ $('stageFilter').innerHTML += PawData.RESCUE_STAGES.map(s => `<option>${s}</opti
 $('priorityFilter').innerHTML += PawData.PRIORITIES.map(p => `<option>${p}</option>`).join('');
 $('rsPriority').innerHTML = PawData.PRIORITIES.map(p => `<option>${p}</option>`).join('');
 
-applyPreset($('periodPreset').value);
 render();
 
 // Link direto (dashboard ou volta do cadastro de animal): resgates.html?resgate=4

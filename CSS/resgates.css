@@ -4,8 +4,8 @@
    e prioridade (.rescue-*, .priority-*) ficam em base.css.
    ========================================================= */
 
-/* ---------- Período e resumo ---------- */
-.period-panel {
+/* ---------- Resumo ---------- */
+.summary-panel {
   display: grid;
   gap: 14px;
   padding: 16px;
@@ -15,11 +15,9 @@
   border-radius: 14px;
 }
 
-.period-controls { display: grid; grid-template-columns: repeat(3, minmax(0, 200px)); gap: 10px; }
+.summary-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 
-.period-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-
-.period-stat {
+.summary-stat {
   display: flex;
   align-items: center;
   gap: 11px;
@@ -28,10 +26,10 @@
   border: 1px solid #edf1ed;
   border-radius: 12px;
 }
-.period-stat strong { display: block; font: 800 22px/1.1 var(--font-title); }
-.period-stat small { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; }
+.summary-stat strong { display: block; font: 800 22px/1.1 var(--font-title); }
+.summary-stat small { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; }
 
-.period-icon {
+.summary-icon {
   display: grid;
   place-items: center;
   flex: 0 0 38px;
@@ -44,8 +42,8 @@
 .icon-blue  { color: var(--blue); background: var(--blue-light); }
 .icon-lilac { color: var(--lilac); background: var(--lilac-light); }
 
-.period-team { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 11px; }
-.period-team:empty { display: none; }
+.summary-team { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 11px; }
+.summary-team:empty { display: none; }
 .team-label { color: var(--muted); font-weight: 700; }
 .team-chip { padding: 4px 9px; color: var(--green-800); background: var(--green-100); border-radius: 20px; }
 
@@ -131,14 +129,12 @@ a.rescued-animal:hover { background: var(--green-100); }
 
 /* ---------- Responsividade ---------- */
 @media (max-width: 900px) {
-  .period-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .summary-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rescue-info { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 600px) {
-  .period-controls { grid-template-columns: 1fr 1fr; }
-  .period-controls > div:first-child { grid-column: 1 / -1; }
-  .period-stat strong { font-size: 19px; }
+  .summary-stat strong { font-size: 19px; }
   .rescue-card { flex-direction: column; }
   .rescue-side { flex-direction: row; align-items: center; }
   .rescue-info { grid-template-columns: 1fr; }

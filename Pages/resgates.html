@@ -28,25 +28,10 @@
     </div>
   </header>
 
-  <!-- Período: o artigo pede saber quais resgates a equipe fez em determinado período -->
-  <section class="period-panel" aria-label="Período">
-    <div class="period-controls">
-      <div>
-        <label class="form-label" for="periodPreset">Período</label>
-        <select id="periodPreset" class="form-select">
-          <option value="month">Este mês</option>
-          <option value="30">Últimos 30 dias</option>
-          <option value="90">Últimos 90 dias</option>
-          <option value="year">Este ano</option>
-          <option value="all" selected>Todo o período</option>
-          <option value="custom">Personalizado</option>
-        </select>
-      </div>
-      <div><label class="form-label" for="periodFrom">De</label><input id="periodFrom" type="date" class="form-control"></div>
-      <div><label class="form-label" for="periodTo">Até</label><input id="periodTo" type="date" class="form-control"></div>
-    </div>
-    <div class="period-stats" id="periodStats"></div>
-    <div class="period-team" id="periodTeam"></div>
+  <!-- Resumo de todos os resgates e de quantos cada responsável atendeu -->
+  <section class="summary-panel" aria-label="Resumo dos resgates">
+    <div class="summary-stats" id="summaryStats"></div>
+    <div class="summary-team" id="summaryTeam"></div>
   </section>
 
   <div class="filter-panel">
@@ -63,7 +48,7 @@
   <div id="empty" class="empty d-none">
     <i class="bi bi-house-heart"></i>
     <h2>Nenhum resgate encontrado</h2>
-    <p>Altere o período, a busca ou os filtros, ou registre uma nova ocorrência.</p>
+    <p>Altere a busca ou os filtros, ou registre uma nova ocorrência.</p>
   </div>
 
   <footer class="page-footer"><span><i class="bi bi-shield-check me-1"></i> PAWSAFE · Cada ocorrência registrada é uma vida acompanhada.</span><span>Protótipo com dados demonstrativos</span></footer>
