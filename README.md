@@ -14,6 +14,7 @@ PAWSAFE/
 │   ├── animais.css     # Pages/animais.html
 │   ├── adocoes.css     # Pages/adocoes.html
 │   ├── resgates.css    # Pages/resgates.html
+│   ├── voluntarios.css # Pages/voluntarios.html e voluntario-cadastro.html
 │   └── login.css       # Pages/Pg_Login.html
 ├── Img/
 ├── js/
@@ -24,12 +25,16 @@ PAWSAFE/
 │   ├── animais.js
 │   ├── adocoes.js
 │   ├── resgates.js
+│   ├── voluntarios.js
+│   ├── voluntario-cadastro.js
 │   └── login.js
 ├── Pages/
 │   ├── Pg_Login.html
 │   ├── animais.html
 │   ├── adocoes.html
-│   └── resgates.html
+│   ├── resgates.html
+│   ├── voluntarios.html
+│   └── voluntario-cadastro.html   # formulário público (sem login)
 └── index.html          # dashboard
 ```
 
@@ -39,9 +44,9 @@ Abra a pasta no VS Code e rode `Pages/Pg_Login.html` (ou `index.html`) com o Liv
 
 ## Como os dados funcionam no protótipo
 
-- Animais, adotantes, processos de adoção e resgates ficam no `localStorage` do navegador (`js/dados.js`). Todas as páginas leem a mesma fonte.
+- Animais, adotantes, processos de adoção, resgates e voluntários ficam no `localStorage` do navegador (`js/dados.js`). Todas as páginas leem a mesma fonte.
 - Para voltar aos dados de exemplo: no console do navegador, rode `PawData.resetAll()` e recarregue a página.
-- Os indicadores de voluntários e doações são ilustrativos até esses módulos existirem.
+- O indicador de doações é ilustrativo até esse módulo existir.
 
 ## Nova página do sistema
 
@@ -51,7 +56,7 @@ Para manter o padrão nas páginas de `Pages/`:
 2. No `<body>`: `<div id="sidebarMount"></div>` e `<main class="main-content">` com o cabeçalho `<header class="topbar">` (botão `class="mobile-menu" id="menuToggle"` + `<div class="topbar-title">`).
 3. Antes do JS da página: `../js/dados.js`, `../js/utils.js` e `../js/sidebar.js`, nesta ordem.
 
-Páginas do menu ainda não criadas: `voluntarios.html`, `doacoes.html`, `estoque.html`, `relatorios.html`.
+Páginas do menu ainda não criadas: `doacoes.html`, `estoque.html`, `relatorios.html`.
 
 ## Padrão do CSS
 
@@ -74,3 +79,10 @@ Páginas do menu ainda não criadas: `voluntarios.html`, `doacoes.html`, `estoqu
 - **Resumo:** total de ocorrências, concluídos, em aberto, animais acolhidos e quantos resgates cada responsável atendeu.
 - **Animal resgatado:** “Cadastrar animal resgatado” abre o formulário de Animais já preenchido (status Resgatado, data de chegada, espécie). O animal fica ligado ao resgate e a ficha dele mostra a origem.
 - Menu lateral e dashboard mostram as ocorrências em aberto. Links diretos: `resgates.html?resgate=ID`, `animais.html?animal=ID`.
+
+## Módulo de Voluntários e Equipe
+
+- **Formulário de inscrição** (`voluntario-cadastro.html`, aberto pelo “Link de voluntariado” do menu): nome completo, e-mail, telefone, habilidades, experiências e disponibilidade (dias e turnos), com consentimento LGPD. Quem se inscreve entra como **Interessado**.
+- **Equipe** (`voluntarios.html`): abas Equipe e Interessados, busca, filtro por habilidade e por dia disponível. Interessado → **Aprovar** (Ativo) ou **Arquivar**; Ativo ↔ Inativo.
+- Resgates escolhem o responsável entre os voluntários ativos. Quem é responsável por algum resgate não pode ser excluído, só inativado.
+- No protótipo o formulário grava no mesmo `localStorage`, então só funciona no mesmo navegador. No back-end ele vira uma rota pública que grava no banco; ali o resgate deve guardar o **id** do voluntário, e não o nome.
