@@ -1,6 +1,6 @@
 /* PAWSAFE — fonte única de dados do protótipo.
    Enquanto o back-end (Laravel + MySQL) não existe, animais, adotantes, processos de
-   adoção e resgates ficam no localStorage. Todas as páginas leem daqui, então os números sempre batem.
+   adoção, resgates e voluntários ficam no localStorage. Todas as páginas leem daqui, então os números sempre batem.
    Na integração com o back-end, troque as funções load/save por chamadas à API. */
 
 const PawData = (() => {
@@ -262,12 +262,76 @@ const PawData = (() => {
     }
   ];
 
+  // ================= Voluntários e equipe =================
+  // Interessado = chegou pelo formulário e aguarda contato da equipe.
+  const VOLUNTEER_STATUS = ['Interessado', 'Ativo', 'Inativo'];
+  const VOLUNTEER_CLASS = { 'Interessado': 'volunteer-interessado', 'Ativo': 'volunteer-ativo', 'Inativo': 'volunteer-inativo' };
+  const volunteerClass = (status) => VOLUNTEER_CLASS[status] || 'volunteer-interessado';
+
+  const ROLES = ['Voluntário', 'Coordenação', 'Veterinário(a)', 'Administração'];
+  const SKILLS = ['Resgate', 'Cuidados e limpeza', 'Cuidados veterinários', 'Transporte', 'Lar temporário', 'Eventos e feiras', 'Redes sociais', 'Arrecadação'];
+  const DAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+  const SHIFTS = ['Manhã', 'Tarde', 'Noite'];
+
+  // Os nomes batem com os responsáveis dos resgates e com os veterinários das fichas dos animais.
+  const SEED_VOLUNTEERS = [
+    {
+      id: 1, name: 'Renata Oliveira', email: 'renata.oliveira@email.com', phone: '(42) 99901-2233',
+      role: 'Administração', status: 'Ativo', skills: ['Resgate', 'Redes sociais', 'Arrecadação'],
+      experience: 'Coordena a organização desde a fundação.', days: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'], shifts: ['Manhã', 'Tarde'],
+      notes: '', source: 'Cadastro interno', consent: true, createdAt: '2025-03-01'
+    },
+    {
+      id: 2, name: 'Marcos Ribeiro', email: 'marcos.ribeiro@email.com', phone: '(42) 99812-4455',
+      role: 'Voluntário', status: 'Ativo', skills: ['Resgate', 'Transporte'],
+      experience: 'Tem caminhonete e ajuda nos resgates de fim de semana.', days: ['Qua', 'Sáb', 'Dom'], shifts: ['Manhã', 'Tarde'],
+      notes: '', source: 'Formulário', consent: true, createdAt: '2025-08-12'
+    },
+    {
+      id: 3, name: 'Ana Paula Souza', email: 'anapaula.souza@email.com', phone: '(42) 99733-6677',
+      role: 'Coordenação', status: 'Ativo', skills: ['Resgate', 'Cuidados e limpeza', 'Lar temporário'],
+      experience: 'Já foi lar temporário de mais de 20 gatos.', days: ['Seg', 'Qua', 'Sex'], shifts: ['Tarde', 'Noite'],
+      notes: 'Responsável pela escala de limpeza.', source: 'Formulário', consent: true, createdAt: '2025-06-20'
+    },
+    {
+      id: 4, name: 'Dra. Marina Lopes', email: 'marina.lopes@email.com', phone: '(42) 99654-8899',
+      role: 'Veterinário(a)', status: 'Ativo', skills: ['Cuidados veterinários'],
+      experience: 'Médica-veterinária, atende os animais da organização.', days: ['Ter', 'Qui'], shifts: ['Manhã'],
+      notes: '', source: 'Cadastro interno', consent: true, createdAt: '2025-04-10'
+    },
+    {
+      id: 5, name: 'Dr. Henrique Farias', email: 'henrique.farias@email.com', phone: '(42) 99545-1010',
+      role: 'Veterinário(a)', status: 'Ativo', skills: ['Cuidados veterinários'],
+      experience: 'Médico-veterinário, foco em felinos.', days: ['Seg', 'Sex'], shifts: ['Tarde'],
+      notes: '', source: 'Cadastro interno', consent: true, createdAt: '2025-09-02'
+    },
+    {
+      id: 6, name: 'Paulo Henrique Lima', email: 'paulo.lima@email.com', phone: '(42) 99476-2020',
+      role: 'Voluntário', status: 'Inativo', skills: ['Cuidados e limpeza'],
+      experience: '', days: ['Sáb'], shifts: ['Manhã'],
+      notes: 'Mudou de cidade em agosto de 2026.', source: 'Formulário', consent: true, createdAt: '2025-11-15'
+    },
+    {
+      id: 7, name: 'Bruna Carvalho', email: 'bruna.carvalho@email.com', phone: '(42) 99367-3030',
+      role: 'Voluntário', status: 'Interessado', skills: ['Redes sociais', 'Eventos e feiras'],
+      experience: 'Ajudou a organizar uma feira de adoção na faculdade.', days: ['Sáb'], shifts: ['Manhã', 'Tarde'],
+      notes: '', source: 'Formulário', consent: true, createdAt: '2026-10-24'
+    },
+    {
+      id: 8, name: 'Diego Martins', email: 'diego.martins@email.com', phone: '(42) 99258-4040',
+      role: 'Voluntário', status: 'Interessado', skills: ['Transporte', 'Resgate'],
+      experience: 'Tem carro e já levou animais à clínica para uma vizinha.', days: ['Dom'], shifts: ['Manhã'],
+      notes: '', source: 'Formulário', consent: true, createdAt: '2026-10-27'
+    }
+  ];
+
   // ================= Armazenamento (localStorage) =================
   const KEYS = {
     animals: STORAGE_KEY,
     adopters: 'pawsafe_adotantes_v1',
     adoptions: 'pawsafe_adocoes_v1',
-    rescues: 'pawsafe_resgates_v1'
+    rescues: 'pawsafe_resgates_v1',
+    volunteers: 'pawsafe_voluntarios_v1'
   };
 
   function load(key, seed) {
@@ -299,6 +363,7 @@ const PawData = (() => {
     STATUS, SPECIES, statusClass,
     ADOPTION_STAGES, ACTIVE_STAGES, CHECKLIST, stageClass,
     RESCUE_STAGES, OPEN_RESCUE_STAGES, PRIORITIES, rescueClass, priorityClass,
+    VOLUNTEER_STATUS, ROLES, SKILLS, DAYS, SHIFTS, volunteerClass,
     loadAnimals: () => load(KEYS.animals, SEED),
     saveAnimals: (list) => save(KEYS.animals, list),
     loadAdopters: () => load(KEYS.adopters, SEED_ADOPTERS),
@@ -307,6 +372,8 @@ const PawData = (() => {
     saveAdoptions: (list) => save(KEYS.adoptions, list),
     loadRescues: () => load(KEYS.rescues, SEED_RESCUES),
     saveRescues: (list) => save(KEYS.rescues, list),
+    loadVolunteers: () => load(KEYS.volunteers, SEED_VOLUNTEERS),
+    saveVolunteers: (list) => save(KEYS.volunteers, list),
     resetAll,
     resetAnimals: resetAll // nome antigo, mantido por compatibilidade
   };
