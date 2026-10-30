@@ -1,6 +1,6 @@
 /* PAWSAFE — fonte única de dados do protótipo.
    Enquanto o back-end (Laravel + MySQL) não existe, animais, adotantes, processos de
-   adoção, resgates e voluntários ficam no localStorage. Todas as páginas leem daqui, então os números sempre batem.
+   adoção, resgates, voluntários, doações e despesas ficam no localStorage. Todas as páginas leem daqui, então os números sempre batem.
    Na integração com o back-end, troque as funções load/save por chamadas à API. */
 
 const PawData = (() => {
@@ -325,13 +325,42 @@ const PawData = (() => {
     }
   ];
 
+  // ================= Doações e despesas =================
+  const ORIGINS = ['Pessoa física', 'Pessoa jurídica'];
+  const DONATION_TYPES = ['Financeira', 'Material'];
+  const PAYMENT_METHODS = ['PIX', 'Dinheiro', 'Transferência', 'Cartão', 'Boleto'];
+  const UNITS = ['kg', 'un', 'L', 'mL']; // as mesmas unidades do módulo de Estoque (artigo)
+  const EXPENSE_CATEGORIES = ['Veterinário', 'Medicamentos', 'Ração e alimentação', 'Higiene e limpeza', 'Transporte', 'Manutenção', 'Outros'];
+
+  // Doações financeiras de outubro/2026 somam R$ 1.550 (valor que o dashboard mostrava antes).
+  const SEED_DONATIONS = [
+    { id: 1, date: '2026-08-05', origin: 'Pessoa física', donor: 'Carlos Mendes', type: 'Financeira', amount: 150, method: 'PIX', item: '', quantity: null, unit: '', notes: '' },
+    { id: 2, date: '2026-08-20', origin: 'Pessoa jurídica', donor: 'Agropecuária Campo Verde Ltda.', type: 'Material', amount: null, method: '', item: 'Ração para cães adultos', quantity: 50, unit: 'kg', notes: '' },
+    { id: 3, date: '2026-09-03', origin: 'Pessoa física', donor: '', type: 'Financeira', amount: 80, method: 'Dinheiro', item: '', quantity: null, unit: '', notes: 'Caixinha da feira de adoção.' },
+    { id: 4, date: '2026-09-15', origin: 'Pessoa jurídica', donor: 'Clínica Veterinária Bem-Estar', type: 'Material', amount: null, method: '', item: 'Vermífugo', quantity: 20, unit: 'un', notes: '' },
+    { id: 5, date: '2026-10-02', origin: 'Pessoa jurídica', donor: 'Supermercado Guará', type: 'Financeira', amount: 500, method: 'Transferência', item: '', quantity: null, unit: '', notes: 'Campanha do troco solidário.' },
+    { id: 6, date: '2026-10-10', origin: 'Pessoa física', donor: 'Fernanda Lima', type: 'Financeira', amount: 120, method: 'PIX', item: '', quantity: null, unit: '', notes: '' },
+    { id: 7, date: '2026-10-18', origin: 'Pessoa física', donor: 'Juliana Alves', type: 'Material', amount: null, method: '', item: 'Areia sanitária', quantity: 15, unit: 'kg', notes: '' },
+    { id: 8, date: '2026-10-25', origin: 'Pessoa física', donor: '', type: 'Financeira', amount: 930, method: 'PIX', item: '', quantity: null, unit: '', notes: 'Vaquinha on-line para a ninhada do RES-0004.' }
+  ];
+
+  const SEED_EXPENSES = [
+    { id: 1, date: '2026-08-10', category: 'Veterinário', description: 'Consulta e exames — Bolinha', amount: 260, paidTo: 'Clínica Veterinária Bem-Estar', notes: '' },
+    { id: 2, date: '2026-09-05', category: 'Medicamentos', description: 'Antibiótico e pomada dermatológica', amount: 95, paidTo: 'Farmácia Veterinária Centro', notes: '' },
+    { id: 3, date: '2026-09-22', category: 'Ração e alimentação', description: 'Ração para gatos (25 kg)', amount: 180, paidTo: 'Agropecuária Campo Verde Ltda.', notes: '' },
+    { id: 4, date: '2026-10-05', category: 'Veterinário', description: 'Castração — Simba', amount: 350, paidTo: 'Clínica Veterinária Bem-Estar', notes: '' },
+    { id: 5, date: '2026-10-20', category: 'Transporte', description: 'Combustível para resgates', amount: 120, paidTo: 'Posto Bela Vista', notes: '' }
+  ];
+
   // ================= Armazenamento (localStorage) =================
   const KEYS = {
     animals: STORAGE_KEY,
     adopters: 'pawsafe_adotantes_v1',
     adoptions: 'pawsafe_adocoes_v1',
     rescues: 'pawsafe_resgates_v1',
-    volunteers: 'pawsafe_voluntarios_v1'
+    volunteers: 'pawsafe_voluntarios_v1',
+    donations: 'pawsafe_doacoes_v1',
+    expenses: 'pawsafe_despesas_v1'
   };
 
   function load(key, seed) {
@@ -364,6 +393,7 @@ const PawData = (() => {
     ADOPTION_STAGES, ACTIVE_STAGES, CHECKLIST, stageClass,
     RESCUE_STAGES, OPEN_RESCUE_STAGES, PRIORITIES, rescueClass, priorityClass,
     VOLUNTEER_STATUS, ROLES, SKILLS, DAYS, SHIFTS, volunteerClass,
+    ORIGINS, DONATION_TYPES, PAYMENT_METHODS, UNITS, EXPENSE_CATEGORIES,
     loadAnimals: () => load(KEYS.animals, SEED),
     saveAnimals: (list) => save(KEYS.animals, list),
     loadAdopters: () => load(KEYS.adopters, SEED_ADOPTERS),
@@ -374,6 +404,10 @@ const PawData = (() => {
     saveRescues: (list) => save(KEYS.rescues, list),
     loadVolunteers: () => load(KEYS.volunteers, SEED_VOLUNTEERS),
     saveVolunteers: (list) => save(KEYS.volunteers, list),
+    loadDonations: () => load(KEYS.donations, SEED_DONATIONS),
+    saveDonations: (list) => save(KEYS.donations, list),
+    loadExpenses: () => load(KEYS.expenses, SEED_EXPENSES),
+    saveExpenses: (list) => save(KEYS.expenses, list),
     resetAll,
     resetAnimals: resetAll // nome antigo, mantido por compatibilidade
   };

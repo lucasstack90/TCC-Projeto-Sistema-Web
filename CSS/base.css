@@ -384,6 +384,30 @@ h1 {
 }
 .consent input { margin-top: 3px; accent-color: var(--green-700); }
 
+/* ---------- Tabelas dos módulos (Adoções, Doações) ---------- */
+.table-card { overflow: hidden; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+
+.data-table {
+  --bs-table-bg: transparent;
+  --bs-table-border-color: #edf1ed;
+  font-size: 12px;
+}
+.data-table thead th {
+  padding: 12px 14px;
+  color: #859188;
+  background: var(--surface-soft);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.data-table td { padding: 11px 14px; color: var(--muted); }
+.data-table td strong { display: block; color: var(--text); }
+.data-table td small { display: block; color: #8a968e; font-size: 10px; }
+.data-table tbody tr:last-child td { border-bottom: 0; }
+.data-table .btn-sm { padding: 6px 10px; font-size: 11px; }
+
 /* ---------- Abas ---------- */
 .tabs { display: flex; gap: 4px; padding: 0 17px; overflow-x: auto; border-bottom: 1px solid var(--border); }
 

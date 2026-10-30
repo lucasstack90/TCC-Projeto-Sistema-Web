@@ -65,5 +65,8 @@ const PawUtils = (() => {
 
   const checkedValues = (root, name) => [...root.querySelectorAll(`input[name="${name}"]:checked`)].map(input => input.value);
 
-  return { today, formatDate, escapeHtml, plural, code, nextId, compressImage, animalPhoto, maskPhone, checkboxes, checkedValues };
+  // Valores em reais: money(1550) → "R$ 1.550,00"
+  const money = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
+
+  return { today, formatDate, escapeHtml, plural, code, nextId, compressImage, animalPhoto, maskPhone, checkboxes, checkedValues, money };
 })();

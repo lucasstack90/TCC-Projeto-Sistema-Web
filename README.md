@@ -15,6 +15,7 @@ PAWSAFE/
 │   ├── adocoes.css     # Pages/adocoes.html
 │   ├── resgates.css    # Pages/resgates.html
 │   ├── voluntarios.css # Pages/voluntarios.html e voluntario-cadastro.html
+│   ├── doacoes.css     # Pages/doacoes.html
 │   └── login.css       # Pages/Pg_Login.html
 ├── Img/
 ├── js/
@@ -27,6 +28,7 @@ PAWSAFE/
 │   ├── resgates.js
 │   ├── voluntarios.js
 │   ├── voluntario-cadastro.js
+│   ├── doacoes.js
 │   └── login.js
 ├── Pages/
 │   ├── Pg_Login.html
@@ -34,6 +36,7 @@ PAWSAFE/
 │   ├── adocoes.html
 │   ├── resgates.html
 │   ├── voluntarios.html
+│   ├── doacoes.html
 │   └── voluntario-cadastro.html   # formulário público (sem login)
 └── index.html          # dashboard
 ```
@@ -44,9 +47,8 @@ Abra a pasta no VS Code e rode `Pages/Pg_Login.html` (ou `index.html`) com o Liv
 
 ## Como os dados funcionam no protótipo
 
-- Animais, adotantes, processos de adoção, resgates e voluntários ficam no `localStorage` do navegador (`js/dados.js`). Todas as páginas leem a mesma fonte.
+- Animais, adotantes, processos de adoção, resgates, voluntários, doações e despesas ficam no `localStorage` do navegador (`js/dados.js`). Todas as páginas leem a mesma fonte.
 - Para voltar aos dados de exemplo: no console do navegador, rode `PawData.resetAll()` e recarregue a página.
-- O indicador de doações é ilustrativo até esse módulo existir.
 
 ## Nova página do sistema
 
@@ -56,7 +58,7 @@ Para manter o padrão nas páginas de `Pages/`:
 2. No `<body>`: `<div id="sidebarMount"></div>` e `<main class="main-content">` com o cabeçalho `<header class="topbar">` (botão `class="mobile-menu" id="menuToggle"` + `<div class="topbar-title">`).
 3. Antes do JS da página: `../js/dados.js`, `../js/utils.js` e `../js/sidebar.js`, nesta ordem.
 
-Páginas do menu ainda não criadas: `doacoes.html`, `estoque.html`, `relatorios.html`.
+Páginas do menu ainda não criadas: `estoque.html`, `relatorios.html`.
 
 ## Padrão do CSS
 
@@ -86,6 +88,13 @@ Páginas do menu ainda não criadas: `doacoes.html`, `estoque.html`, `relatorios
 - **Equipe** (`voluntarios.html`): abas Equipe e Interessados, busca, filtro por habilidade e por dia disponível. Interessado → **Aprovar** (Ativo) ou **Arquivar**; Ativo ↔ Inativo.
 - Resgates escolhem o responsável entre os voluntários ativos. Quem é responsável por algum resgate não pode ser excluído, só inativado.
 - No protótipo o formulário grava no mesmo `localStorage`, então só funciona no mesmo navegador. No back-end ele vira uma rota pública que grava no banco; ali o resgate deve guardar o **id** do voluntário, e não o nome.
+
+## Módulo de Doações / Financeiro
+
+- **Doação:** data, origem (pessoa física ou jurídica), doador (opcional, para doações anônimas) e categoria. **Financeira:** valor e forma de pagamento. **Material:** item, quantidade e unidade (kg, un, L, mL — as mesmas do Estoque).
+- **Despesa:** data, categoria, descrição, valor e a quem foi pago.
+- **Totais:** total doado (doações financeiras), despesas, saldo e quantidade de doações materiais. O dashboard mostra as doações financeiras do mês atual.
+- Clique em uma linha para editar ou excluir.
 
 ## Antes de começar o back-end
 

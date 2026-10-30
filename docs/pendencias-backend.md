@@ -42,6 +42,12 @@ Precisam ser repetidas no servidor, senão qualquer pessoa contorna pelo console
 - [ ] Animal ↔ resgate de origem também por chave estrangeira.
 - [ ] Fotos de animais e documentos de adotantes em armazenamento de arquivos
       (`storage`), não em base64 dentro do banco.
+- [ ] Valores em dinheiro em colunas `DECIMAL(10,2)`, nunca `FLOAT` (o JavaScript do protótipo
+      usa números decimais comuns, que podem gerar erros de centavos em somas grandes).
+- [ ] Doação **material** deve gerar uma entrada no Estoque (mesmo item, quantidade e unidade),
+      para não ser registrada duas vezes à mão.
+- [ ] Doações e despesas não devem ser apagadas de verdade: guardar quem alterou e quando
+      (prestação de contas), em vez do "Excluir" do protótipo.
 
 ## 4. Acesso e LGPD
 
