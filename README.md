@@ -86,3 +86,7 @@ Páginas do menu ainda não criadas: `doacoes.html`, `estoque.html`, `relatorios
 - **Equipe** (`voluntarios.html`): abas Equipe e Interessados, busca, filtro por habilidade e por dia disponível. Interessado → **Aprovar** (Ativo) ou **Arquivar**; Ativo ↔ Inativo.
 - Resgates escolhem o responsável entre os voluntários ativos. Quem é responsável por algum resgate não pode ser excluído, só inativado.
 - No protótipo o formulário grava no mesmo `localStorage`, então só funciona no mesmo navegador. No back-end ele vira uma rota pública que grava no banco; ali o resgate deve guardar o **id** do voluntário, e não o nome.
+
+## Antes de começar o back-end
+
+Leia [`docs/pendencias-backend.md`](docs/pendencias-backend.md): proteção do formulário público contra envios em massa, regras que hoje só existem no JavaScript, ajustes no modelo de dados e LGPD.
