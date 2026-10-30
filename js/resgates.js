@@ -141,10 +141,13 @@ function openForm(rescue = null) {
   $('rescueId').value = rescue?.id ?? '';
   $('rsDate').max = today();
 
-  // Sugestões com os responsáveis já usados (até existir o módulo de Voluntários)
-  $('responsibleList').innerHTML = [...new Set(rescues.map(r => r.responsible))]
+  // Responsável: membros ativos de Voluntários & Equipe. Na edição, mantém quem já estava
+  // registrado mesmo que hoje esteja inativo, para não perder o histórico.
+  const team = PawData.loadVolunteers().filter(v => v.status === 'Ativo').map(v => v.name);
+  if (rescue && !team.includes(rescue.responsible)) team.push(rescue.responsible);
+  $('rsResponsible').innerHTML = '<option value="">Selecione</option>' + team
     .sort((a, b) => a.localeCompare(b, 'pt-BR'))
-    .map(name => `<option value="${escapeHtml(name)}">`).join('');
+    .map(name => `<option>${escapeHtml(name)}</option>`).join('');
 
   if (rescue) {
     Object.entries(FIELDS).forEach(([field, key]) => { $(field).value = rescue[key] ?? ''; });

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#244438">
+  <title>PAWSAFE | Doações / Financeiro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../CSS/base.css">
+  <link rel="stylesheet" href="../CSS/sidebar.css">
+  <link rel="stylesheet" href="../CSS/doacoes.css">
+</head>
+<body>
+<div id="sidebarMount"></div>
+
+<main class="main-content">
+  <header class="topbar">
+    <button class="mobile-menu" id="menuToggle" type="button" aria-label="Abrir menu" aria-expanded="false"><i class="bi bi-list"></i></button>
+    <div class="topbar-title">
+      <div class="eyebrow">Gestão financeira</div>
+      <h1>Doações / Financeiro</h1>
+      <p class="page-subtitle"><span id="donationText"></span> <span class="subtitle-dot">•</span> <span id="expenseText"></span></p>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline-green" id="addExpense" type="button"><i class="bi bi-dash-circle me-2"></i>Registrar despesa</button>
+      <button class="btn btn-green" id="addDonation" type="button"><i class="bi bi-plus-lg me-2"></i>Registrar doação</button>
+    </div>
+  </header>
+
+  <!-- Totais: o artigo pede o total doado e o registro dos recursos usados (despesas) -->
+  <section class="finance-stats" id="financeStats" aria-label="Totais"></section>
+
+  <nav class="tabs view-tabs" aria-label="Visualização">
+    <button type="button" class="tab active" data-view="donations"><i class="bi bi-gift"></i>Doações</button>
+    <button type="button" class="tab" data-view="expenses"><i class="bi bi-receipt"></i>Despesas</button>
+  </nav>
+
+  <!-- Doações -->
+  <section id="donationsView">
+    <div class="filter-panel">
+      <div class="search"><i class="bi bi-search"></i><input id="donationSearch" type="search" class="form-control" placeholder="Buscar por doador, item ou observação..." aria-label="Buscar doações"></div>
+      <div class="filter-controls">
+        <select id="typeFilter" class="form-select" aria-label="Filtrar por categoria"><option value="">Financeiras e materiais</option></select>
+        <select id="originFilter" class="form-select" aria-label="Filtrar por origem"><option value="">Qualquer origem</option></select>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="table data-table align-middle mb-0">
+          <thead><tr><th>Data</th><th>Doador</th><th>Categoria</th><th>Recurso</th><th class="text-end">Valor</th></tr></thead>
+          <tbody id="donationRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Despesas -->
+  <section id="expensesView" class="d-none">
+    <div class="filter-panel">
+      <div class="search"><i class="bi bi-search"></i><input id="expenseSearch" type="search" class="form-control" placeholder="Buscar por descrição ou fornecedor..." aria-label="Buscar despesas"></div>
+      <div class="filter-controls">
+        <select id="categoryFilter" class="form-select" aria-label="Filtrar por categoria"><option value="">Todas as categorias</option></select>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="table data-table align-middle mb-0">
+          <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Pago a</th><th class="text-end">Valor</th></tr></thead>
+          <tbody id="expenseRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div id="empty" class="empty d-none">
+    <i class="bi bi-search"></i>
+    <h2>Nenhum registro encontrado</h2>
+    <p>Altere a busca ou os filtros.</p>
+  </div>
+
+  <footer class="page-footer"><span><i class="bi bi-shield-check me-1"></i> Clique em uma linha para editar ou excluir o registro.</span><span>Protótipo com dados demonstrativos</span></footer>
+</main>
+
+<!-- Doação -->
+<div class="modal fade" id="donationModal" tabindex="-1" aria-labelledby="donationTitle" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header"><div><h2 id="donationTitle">Registrar doação</h2><p>Origem, categoria e o que foi recebido.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+  <form id="donationForm">
+    <div class="modal-body">
+      <input type="hidden" id="donationId">
+      <div class="row g-3">
+        <div class="col-md-6"><label class="form-label" for="dDate">Data *</label><input id="dDate" type="date" class="form-control" required></div>
+        <div class="col-md-6"><label class="form-label" for="dOrigin">Origem *</label><select id="dOrigin" class="form-select" required></select></div>
+        <div class="col-12"><label class="form-label" for="dDonor">Doador</label><input id="dDonor" class="form-control" maxlength="100" placeholder="Nome da pessoa ou empresa — em branco se anônimo"></div>
+        <div class="col-12"><label class="form-label" for="dType">Categoria do recurso *</label><select id="dType" class="form-select" required></select></div>
+
+        <!-- Financeira -->
+        <div class="col-md-6 financial-field"><label class="form-label" for="dAmount">Valor (R$) *</label><input id="dAmount" type="number" min="0.01" step="0.01" class="form-control" placeholder="0,00"></div>
+        <div class="col-md-6 financial-field"><label class="form-label" for="dMethod">Forma de pagamento *</label><select id="dMethod" class="form-select"></select></div>
+
+        <!-- Material -->
+        <div class="col-12 material-field"><label class="form-label" for="dItem">Item doado *</label><input id="dItem" class="form-control" maxlength="100" placeholder="Ex.: ração para filhotes, cobertores"></div>
+        <div class="col-md-6 material-field"><label class="form-label" for="dQuantity">Quantidade *</label><input id="dQuantity" type="number" min="0.01" step="0.01" class="form-control"></div>
+        <div class="col-md-6 material-field"><label class="form-label" for="dUnit">Unidade *</label><select id="dUnit" class="form-select"></select></div>
+
+        <div class="col-12"><label class="form-label" for="dNotes">Observação</label><textarea id="dNotes" class="form-control" rows="2" maxlength="300"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="deleteDonation" class="btn btn-outline-danger me-auto d-none"><i class="bi bi-trash me-1"></i>Excluir</button>
+      <button type="button" class="btn btn-outline-green" data-bs-dismiss="modal">Cancelar</button>
+      <button type="submit" id="saveDonationButton" class="btn btn-green"><i class="bi bi-check2 me-2"></i>Registrar doação</button>
+    </div>
+  </form>
+</div></div></div>
+
+<!-- Despesa -->
+<div class="modal fade" id="expenseModal" tabindex="-1" aria-labelledby="expenseTitle" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header"><div><h2 id="expenseTitle">Registrar despesa</h2><p>Recurso financeiro usado pela organização.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+  <form id="expenseForm">
+    <div class="modal-body">
+      <input type="hidden" id="expenseId">
+      <div class="row g-3">
+        <div class="col-md-6"><label class="form-label" for="eDate">Data *</label><input id="eDate" type="date" class="form-control" required></div>
+        <div class="col-md-6"><label class="form-label" for="eCategory">Categoria *</label><select id="eCategory" class="form-select" required></select></div>
+        <div class="col-12"><label class="form-label" for="eDescription">Descrição *</label><input id="eDescription" class="form-control" required maxlength="120" placeholder="Ex.: castração — Simba"></div>
+        <div class="col-md-6"><label class="form-label" for="eAmount">Valor (R$) *</label><input id="eAmount" type="number" min="0.01" step="0.01" class="form-control" required placeholder="0,00"></div>
+        <div class="col-md-6"><label class="form-label" for="ePaidTo">Pago a</label><input id="ePaidTo" class="form-control" maxlength="100" placeholder="Fornecedor ou prestador"></div>
+        <div class="col-12"><label class="form-label" for="eNotes">Observação</label><textarea id="eNotes" class="form-control" rows="2" maxlength="300"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="deleteExpense" class="btn btn-outline-danger me-auto d-none"><i class="bi bi-trash me-1"></i>Excluir</button>
+      <button type="button" class="btn btn-outline-green" data-bs-dismiss="modal">Cancelar</button>
+      <button type="submit" id="saveExpenseButton" class="btn btn-green"><i class="bi bi-check2 me-2"></i>Registrar despesa</button>
+    </div>
+  </form>
+</div></div></div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3"><div id="toast" class="toast" role="status" aria-live="polite"><div class="toast-body"><i class="bi bi-check-circle-fill me-2"></i><span id="toastText"></span></div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/dados.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/doacoes.js"></script>
+</body>
+</html>

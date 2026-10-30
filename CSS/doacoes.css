@@ -1,0 +1,68 @@
+/* =========================================================
+   PAWSAFE — Doações / Financeiro (Pages/doacoes.html)
+   Abas, busca, tabelas (.data-table), modais e botões
+   ficam em base.css.
+   ========================================================= */
+
+/* ---------- Totais ---------- */
+.finance-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+
+.finance-stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.finance-stat small,
+.finance-stat span:not(.finance-icon) { display: block; }
+.finance-stat small { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .35px; text-transform: uppercase; }
+.finance-stat strong { display: block; margin: 3px 0 2px; font: 800 21px/1.15 var(--font-title); letter-spacing: -.5px; }
+.finance-stat strong.negative { color: var(--danger); }
+.finance-stat span:not(.finance-icon) { color: #7c8a81; font-size: 10px; }
+
+.finance-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  height: 42px;
+  border-radius: 12px;
+  font-size: 19px;
+}
+.icon-green  { color: var(--green-700); background: var(--green-100); }
+.icon-terra  { color: #b96a42; background: var(--terra-light); }
+.icon-blue   { color: var(--blue); background: var(--blue-light); }
+.icon-lilac  { color: var(--lilac); background: var(--lilac-light); }
+.icon-danger { color: var(--danger); background: var(--danger-light); }
+
+/* ---------- Tabelas ---------- */
+.data-table td:first-child { white-space: nowrap; }
+.data-table .amount { color: var(--green-800); font-weight: 700; white-space: nowrap; }
+.data-table .amount.expense { color: #a65c31; }
+.data-table .status-badge { font-size: 9px; }
+.clickable-row { cursor: pointer; }
+.clickable-row:hover { background: var(--surface-soft); }
+
+#typeFilter { width: 205px; }
+
+.type-financeira { color: #2d6c4c; background: #dceee0; }
+.type-material   { color: #685a91; background: #e5e0f1; }
+
+/* ---------- Responsividade ---------- */
+@media (max-width: 1100px) {
+  .finance-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .finance-stat { padding: 13px; }
+  .finance-stat strong { font-size: 18px; }
+  .finance-icon { flex-basis: 36px; height: 36px; font-size: 16px; }
+  #typeFilter { width: auto; }
+
+  /* No celular ficam Data, Doador/Descrição e Valor; o resto aparece ao abrir a linha */
+  .data-table th:nth-child(3), .data-table td:nth-child(3),
+  .data-table th:nth-child(4), .data-table td:nth-child(4) { display: none; }
+}
