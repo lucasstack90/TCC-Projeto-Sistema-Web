@@ -7,7 +7,8 @@ const adoptions = PawData.loadAdoptions();
 const rescues = PawData.loadRescues();
 const volunteers = PawData.loadVolunteers();
 const thisMonth = PawUtils.today().slice(0, 7); // "AAAA-MM"
-const monthFinancial = PawData.loadDonations().filter(d => d.type === 'Financeira' && d.date.startsWith(thisMonth));
+const monthFinancial = PawData.loadDonations().filter(d => PawFinance.isFinancial(d) && PawFinance.monthKey(d.date) === thisMonth);
+const [monthFlow] = PawFinance.monthlyFlow(PawData.loadDonations(), PawData.loadExpenses(), [thisMonth], PawData.loadOpening());
 const isOpenRescue = (r) => PawData.OPEN_RESCUE_STAGES.includes(r.stage);
 const { escapeHtml, formatDate } = PawUtils;
 const countBy = (test) => animals.filter(test).length;
@@ -32,7 +33,7 @@ const stats = {
   adopted: countBy(a => a.status === 'Adotado'),
   openRescues: rescues.filter(isOpenRescue).length,
   activeVolunteers: volunteers.filter(v => v.status === 'Ativo').length,
-  monthDonations: PawUtils.money(monthFinancial.reduce((total, d) => total + d.amount, 0)),
+  monthDonations: PawUtils.money(monthFlow.income),
   monthDonationsFoot: PawUtils.plural(monthFinancial.length, 'doação financeira', 'doações financeiras'),
   pendingVolunteers: PawUtils.plural(volunteers.filter(v => v.status === 'Interessado').length, 'interessado aguardando', 'interessados aguardando')
 };

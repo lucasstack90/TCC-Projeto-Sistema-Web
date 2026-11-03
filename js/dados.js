@@ -345,12 +345,21 @@ const PawData = (() => {
   ];
 
   const SEED_EXPENSES = [
-    { id: 1, date: '2026-08-10', category: 'Veterinário', description: 'Consulta e exames — Bolinha', amount: 260, paidTo: 'Clínica Veterinária Bem-Estar', notes: '' },
+    { id: 1, date: '2026-08-10', category: 'Veterinário', description: 'Consulta e exames — Bolinha', amount: 260, paidTo: 'Clínica Veterinária Bem-Estar', animalId: 3, notes: '' },
     { id: 2, date: '2026-09-05', category: 'Medicamentos', description: 'Antibiótico e pomada dermatológica', amount: 95, paidTo: 'Farmácia Veterinária Centro', notes: '' },
     { id: 3, date: '2026-09-22', category: 'Ração e alimentação', description: 'Ração para gatos (25 kg)', amount: 180, paidTo: 'Agropecuária Campo Verde Ltda.', notes: '' },
-    { id: 4, date: '2026-10-05', category: 'Veterinário', description: 'Castração — Simba', amount: 350, paidTo: 'Clínica Veterinária Bem-Estar', notes: '' },
+    { id: 4, date: '2026-10-05', category: 'Veterinário', description: 'Castração — Simba', amount: 350, paidTo: 'Clínica Veterinária Bem-Estar', animalId: 8, notes: '' },
     { id: 5, date: '2026-10-20', category: 'Transporte', description: 'Combustível para resgates', amount: 120, paidTo: 'Posto Bela Vista', notes: '' }
   ];
+
+  // Saldo inicial: dinheiro em caixa quando a organização começou a usar o sistema.
+  const SEED_OPENING = { amount: 400, date: '2026-08-01' };
+
+  // Orçamento mensal por categoria de despesa (R$). Editável na aba Resumo de Doações.
+  const SEED_BUDGETS = {
+    'Veterinário': 600, 'Medicamentos': 200, 'Ração e alimentação': 400, 'Higiene e limpeza': 100,
+    'Transporte': 150, 'Manutenção': 100, 'Outros': 100
+  };
 
   // ================= Armazenamento (localStorage) =================
   const KEYS = {
@@ -360,7 +369,9 @@ const PawData = (() => {
     rescues: 'pawsafe_resgates_v1',
     volunteers: 'pawsafe_voluntarios_v1',
     donations: 'pawsafe_doacoes_v1',
-    expenses: 'pawsafe_despesas_v1'
+    expenses: 'pawsafe_despesas_v1',
+    budgets: 'pawsafe_orcamento_v1',
+    opening: 'pawsafe_saldo_inicial_v1'
   };
 
   function load(key, seed) {
@@ -408,6 +419,11 @@ const PawData = (() => {
     saveDonations: (list) => save(KEYS.donations, list),
     loadExpenses: () => load(KEYS.expenses, SEED_EXPENSES),
     saveExpenses: (list) => save(KEYS.expenses, list),
+    loadBudgets: () => ({ ...SEED_BUDGETS, ...load(KEYS.budgets, {}) }),
+    saveBudgets: (budgets) => save(KEYS.budgets, budgets),
+    loadOpening: () => load(KEYS.opening, SEED_OPENING),
+    saveOpening: (opening) => save(KEYS.opening, opening),
+    KEYS,
     resetAll,
     resetAnimals: resetAll // nome antigo, mantido por compatibilidade
   };

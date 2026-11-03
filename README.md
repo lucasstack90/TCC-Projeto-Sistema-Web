@@ -29,6 +29,7 @@ PAWSAFE/
 │   ├── voluntarios.js
 │   ├── voluntario-cadastro.js
 │   ├── doacoes.js
+│   ├── financeiro.js   # cálculos financeiros (saldo, fluxo, orçamento) — usado por Doações e Dashboard
 │   └── login.js
 ├── Pages/
 │   ├── Pg_Login.html
@@ -92,8 +93,18 @@ Páginas do menu ainda não criadas: `estoque.html`, `relatorios.html`.
 ## Módulo de Doações / Financeiro
 
 - **Doação:** data, origem (pessoa física ou jurídica), doador (opcional, para doações anônimas) e categoria. **Financeira:** valor e forma de pagamento. **Material:** item, quantidade e unidade (kg, un, L, mL — as mesmas do Estoque).
-- **Despesa:** data, categoria, descrição, valor e a quem foi pago.
+- **Despesa:** data, categoria, descrição, valor, a quem foi pago e, opcionalmente, o animal relacionado.
 - **Totais:** total doado (doações financeiras), despesas, saldo e quantidade de doações materiais. O dashboard mostra as doações financeiras do mês atual.
+- **Saldo automático:** o saldo nunca é digitado nem guardado; é sempre calculado em `js/financeiro.js` como *saldo inicial + doações financeiras − despesas*. Ao registrar, editar ou excluir uma despesa, o card de Saldo é destacado com "antes → depois" e o aviso mostra o novo valor. Enquanto a despesa é digitada, o formulário já mostra como ficam o saldo e o orçamento da categoria. Outras abas abertas do sistema também se atualizam.
+- **Aba Resumo** (indicadores para a coordenação decidir):
+  - **Fôlego de caixa:** quantos meses o saldo paga as despesas, pela média dos últimos 3 meses completos. Meta: reserva de 3 meses.
+  - **Resultado do mês:** superávit ou déficit do mês escolhido.
+  - **Dependência de doadores:** quanto do arrecadado vem do maior doador (alerta acima de 40%), divisão pessoa física/jurídica e doadores recorrentes.
+  - **Fluxo de caixa:** gráfico e tabela dos últimos 6 meses (entradas, saídas, resultado e saldo ao fim do mês).
+  - **Orçamento mensal por categoria:** alerta ao chegar a 80% e ao passar de 100%, também no momento de registrar a despesa.
+  - **Custo por animal:** total gasto com cada animal e custo médio por animal atendido.
+  - **Maiores doadores** e **exportação da prestação de contas** do mês em CSV (abre no Excel e no Google Planilhas).
+- **Orçamento e saldo inicial:** editáveis na aba Resumo. Sem o saldo inicial, o saldo do sistema não bate com o extrato do banco.
 - Clique em uma linha para editar ou excluir.
 
 ## Antes de começar o back-end
