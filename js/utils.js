@@ -54,5 +54,19 @@ const PawUtils = (() => {
     }
   }, true);
 
-  return { today, formatDate, escapeHtml, plural, code, nextId, compressImage, animalPhoto };
+  // (42) 99999-9999 enquanto digita
+  const maskPhone = (value) => value.replace(/\D/g, '').slice(0, 11)
+    .replace(/^(\d{2})(\d)/, '($1) $2')
+    .replace(/(\d{5})(\d{1,4})$/, '$1-$2');
+
+  // Caixas de marcar no estilo .choice-options: checkboxes('skill', ['Resgate', ...], ['Resgate'])
+  const checkboxes = (name, options, checked = []) => options.map(option => `
+    <label><input type="checkbox" name="${name}" value="${escapeHtml(option)}"${checked.includes(option) ? ' checked' : ''}><span>${escapeHtml(option)}</span></label>`).join('');
+
+  const checkedValues = (root, name) => [...root.querySelectorAll(`input[name="${name}"]:checked`)].map(input => input.value);
+
+  // Valores em reais: money(1550) → "R$ 1.550,00"
+  const money = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
+
+  return { today, formatDate, escapeHtml, plural, code, nextId, compressImage, animalPhoto, maskPhone, checkboxes, checkedValues, money };
 })();

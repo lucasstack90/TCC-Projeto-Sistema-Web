@@ -1,0 +1,167 @@
+/* =========================================================
+   PAWSAFE — Doações / Financeiro (Pages/doacoes.html)
+   Abas, busca, tabelas (.data-table), modais e botões
+   ficam em base.css.
+   ========================================================= */
+
+/* ---------- Totais ---------- */
+.finance-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+
+.finance-stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.finance-stat small,
+.finance-stat span:not(.finance-icon) { display: block; }
+.finance-stat small { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .35px; text-transform: uppercase; }
+.finance-stat strong { display: block; margin: 3px 0 2px; font: 800 21px/1.15 var(--font-title); letter-spacing: -.5px; }
+.finance-stat strong.negative { color: var(--danger); }
+.finance-stat span:not(.finance-icon) { color: #7c8a81; font-size: 10px; }
+
+.finance-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  height: 42px;
+  border-radius: 12px;
+  font-size: 19px;
+}
+.icon-green  { color: var(--green-700); background: var(--green-100); }
+.icon-terra  { color: #b96a42; background: var(--terra-light); }
+.icon-blue   { color: var(--blue); background: var(--blue-light); }
+.icon-lilac  { color: var(--lilac); background: var(--lilac-light); }
+.icon-danger { color: var(--danger); background: var(--danger-light); }
+
+/* ---------- Tabelas ---------- */
+.data-table td:first-child { white-space: nowrap; }
+.data-table .amount { color: var(--green-800); font-weight: 700; white-space: nowrap; }
+.data-table .amount.expense { color: #a65c31; }
+.data-table .status-badge { font-size: 9px; }
+.clickable-row { cursor: pointer; }
+.clickable-row:hover { background: var(--surface-soft); }
+
+#typeFilter { width: 205px; }
+
+.type-financeira { color: #2d6c4c; background: #dceee0; }
+.type-material   { color: #685a91; background: #e5e0f1; }
+
+/* ---------- Saldo atualizado (após registrar/editar/excluir despesa) ---------- */
+.finance-stat.updated { border-color: var(--blue); animation: balance-pulse 1.4s ease-out 2; }
+.balance-change { display: block; color: var(--blue); font-size: 10px; font-style: normal; font-weight: 700; }
+@keyframes balance-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(82, 132, 154, .45); }
+  100% { box-shadow: 0 0 0 12px rgba(82, 132, 154, 0); }
+}
+@media (prefers-reduced-motion: reduce) { .finance-stat.updated { animation: none; } }
+
+.toast-detail { display: block; margin: 3px 0 0 24px; color: var(--muted); font-size: 11px; }
+
+/* ---------- Prévia no formulário de despesa ---------- */
+.expense-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  padding: 10px 12px;
+  color: var(--text);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+}
+.expense-preview i { margin-right: 4px; color: var(--muted); }
+.expense-preview.preview-warning  { background: #fdf3e2; border-color: #efd29e; }
+.expense-preview.preview-critical { background: var(--danger-light); border-color: #e7c4c2; }
+
+/* ---------- Resumo ---------- */
+.summary-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.month-picker { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--muted); font-size: 12px; font-weight: 600; }
+.month-picker select { width: auto; min-width: 190px; }
+.summary-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.insight-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+.insight,
+.summary-panel { padding: 16px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+.insight header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.insight small { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .35px; text-transform: uppercase; }
+.insight > strong { display: block; margin: 8px 0 6px; font: 800 24px/1.1 var(--font-title); letter-spacing: -.5px; }
+.insight > strong.negative { color: var(--danger); }
+.insight p { margin: 8px 0 0; color: var(--muted); font-size: 11.5px; line-height: 1.45; }
+.insight p strong { color: var(--text); }
+
+/* Status sempre com ícone + texto, nunca só cor */
+.level-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+.level-ok       { color: #22634a; background: #dceee0; }
+.level-warning  { color: #8a5413; background: #f8e7c8; }
+.level-critical { color: var(--danger); background: var(--danger-light); }
+.level-neutral  { color: var(--muted); background: var(--surface-muted); }
+
+.meter { height: 6px; overflow: hidden; background: var(--surface-muted); border-radius: 999px; }
+.meter span { display: block; height: 100%; border-radius: 999px; }
+.meter .level-ok       { background: #2f7d5b; }
+.meter .level-warning  { background: #d9922e; }
+.meter .level-critical { background: var(--danger); }
+
+.summary-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 12px; margin-bottom: 14px; }
+.summary-panel header { margin-bottom: 12px; }
+.summary-panel h2 { margin: 0; font-size: 15px; font-weight: 800; letter-spacing: -.25px; }
+.summary-panel header p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+.summary-panel header p::first-letter { text-transform: uppercase; }
+.summary-empty { margin: 0; padding: 18px 0; color: var(--muted); font-size: 12px; }
+
+.flow-chart { position: relative; height: 230px; margin-bottom: 12px; }
+.flow-table { font-size: 12px; }
+.flow-table th { color: var(--muted); font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.flow-table td { padding-top: 6px; padding-bottom: 6px; white-space: nowrap; }
+.flow-table tr.current td { background: var(--surface-soft); font-weight: 600; }
+.flow-table .negative { color: var(--danger); }
+
+.budget-list { display: grid; gap: 12px; }
+.budget-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 5px; font-size: 12.5px; font-weight: 600; }
+.budget-head small { margin-left: auto; color: var(--muted); font-size: 11px; font-weight: 500; }
+
+.rank-list { margin: 0; padding: 0; list-style: none; }
+.rank-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid #edf1ed; font-size: 12.5px; }
+.rank-list li:last-child { border-bottom: 0; }
+.rank-name { min-width: 0; font-weight: 600; }
+.rank-name small { display: block; color: var(--muted); font-size: 10.5px; font-weight: 500; }
+.rank-name b { color: var(--green-700); }
+.rank-value { text-align: right; }
+.rank-value small { display: block; color: var(--muted); font-size: 10.5px; }
+.rank-foot { margin: 10px 0 0; color: var(--muted); font-size: 11.5px; line-height: 1.45; }
+.rank-foot strong { color: var(--text); }
+
+.form-section-title { margin: 0 0 4px; font-size: 13px; font-weight: 800; }
+.form-hint { margin: 0 0 10px; color: var(--muted); font-size: 11.5px; }
+
+/* ---------- Responsividade ---------- */
+@media (max-width: 1100px) {
+  .finance-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .summary-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 860px) {
+  .insight-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .finance-stat { padding: 13px; }
+  .finance-stat strong { font-size: 18px; }
+  .finance-icon { flex-basis: 36px; height: 36px; font-size: 16px; }
+  #typeFilter { width: auto; }
+  .summary-toolbar, .summary-actions { flex-direction: column; align-items: stretch; }
+  .month-picker { flex-wrap: wrap; }
+  .month-picker select { width: 100%; }
+  .flow-chart { height: 200px; }
+  /* Resultado = entradas − saídas; no celular ficam só as colunas essenciais */
+  .flow-table th:nth-child(4), .flow-table td:nth-child(4) { display: none; }
+
+  /* No celular ficam Data, Doador/Descrição e Valor; o resto aparece ao abrir a linha */
+  .data-table th:nth-child(3), .data-table td:nth-child(3),
+  .data-table th:nth-child(4), .data-table td:nth-child(4) { display: none; }
+}

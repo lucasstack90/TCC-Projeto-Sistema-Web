@@ -24,8 +24,6 @@
 .stage-chip strong { color: var(--text); }
 .stage-chip i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 
-.view-tabs { padding: 0; margin-bottom: 16px; }
-.view-tabs .tab { font-size: 12px; }
 
 /* ---------- Lista de processos ---------- */
 .process-list { display: grid; gap: 8px; }
@@ -65,29 +63,7 @@
 .mini-progress span { display: block; height: 100%; background: var(--green-700); border-radius: 6px; }
 
 /* ---------- Tabela de adotantes ---------- */
-.table-card { overflow: hidden; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
-
-.adopter-table {
-  --bs-table-bg: transparent;
-  --bs-table-border-color: #edf1ed;
-  font-size: 12px;
-}
-.adopter-table thead th {
-  padding: 12px 14px;
-  color: #859188;
-  background: var(--surface-soft);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: .6px;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-.adopter-table td { padding: 11px 14px; color: var(--muted); }
-.adopter-table td strong { display: block; color: var(--text); }
-.adopter-table td small { color: #8a968e; font-size: 10px; }
-.adopter-table tbody tr:last-child td { border-bottom: 0; }
-.adopter-table .btn-sm { padding: 6px 10px; font-size: 11px; }
-.adopter-table .status-badge { margin-left: 4px; font-size: 9px; }
+#adopterRows .status-badge { margin-left: 4px; font-size: 9px; }
 
 /* ---------- Formulário do adotante ---------- */
 .doc-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 10px; }
@@ -110,19 +86,6 @@
   border: 0;
   border-radius: 50%;
 }
-
-.consent {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px;
-  color: var(--text);
-  background: var(--surface-muted);
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  cursor: pointer;
-}
-.consent input { margin-top: 3px; accent-color: var(--green-700); }
 
 /* ---------- Ficha do processo ---------- */
 #processModal .modal-header h2 { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }

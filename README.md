@@ -14,6 +14,8 @@ PAWSAFE/
 │   ├── animais.css     # Pages/animais.html
 │   ├── adocoes.css     # Pages/adocoes.html
 │   ├── resgates.css    # Pages/resgates.html
+│   ├── voluntarios.css # Pages/voluntarios.html e voluntario-cadastro.html
+│   ├── doacoes.css     # Pages/doacoes.html
 │   └── login.css       # Pages/Pg_Login.html
 ├── Img/
 ├── js/
@@ -24,12 +26,19 @@ PAWSAFE/
 │   ├── animais.js
 │   ├── adocoes.js
 │   ├── resgates.js
+│   ├── voluntarios.js
+│   ├── voluntario-cadastro.js
+│   ├── doacoes.js
+│   ├── financeiro.js   # cálculos financeiros (saldo, fluxo, orçamento) — usado por Doações e Dashboard
 │   └── login.js
 ├── Pages/
 │   ├── Pg_Login.html
 │   ├── animais.html
 │   ├── adocoes.html
-│   └── resgates.html
+│   ├── resgates.html
+│   ├── voluntarios.html
+│   ├── doacoes.html
+│   └── voluntario-cadastro.html   # formulário público (sem login)
 └── index.html          # dashboard
 ```
 
@@ -39,9 +48,8 @@ Abra a pasta no VS Code e rode `Pages/Pg_Login.html` (ou `index.html`) com o Liv
 
 ## Como os dados funcionam no protótipo
 
-- Animais, adotantes, processos de adoção e resgates ficam no `localStorage` do navegador (`js/dados.js`). Todas as páginas leem a mesma fonte.
+- Animais, adotantes, processos de adoção, resgates, voluntários, doações e despesas ficam no `localStorage` do navegador (`js/dados.js`). Todas as páginas leem a mesma fonte.
 - Para voltar aos dados de exemplo: no console do navegador, rode `PawData.resetAll()` e recarregue a página.
-- Os indicadores de voluntários e doações são ilustrativos até esses módulos existirem.
 
 ## Nova página do sistema
 
@@ -51,7 +59,7 @@ Para manter o padrão nas páginas de `Pages/`:
 2. No `<body>`: `<div id="sidebarMount"></div>` e `<main class="main-content">` com o cabeçalho `<header class="topbar">` (botão `class="mobile-menu" id="menuToggle"` + `<div class="topbar-title">`).
 3. Antes do JS da página: `../js/dados.js`, `../js/utils.js` e `../js/sidebar.js`, nesta ordem.
 
-Páginas do menu ainda não criadas: `voluntarios.html`, `doacoes.html`, `estoque.html`, `relatorios.html`.
+Páginas do menu ainda não criadas: `estoque.html`, `relatorios.html`.
 
 ## Padrão do CSS
 
@@ -74,3 +82,31 @@ Páginas do menu ainda não criadas: `voluntarios.html`, `doacoes.html`, `estoqu
 - **Resumo:** total de ocorrências, concluídos, em aberto, animais acolhidos e quantos resgates cada responsável atendeu.
 - **Animal resgatado:** “Cadastrar animal resgatado” abre o formulário de Animais já preenchido (status Resgatado, data de chegada, espécie). O animal fica ligado ao resgate e a ficha dele mostra a origem.
 - Menu lateral e dashboard mostram as ocorrências em aberto. Links diretos: `resgates.html?resgate=ID`, `animais.html?animal=ID`.
+
+## Módulo de Voluntários e Equipe
+
+- **Formulário de inscrição** (`voluntario-cadastro.html`, aberto pelo “Link de voluntariado” do menu): nome completo, e-mail, telefone, habilidades, experiências e disponibilidade (dias e turnos), com consentimento LGPD. Quem se inscreve entra como **Interessado**.
+- **Equipe** (`voluntarios.html`): abas Equipe e Interessados, busca, filtro por habilidade e por dia disponível. Interessado → **Aprovar** (Ativo) ou **Arquivar**; Ativo ↔ Inativo.
+- Resgates escolhem o responsável entre os voluntários ativos. Quem é responsável por algum resgate não pode ser excluído, só inativado.
+- No protótipo o formulário grava no mesmo `localStorage`, então só funciona no mesmo navegador. No back-end ele vira uma rota pública que grava no banco; ali o resgate deve guardar o **id** do voluntário, e não o nome.
+
+## Módulo de Doações / Financeiro
+
+- **Doação:** data, origem (pessoa física ou jurídica), doador (opcional, para doações anônimas) e categoria. **Financeira:** valor e forma de pagamento. **Material:** item, quantidade e unidade (kg, un, L, mL — as mesmas do Estoque).
+- **Despesa:** data, categoria, descrição, valor, a quem foi pago e, opcionalmente, o animal relacionado.
+- **Totais:** total doado (doações financeiras), despesas, saldo e quantidade de doações materiais. O dashboard mostra as doações financeiras do mês atual.
+- **Saldo automático:** o saldo nunca é digitado nem guardado; é sempre calculado em `js/financeiro.js` como *saldo inicial + doações financeiras − despesas*. Ao registrar, editar ou excluir uma despesa, o card de Saldo é destacado com "antes → depois" e o aviso mostra o novo valor. Enquanto a despesa é digitada, o formulário já mostra como ficam o saldo e o orçamento da categoria. Outras abas abertas do sistema também se atualizam.
+- **Aba Resumo** (indicadores para a coordenação decidir):
+  - **Fôlego de caixa:** quantos meses o saldo paga as despesas, pela média dos últimos 3 meses completos. Meta: reserva de 3 meses.
+  - **Resultado do mês:** superávit ou déficit do mês escolhido.
+  - **Dependência de doadores:** quanto do arrecadado vem do maior doador (alerta acima de 40%), divisão pessoa física/jurídica e doadores recorrentes.
+  - **Fluxo de caixa:** gráfico e tabela dos últimos 6 meses (entradas, saídas, resultado e saldo ao fim do mês).
+  - **Orçamento mensal por categoria:** alerta ao chegar a 80% e ao passar de 100%, também no momento de registrar a despesa.
+  - **Custo por animal:** total gasto com cada animal e custo médio por animal atendido.
+  - **Maiores doadores** e **exportação da prestação de contas** do mês em CSV (abre no Excel e no Google Planilhas).
+- **Orçamento e saldo inicial:** editáveis na aba Resumo. Sem o saldo inicial, o saldo do sistema não bate com o extrato do banco.
+- Clique em uma linha para editar ou excluir.
+
+## Antes de começar o back-end
+
+Leia [`docs/pendencias-backend.md`](docs/pendencias-backend.md): proteção do formulário público contra envios em massa, regras que hoje só existem no JavaScript, ajustes no modelo de dados e LGPD.

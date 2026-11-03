@@ -242,6 +242,11 @@ h1 {
 .priority-alta    { color: #a65c31; background: #fbefe8; }
 .priority-critica { color: var(--danger); background: var(--danger-light); }
 
+/* ---------- Situação dos voluntários ---------- */
+.volunteer-interessado { color: #386b86; background: #dceaf1; }
+.volunteer-ativo       { color: #2d6c4c; background: #dceee0; }
+.volunteer-inativo     { color: #6b7570; background: #e9ecea; }
+
 /* Área com mais de um botão no cabeçalho */
 .topbar-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
@@ -365,6 +370,44 @@ h1 {
 .choice-options input:checked + span { color: #28674f; background: var(--green-100); border-color: #9dc2ad; font-weight: 700; }
 .choice-options input:focus-visible + span { outline: 3px solid #9fc7b1; outline-offset: 2px; }
 
+/* ---------- Consentimento LGPD (adotantes, voluntários) ---------- */
+.consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  color: var(--text);
+  background: var(--surface-muted);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  cursor: pointer;
+}
+.consent input { margin-top: 3px; accent-color: var(--green-700); }
+
+/* ---------- Tabelas dos módulos (Adoções, Doações) ---------- */
+.table-card { overflow: hidden; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+
+.data-table {
+  --bs-table-bg: transparent;
+  --bs-table-border-color: #edf1ed;
+  font-size: 12px;
+}
+.data-table thead th {
+  padding: 12px 14px;
+  color: #859188;
+  background: var(--surface-soft);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.data-table td { padding: 11px 14px; color: var(--muted); }
+.data-table td strong { display: block; color: var(--text); }
+.data-table td small { display: block; color: #8a968e; font-size: 10px; }
+.data-table tbody tr:last-child td { border-bottom: 0; }
+.data-table .btn-sm { padding: 6px 10px; font-size: 11px; }
+
 /* ---------- Abas ---------- */
 .tabs { display: flex; gap: 4px; padding: 0 17px; overflow-x: auto; border-bottom: 1px solid var(--border); }
 
@@ -379,6 +422,11 @@ h1 {
 }
 .tab i { margin-right: 6px; }
 .tab.active { color: var(--green-700); border-bottom-color: var(--green-700); font-weight: 700; }
+
+/* Abas que trocam a visualização da página (Adoções, Voluntários) */
+.view-tabs { padding: 0; margin-bottom: 16px; }
+.view-tabs .tab { font-size: 12px; }
+
 
 /* ---------- Blocos de informação ---------- */
 .info-tile { padding: 13px; background: var(--surface-muted); border-radius: var(--radius-sm); }

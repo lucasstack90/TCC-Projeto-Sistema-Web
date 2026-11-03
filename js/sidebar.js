@@ -14,13 +14,14 @@
   const hasData = typeof PawData !== 'undefined';
   const animalCount = hasData ? PawData.loadAnimals().length : '';
   const openRescues = hasData ? PawData.loadRescues().filter(r => PawData.OPEN_RESCUE_STAGES.includes(r.stage)).length : 0;
+  const pendingVolunteers = hasData ? PawData.loadVolunteers().filter(v => v.status === 'Interessado').length : 0;
 
   const items = [
     { id: 'dashboard', label: 'Dashboard', icon: 'bi-grid-1x2-fill', href: home },
     { id: 'animais', label: 'Animais', icon: 'bi-paw', href: `${base}animais.html`, count: animalCount },
     { id: 'adocoes', label: 'Adoções', icon: 'bi-heart', href: `${base}adocoes.html` },
     { id: 'resgates', label: 'Resgates', icon: 'bi-house-heart', href: `${base}resgates.html`, count: openRescues, alert: true },
-    { id: 'voluntarios', label: 'Voluntários & Equipe', icon: 'bi-people', href: `${base}voluntarios.html` },
+    { id: 'voluntarios', label: 'Voluntários & Equipe', icon: 'bi-people', href: `${base}voluntarios.html`, count: pendingVolunteers, alert: true },
     { id: 'doacoes', label: 'Doações / Financeiro', icon: 'bi-cash-coin', href: `${base}doacoes.html` },
     { id: 'estoque', label: 'Estoque', icon: 'bi-box-seam', href: `${base}estoque.html` },
     { id: 'relatorios', label: 'Relatório técnico', icon: 'bi-file-earmark-bar-graph', href: `${base}relatorios.html` }
@@ -45,7 +46,7 @@
       <div class="sidebar-label">MENU PRINCIPAL</div>
       <nav class="nav flex-column sidebar-nav">${navLinks}</nav>
       <div class="sidebar-bottom">
-        <a class="nav-link volunteer-link" href="${base}voluntarios.html"><i class="bi bi-box-arrow-up-right"></i><span>Link de voluntariado</span></a>
+        <a class="nav-link volunteer-link" href="${base}voluntario-cadastro.html" target="_blank" rel="noopener" title="Formulário público de inscrição"><i class="bi bi-box-arrow-up-right"></i><span>Link de voluntariado</span></a>
         <button class="nav-link logout-link" type="button" id="logoutButton"><i class="bi bi-box-arrow-left"></i><span>Sair</span></button>
         <div class="profile-mini">
           <div class="avatar"><i class="bi bi-person-fill"></i></div>
