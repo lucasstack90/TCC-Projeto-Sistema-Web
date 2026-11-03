@@ -14,6 +14,9 @@
   const hasData = typeof PawData !== 'undefined';
   const animalCount = hasData ? PawData.loadAnimals().length : '';
   const openRescues = hasData ? PawData.loadRescues().filter(r => PawData.OPEN_RESCUE_STAGES.includes(r.stage)).length : 0;
+  // Itens em falta ou abaixo do estoque mínimo
+  const stockToRestock = hasData && PawData.stockAlerts
+    ? PawData.stockAlerts(PawData.loadStockItems(), PawData.loadStockMoves()).restock.length : 0;
 
   const items = [
     { id: 'dashboard', label: 'Dashboard', icon: 'bi-grid-1x2-fill', href: home },
@@ -22,7 +25,7 @@
     { id: 'resgates', label: 'Resgates', icon: 'bi-house-heart', href: `${base}resgates.html`, count: openRescues, alert: true },
     { id: 'voluntarios', label: 'Voluntários & Equipe', icon: 'bi-people', href: `${base}voluntarios.html` },
     { id: 'doacoes', label: 'Doações / Financeiro', icon: 'bi-cash-coin', href: `${base}doacoes.html` },
-    { id: 'estoque', label: 'Estoque', icon: 'bi-box-seam', href: `${base}estoque.html` },
+    { id: 'estoque', label: 'Estoque', icon: 'bi-box-seam', href: `${base}estoque.html`, count: stockToRestock, alert: true },
     { id: 'relatorios', label: 'Relatório técnico', icon: 'bi-file-earmark-bar-graph', href: `${base}relatorios.html` }
   ];
 
