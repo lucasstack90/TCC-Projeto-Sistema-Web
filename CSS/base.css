@@ -242,6 +242,17 @@ h1 {
 .priority-alta    { color: #a65c31; background: #fbefe8; }
 .priority-critica { color: var(--danger); background: var(--danger-light); }
 
+/* ---------- Situação dos itens de estoque ---------- */
+.stock-disponivel { color: #2d6c4c; background: #dceee0; }
+.stock-baixo      { color: #8a6a1f; background: #f7efd4; }
+.stock-critico    { color: #a65c31; background: #fbefe8; }
+.stock-falta      { color: var(--danger); background: var(--danger-light); }
+
+/* Validade dos lotes */
+.lot-ok       { color: #4f6b5d; background: #e8efe9; }
+.lot-vencendo { color: #9a642a; background: #f6e8cb; }
+.lot-vencido  { color: var(--danger); background: var(--danger-light); }
+
 /* Área com mais de um botão no cabeçalho */
 .topbar-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 

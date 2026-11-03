@@ -1,6 +1,6 @@
 /* PAWSAFE — fonte única de dados do protótipo.
    Enquanto o back-end (Laravel + MySQL) não existe, animais, adotantes, processos de
-   adoção e resgates ficam no localStorage. Todas as páginas leem daqui, então os números sempre batem.
+   adoção, resgates e estoque ficam no localStorage. Todas as páginas leem daqui, então os números sempre batem.
    Na integração com o back-end, troque as funções load/save por chamadas à API. */
 
 const PawData = (() => {
@@ -262,12 +262,182 @@ const PawData = (() => {
     }
   ];
 
+  // ================= Estoque =================
+  // Regra principal: o saldo NUNCA é digitado. Ele é a soma das movimentações
+  // (entradas menos saídas). Um lançamento errado não é apagado: recebe um estorno.
+  const STOCK_CATEGORIES = ['Ração', 'Medicamento', 'Vacina', 'Higiene e limpeza', 'Utensílio'];
+  const STOCK_UNITS = ['kg', 'g', 'L', 'mL', 'un'];
+  const STOCK_REASONS = {
+    entrada: { doacao: 'Doação recebida', compra: 'Compra', ajuste: 'Ajuste de inventário', estorno: 'Estorno' },
+    saida: { consumo: 'Consumo', uso_animal: 'Uso em animal', perda: 'Perda / descarte', repasse: 'Repasse a outra ONG', ajuste: 'Ajuste de inventário', estorno: 'Estorno' }
+  };
+  const STOCK_STATUS = ['Em falta', 'Crítico', 'Baixo', 'Disponível']; // do mais grave ao normal
+  const STOCK_STATUS_CLASS = {
+    'Disponível': 'stock-disponivel',
+    'Baixo': 'stock-baixo',
+    'Crítico': 'stock-critico',
+    'Em falta': 'stock-falta'
+  };
+  const stockClass = (status) => STOCK_STATUS_CLASS[status] || 'stock-disponivel';
+  const EXPIRY_WARNING_DAYS = 30; // lote "vencendo" quando faltam até 30 dias
+  const LOW_FACTOR = 1.5;         // "Baixo" = até 1,5 × o estoque mínimo
+  const CONSUMPTION_DAYS = 30;    // janela usada no consumo médio
+
+  // Quantidades com até 3 casas (evita 0.1 + 0.2 = 0.30000000000000004).
+  const round3 = (n) => Math.round(n * 1000) / 1000;
+
+  const SEED_STOCK_ITEMS = [
+    { id: 1, name: 'Ração cão adulto', category: 'Ração', unit: 'kg', min: 30, tracksExpiry: true, packages: [{ name: 'Saco 15 kg', size: 15 }, { name: 'Saco 25 kg', size: 25 }], notes: 'Consumo diário do canil.', active: true },
+    { id: 2, name: 'Ração gato adulto', category: 'Ração', unit: 'kg', min: 10, tracksExpiry: true, packages: [{ name: 'Saco 10 kg', size: 10 }], notes: '', active: true },
+    { id: 3, name: 'Ração filhote', category: 'Ração', unit: 'kg', min: 8, tracksExpiry: true, packages: [{ name: 'Saco 3 kg', size: 3 }], notes: 'Cães e gatos até 1 ano.', active: true },
+    { id: 4, name: 'Vacina V8 (polivalente)', category: 'Vacina', unit: 'un', min: 10, tracksExpiry: true, packages: [{ name: 'Caixa 10 doses', size: 10 }], notes: '1 unidade = 1 dose. Manter refrigerada.', active: true },
+    { id: 5, name: 'Vacina antirrábica', category: 'Vacina', unit: 'un', min: 10, tracksExpiry: true, packages: [], notes: '1 unidade = 1 dose. Manter refrigerada.', active: true },
+    { id: 6, name: 'Vermífugo (comprimido)', category: 'Medicamento', unit: 'un', min: 15, tracksExpiry: true, packages: [{ name: 'Caixa 4 comprimidos', size: 4 }], notes: '', active: true },
+    { id: 7, name: 'Antipulgas (pipeta)', category: 'Medicamento', unit: 'un', min: 10, tracksExpiry: true, packages: [], notes: '', active: true },
+    { id: 8, name: 'Amoxicilina suspensão oral', category: 'Medicamento', unit: 'mL', min: 60, tracksExpiry: true, packages: [{ name: 'Frasco 60 mL', size: 60 }], notes: 'Somente com prescrição veterinária.', active: true },
+    { id: 9, name: 'Desinfetante', category: 'Higiene e limpeza', unit: 'L', min: 10, tracksExpiry: false, packages: [{ name: 'Galão 5 L', size: 5 }], notes: '', active: true },
+    { id: 10, name: 'Areia sanitária', category: 'Higiene e limpeza', unit: 'kg', min: 12, tracksExpiry: false, packages: [{ name: 'Pacote 4 kg', size: 4 }], notes: '', active: true },
+    { id: 11, name: 'Tapete higiênico', category: 'Higiene e limpeza', unit: 'un', min: 30, tracksExpiry: false, packages: [{ name: 'Pacote 30 un', size: 30 }], notes: '', active: true },
+    { id: 12, name: 'Coleira', category: 'Utensílio', unit: 'un', min: 5, tracksExpiry: false, packages: [], notes: 'Entregue junto com o animal na adoção.', active: true }
+  ];
+
+  // Atalhos só para deixar os dados de exemplo mais legíveis.
+  const lot = (code, expiry, qty) => ({ lot: code, expiry, qty });
+  const mv = (id, itemId, type, reason, qty, date, extra = {}) => ({
+    id, itemId, type, reason, qty, date,
+    packageLabel: '', lots: [], user: 'Renata Oliveira', animalId: null, party: '', note: '',
+    reversalOf: null, reversedBy: null, ...extra
+  });
+
+  const SEED_STOCK_MOVES = [
+    mv(1, 8, 'entrada', 'doacao', 120, '2026-07-20', { packageLabel: '2 × Frasco 60 mL', lots: [lot('AMX-1102', '2026-10-31', 120)], party: 'Doação anônima' }),
+    mv(2, 12, 'entrada', 'doacao', 10, '2026-08-15', { party: 'Pet Shop Amigo Fiel' }),
+    mv(3, 5, 'entrada', 'doacao', 15, '2026-08-30', { lots: [lot('RAB-311', '2027-08-31', 15)], party: 'Clínica Veterinária São Francisco' }),
+    mv(4, 8, 'saida', 'uso_animal', 40, '2026-09-02', { lots: [lot('AMX-1102', '2026-10-31', 40)], animalId: 3, user: 'Marcos Ribeiro', note: 'Tratamento de pele, 10 dias.' }),
+    mv(5, 9, 'entrada', 'doacao', 20, '2026-09-05', { packageLabel: '4 × Galão 5 L', party: 'Supermercado Bom Preço' }),
+    mv(6, 4, 'entrada', 'compra', 20, '2026-09-10', { packageLabel: '2 × Caixa 10 doses', lots: [lot('V8-2048', '2026-11-25', 20)], party: 'Distribuidora VetSul' }),
+    mv(7, 10, 'entrada', 'doacao', 16, '2026-09-12', { packageLabel: '4 × Pacote 4 kg', party: 'Campanha de arrecadação' }),
+    mv(8, 5, 'saida', 'uso_animal', 1, '2026-09-15', { lots: [lot('RAB-311', '2027-08-31', 1)], animalId: 7, user: 'Ana Paula Souza' }),
+    mv(9, 7, 'entrada', 'compra', 24, '2026-09-18', { lots: [lot('AP-5531', '2027-09-30', 24)], party: 'Distribuidora VetSul' }),
+    mv(10, 1, 'entrada', 'doacao', 60, '2026-09-20', { packageLabel: '4 × Saco 15 kg', lots: [lot('RC-0925', '2027-03-10', 60)], party: 'Agropecuária Campos Gerais' }),
+    mv(11, 9, 'saida', 'consumo', 5, '2026-09-20', { user: 'Marcos Ribeiro' }),
+    mv(12, 12, 'saida', 'consumo', 2, '2026-09-22', { note: 'Entregues junto com animais adotados.' }),
+    mv(13, 2, 'entrada', 'doacao', 30, '2026-09-25', { packageLabel: '3 × Saco 10 kg', lots: [lot('RG-0925', '2027-02-15', 30)], party: 'Agropecuária Campos Gerais' }),
+    mv(14, 10, 'saida', 'consumo', 8, '2026-09-30', { user: 'Ana Paula Souza' }),
+    mv(15, 6, 'entrada', 'doacao', 40, '2026-10-01', { packageLabel: '10 × Caixa 4 comprimidos', lots: [lot('VM-077', '2028-01-31', 40)], party: 'Clínica Veterinária São Francisco' }),
+    mv(16, 3, 'entrada', 'compra', 9, '2026-10-02', { packageLabel: '3 × Saco 3 kg', lots: [lot('RF-1002', '2027-01-20', 9)], party: 'Agropecuária Campos Gerais' }),
+    mv(17, 11, 'entrada', 'doacao', 90, '2026-10-03', { packageLabel: '3 × Pacote 30 un', party: 'Doação anônima' }),
+    mv(18, 4, 'saida', 'uso_animal', 1, '2026-10-05', { lots: [lot('V8-2048', '2026-11-25', 1)], animalId: 7, user: 'Ana Paula Souza' }),
+    mv(19, 5, 'saida', 'uso_animal', 1, '2026-10-05', { lots: [lot('RAB-311', '2027-08-31', 1)], animalId: 8, user: 'Ana Paula Souza' }),
+    mv(20, 12, 'saida', 'perda', 1, '2026-10-05', { note: 'Fivela quebrada.' }),
+    mv(21, 1, 'saida', 'consumo', 21, '2026-10-06', { lots: [lot('RC-0925', '2027-03-10', 21)], user: 'Marcos Ribeiro', note: 'Consumo semanal do canil.' }),
+    mv(22, 2, 'saida', 'consumo', 6, '2026-10-08', { lots: [lot('RG-0925', '2027-02-15', 6)], user: 'Marcos Ribeiro' }),
+    mv(23, 6, 'saida', 'consumo', 6, '2026-10-10', { lots: [lot('VM-077', '2028-01-31', 6)], user: 'Ana Paula Souza', note: 'Vermifugação dos animais do canil.' }),
+    mv(24, 9, 'saida', 'consumo', 5, '2026-10-10', { user: 'Marcos Ribeiro' }),
+    mv(25, 7, 'saida', 'consumo', 4, '2026-10-12', { lots: [lot('AP-5531', '2027-09-30', 4)], user: 'Ana Paula Souza', note: 'Aplicação mensal no canil.' }),
+    mv(26, 1, 'saida', 'consumo', 21, '2026-10-13', { lots: [lot('RC-0925', '2027-03-10', 21)], user: 'Marcos Ribeiro', note: 'Consumo semanal do canil.' }),
+    mv(27, 1, 'entrada', 'compra', 30, '2026-10-15', { packageLabel: '2 × Saco 15 kg', lots: [lot('RC-1015', '2027-05-20', 30)], party: 'Agropecuária Campos Gerais', reversedBy: 28 }),
+    mv(28, 1, 'saida', 'estorno', 30, '2026-10-15', { lots: [lot('RC-1015', '2027-05-20', 30)], reversalOf: 27, note: 'Lançado com a embalagem errada: eram sacos de 25 kg.' }),
+    mv(29, 1, 'entrada', 'compra', 50, '2026-10-15', { packageLabel: '2 × Saco 25 kg', lots: [lot('RC-1015', '2027-05-20', 50)], party: 'Agropecuária Campos Gerais' }),
+    mv(30, 11, 'saida', 'consumo', 30, '2026-10-17', { user: 'Ana Paula Souza' }),
+    mv(31, 3, 'saida', 'consumo', 3, '2026-10-19', { lots: [lot('RF-1002', '2027-01-20', 3)], user: 'Ana Paula Souza', note: 'Ninhada resgatada (RES-0004).' }),
+    mv(32, 1, 'saida', 'consumo', 21, '2026-10-20', { lots: [lot('RC-0925', '2027-03-10', 18), lot('RC-1015', '2027-05-20', 3)], user: 'Marcos Ribeiro', note: 'Consumo semanal do canil.' }),
+    mv(33, 10, 'saida', 'consumo', 8, '2026-10-20', { user: 'Ana Paula Souza' }),
+    mv(34, 9, 'entrada', 'compra', 10, '2026-10-20', { packageLabel: '2 × Galão 5 L', party: 'Supermercado Bom Preço' }),
+    mv(35, 4, 'saida', 'uso_animal', 1, '2026-10-21', { lots: [lot('V8-2048', '2026-11-25', 1)], animalId: 3, user: 'Ana Paula Souza' }),
+    mv(36, 5, 'saida', 'uso_animal', 1, '2026-10-21', { lots: [lot('RAB-311', '2027-08-31', 1)], animalId: 2, user: 'Ana Paula Souza' }),
+    mv(37, 2, 'saida', 'consumo', 6, '2026-10-22', { lots: [lot('RG-0925', '2027-02-15', 6)], user: 'Marcos Ribeiro' }),
+    mv(38, 6, 'saida', 'consumo', 8, '2026-10-24', { lots: [lot('VM-077', '2028-01-31', 8)], user: 'Ana Paula Souza' }),
+    mv(39, 8, 'entrada', 'compra', 120, '2026-10-25', { packageLabel: '2 × Frasco 60 mL', lots: [lot('AMX-2210', '2027-04-30', 120)], party: 'Distribuidora VetSul' }),
+    mv(40, 3, 'saida', 'consumo', 2, '2026-10-26', { lots: [lot('RF-1002', '2027-01-20', 2)], user: 'Ana Paula Souza' }),
+    mv(41, 1, 'saida', 'consumo', 21, '2026-10-27', { lots: [lot('RC-1015', '2027-05-20', 21)], user: 'Marcos Ribeiro', note: 'Consumo semanal do canil.' }),
+    mv(42, 7, 'saida', 'consumo', 3, '2026-10-28', { lots: [lot('AP-5531', '2027-09-30', 3)], user: 'Ana Paula Souza' }),
+    mv(43, 8, 'saida', 'uso_animal', 20, '2026-10-28', { lots: [lot('AMX-2210', '2027-04-30', 20)], animalId: 3, user: 'Marcos Ribeiro' }),
+    mv(44, 1, 'entrada', 'doacao', 45, '2026-10-30', { packageLabel: '3 × Saco 15 kg', lots: [lot('RC-1030', '2027-06-15', 45)], party: 'Feira de adoção (arrecadação)' }),
+    mv(45, 9, 'saida', 'consumo', 3, '2026-10-30', { user: 'Marcos Ribeiro' }),
+    mv(46, 11, 'saida', 'consumo', 20, '2026-10-31', { user: 'Ana Paula Souza' }),
+    mv(47, 2, 'saida', 'consumo', 5, '2026-11-01', { lots: [lot('RG-0925', '2027-02-15', 5)], user: 'Marcos Ribeiro' })
+  ];
+
+  const isoToday = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+  const daysBetween = (from, to) => Math.round((Date.parse(`${to}T12:00:00`) - Date.parse(`${from}T12:00:00`)) / 864e5);
+
+  // Calcula tudo o que é derivado das movimentações de UM item:
+  // saldo por lote, saldo utilizável (sem vencidos), status, consumo médio e cobertura.
+  // No back-end, este cálculo vira consultas SUM() na tabela de movimentações.
+  function stockInfo(item, moves, today = isoToday()) {
+    const own = moves.filter(m => m.itemId === item.id);
+    let total = 0;
+    const lotMap = {};
+
+    own.forEach(m => {
+      const sign = m.type === 'entrada' ? 1 : -1;
+      total += sign * m.qty;
+      m.lots.forEach(l => {
+        const entry = lotMap[l.lot] || (lotMap[l.lot] = { lot: l.lot, expiry: l.expiry, qty: 0 });
+        entry.qty += sign * l.qty;
+      });
+    });
+
+    const lots = Object.values(lotMap)
+      .map(l => {
+        const daysLeft = daysBetween(today, l.expiry);
+        const state = daysLeft < 0 ? 'vencido' : daysLeft <= EXPIRY_WARNING_DAYS ? 'vencendo' : 'ok';
+        return { ...l, qty: round3(l.qty), daysLeft, state };
+      })
+      .filter(l => l.qty > 0)
+      .sort((a, b) => a.expiry.localeCompare(b.expiry)); // ordem FEFO: vence primeiro, sai primeiro
+
+    total = round3(total);
+    const expired = round3(lots.filter(l => l.state === 'vencido').reduce((s, l) => s + l.qty, 0));
+    const usable = round3(total - expired);
+
+    // Consumo real: só consumo e uso em animal (perda, repasse e ajuste não contam),
+    // ignorando lançamentos que foram estornados.
+    const consumed = own
+      .filter(m => m.type === 'saida' && (m.reason === 'consumo' || m.reason === 'uso_animal') && !m.reversedBy)
+      .filter(m => { const d = daysBetween(m.date, today); return d >= 0 && d < CONSUMPTION_DAYS; })
+      .reduce((s, m) => s + m.qty, 0);
+    const dailyUse = consumed / CONSUMPTION_DAYS;
+    const coverageDays = dailyUse > 0 ? Math.floor(usable / dailyUse) : null;
+
+    let status = 'Disponível';
+    if (usable <= 0) status = 'Em falta';
+    else if (usable < item.min) status = 'Crítico';
+    else if (usable <= item.min * LOW_FACTOR) status = 'Baixo';
+
+    const nextLot = lots.find(l => l.state !== 'vencido');
+    return {
+      total, usable, expired, lots, status, dailyUse, coverageDays,
+      nextExpiry: nextLot?.expiry ?? '',
+      expiringLots: lots.filter(l => l.state === 'vencendo'),
+      expiredLots: lots.filter(l => l.state === 'vencido'),
+      moveCount: own.length
+    };
+  }
+
+  // Itens que precisam de reposição (usado no menu lateral e no dashboard).
+  function stockAlerts(items, moves) {
+    const active = items.filter(i => i.active);
+    const infos = active.map(item => ({ item, info: stockInfo(item, moves) }));
+    return {
+      restock: infos.filter(x => x.info.status === 'Em falta' || x.info.status === 'Crítico'),
+      expiring: infos.filter(x => x.info.expiringLots.length),
+      expired: infos.filter(x => x.info.expiredLots.length)
+    };
+  }
+
   // ================= Armazenamento (localStorage) =================
   const KEYS = {
     animals: STORAGE_KEY,
     adopters: 'pawsafe_adotantes_v1',
     adoptions: 'pawsafe_adocoes_v1',
-    rescues: 'pawsafe_resgates_v1'
+    rescues: 'pawsafe_resgates_v1',
+    stockItems: 'pawsafe_estoque_itens_v1',
+    stockMoves: 'pawsafe_estoque_movimentacoes_v1'
   };
 
   function load(key, seed) {
@@ -307,6 +477,12 @@ const PawData = (() => {
     saveAdoptions: (list) => save(KEYS.adoptions, list),
     loadRescues: () => load(KEYS.rescues, SEED_RESCUES),
     saveRescues: (list) => save(KEYS.rescues, list),
+    STOCK_CATEGORIES, STOCK_UNITS, STOCK_REASONS, STOCK_STATUS, stockClass,
+    EXPIRY_WARNING_DAYS, CONSUMPTION_DAYS, round3, stockInfo, stockAlerts,
+    loadStockItems: () => load(KEYS.stockItems, SEED_STOCK_ITEMS),
+    saveStockItems: (list) => save(KEYS.stockItems, list),
+    loadStockMoves: () => load(KEYS.stockMoves, SEED_STOCK_MOVES),
+    saveStockMoves: (list) => save(KEYS.stockMoves, list),
     resetAll,
     resetAnimals: resetAll // nome antigo, mantido por compatibilidade
   };
