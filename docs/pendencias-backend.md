@@ -42,6 +42,21 @@ Precisam ser repetidas no servidor, senão qualquer pessoa contorna pelo console
 - [ ] Animal ↔ resgate de origem também por chave estrangeira.
 - [ ] Fotos de animais e documentos de adotantes em armazenamento de arquivos
       (`storage`), não em base64 dentro do banco.
+- [ ] Valores em dinheiro em colunas `DECIMAL(10,2)`, nunca `FLOAT` (o JavaScript do protótipo
+      usa números decimais comuns, que podem gerar erros de centavos em somas grandes).
+- [ ] **Saldo calculado, não guardado:** o saldo vem de `SUM` das doações financeiras menos `SUM`
+      das despesas (mais o saldo inicial), numa consulta ou *view* do MySQL. Não criar uma coluna
+      `saldo` atualizada pelo PHP: se uma gravação falhar no meio, o saldo fica errado para sempre.
+      Se um dia for preciso guardar (por desempenho), atualizar na **mesma transação** da despesa.
+- [ ] Tabelas novas: `orcamentos` (categoria, valor mensal) e `configuracoes_financeiras`
+      (saldo inicial e data). Despesa ganha `animal_id` (chave estrangeira opcional para `animais`).
+- [ ] Regras do protótipo a repetir no servidor: valor maior que zero, data não futura, categoria da
+      lista; aviso de saldo negativo e de orçamento estourado devolvidos pela API.
+- [ ] Exportação da prestação de contas gerada no servidor (CSV/PDF), base do módulo de Relatório técnico.
+- [ ] Doação **material** deve gerar uma entrada no Estoque (mesmo item, quantidade e unidade),
+      para não ser registrada duas vezes à mão.
+- [ ] Doações e despesas não devem ser apagadas de verdade: guardar quem alterou e quando
+      (prestação de contas), em vez do "Excluir" do protótipo.
 
 ## 4. Acesso e LGPD
 
