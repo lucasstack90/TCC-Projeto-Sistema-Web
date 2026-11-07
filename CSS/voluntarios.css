@@ -1,0 +1,153 @@
+/* =========================================================
+   PAWSAFE — Voluntários & Equipe (Pages/voluntarios.html)
+   e formulário público de inscrição (Pages/voluntario-cadastro.html).
+   Abas, busca, modais, caixas de marcar (.choice-options),
+   consentimento e cores de situação ficam em base.css.
+   ========================================================= */
+
+/* ---------- Abas e resultados ---------- */
+.tab-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 4px;
+  padding: 0 5px;
+  color: #fff;
+  background: var(--terra);
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.tab-count:empty { display: none; }
+
+.results { margin: 0 2px 12px; color: var(--muted); font-size: 11px; }
+
+/* ---------- Cartões ---------- */
+.volunteer-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+
+.volunteer-card {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 15px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  transition: box-shadow .18s ease;
+}
+.volunteer-card:hover { box-shadow: var(--shadow-lg); }
+.volunteer-card.is-inactive { opacity: .65; }
+
+.volunteer-head { display: flex; align-items: center; gap: 10px; }
+.volunteer-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 40px;
+  height: 40px;
+  color: var(--green-800);
+  background: var(--green-100);
+  border-radius: 50%;
+  font: 800 13px var(--font-title);
+}
+.volunteer-name { flex: 1; min-width: 0; }
+.volunteer-name strong,
+.volunteer-name small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.volunteer-name strong { font-size: 13px; }
+.volunteer-name small { color: var(--muted); font-size: 10px; }
+.volunteer-head .status-badge { font-size: 9px; }
+
+.volunteer-contact { display: grid; gap: 3px; color: var(--muted); font-size: 11px; }
+.volunteer-contact span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.volunteer-contact i,
+.volunteer-availability i { margin-right: 6px; color: #8a9b91; }
+
+.skill-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.skill-tag { padding: 4px 8px; color: #39705e; background: #e2eee5; border-radius: 20px; font-size: 10px; }
+.volunteer-availability { margin: 0; color: var(--text); font-size: 11px; }
+
+.volunteer-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid #edf0e9;
+}
+.volunteer-foot small { color: #899a91; font-size: 10px; }
+.volunteer-foot .waiting-late { color: #a65d43; font-weight: 700; }
+.volunteer-foot .btn { padding: 6px 11px; font-size: 11px; }
+
+/* ---------- Formulário (ficha e inscrição) ---------- */
+.modal-title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.modal-title-row .status-badge { font-size: 10px; }
+
+.status-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  margin-bottom: 18px;
+  background: var(--surface-muted);
+  border-radius: var(--radius-sm);
+}
+.status-bar .btn { padding: 8px 12px; font-size: 11px; }
+
+.skill-options { grid-template-columns: repeat(4, 1fr); }
+.day-options { grid-template-columns: repeat(7, 1fr); }
+.choice-options span { padding: 0 6px; text-align: center; }
+
+fieldset legend.section-title { float: none; width: auto; }
+.section-title small { margin-left: 6px; color: var(--muted); font-weight: 500; letter-spacing: 0; }
+
+/* ---------- Página pública de inscrição ---------- */
+.signup-page {
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 36px 16px;
+  background:
+    radial-gradient(circle at 12% 8%, #dfe9e2 0, transparent 32%),
+    radial-gradient(circle at 90% 90%, #d5e1d9 0, transparent 30%),
+    #eef2ed;
+}
+
+.signup-card {
+  width: min(680px, 100%);
+  height: max-content;
+  padding: 30px 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: 0 28px 75px rgba(29, 57, 46, .12);
+}
+
+.signup-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 24px; }
+.signup-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 46px;
+  height: 46px;
+  color: var(--green-700);
+  background: var(--green-100);
+  border-radius: 14px;
+  font-size: 22px;
+}
+
+.signup-done { padding: 30px 10px 10px; text-align: center; }
+.signup-done > i { color: var(--green-700); font-size: 46px; }
+.signup-done h2 { margin: 10px 0 6px; font-size: 22px; font-weight: 800; }
+.signup-done p { color: var(--muted); }
+
+/* ---------- Responsividade ---------- */
+@media (max-width: 1200px) {
+  .volunteer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .volunteer-grid { grid-template-columns: 1fr; }
+  .skill-options { grid-template-columns: 1fr 1fr; }
+  .day-options { grid-template-columns: repeat(4, 1fr); }
+  .signup-card { padding: 22px 18px; }
+}

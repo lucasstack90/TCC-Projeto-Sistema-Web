@@ -1,11 +1,12 @@
 /* PAWSAFE — Dashboard
    Animais, adoções e resgates vêm de js/dados.js — a mesma fonte dos módulos.
-   Os cartões de voluntários e doações seguem ilustrativos até esses módulos existirem. */
+   O cartão de doações segue ilustrativo até o módulo de Doações existir. */
 
 const animals = PawData.loadAnimals();
 const adopters = PawData.loadAdopters();
 const adoptions = PawData.loadAdoptions();
 const rescues = PawData.loadRescues();
+const volunteers = PawData.loadVolunteers();
 const isOpenRescue = (r) => PawData.OPEN_RESCUE_STAGES.includes(r.stage);
 const { escapeHtml, formatDate } = PawUtils;
 const countBy = (test) => animals.filter(test).length;
@@ -28,7 +29,9 @@ const stats = {
   total: animals.length,
   available: countBy(a => a.status === 'Disponível'),
   adopted: countBy(a => a.status === 'Adotado'),
-  openRescues: rescues.filter(isOpenRescue).length
+  openRescues: rescues.filter(isOpenRescue).length,
+  activeVolunteers: volunteers.filter(v => v.status === 'Ativo').length,
+  pendingVolunteers: PawUtils.plural(volunteers.filter(v => v.status === 'Interessado').length, 'interessado aguardando', 'interessados aguardando')
 };
 document.querySelectorAll('[data-stat]').forEach(el => { el.textContent = stats[el.dataset.stat]; });
 document.querySelectorAll('[data-species]').forEach(el => { el.textContent = speciesCount[el.dataset.species]; });
