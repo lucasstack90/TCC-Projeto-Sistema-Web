@@ -39,8 +39,8 @@
 }
 
 .icon-green  { color: var(--green-700); background: var(--green-100); }
-.icon-sage   { color: #5e8266; background: #eaf2e8; }
-.icon-orange { color: #b96a42; background: var(--terra-light); }
+.icon-sage   { color: var(--tinta-5e8266); background: var(--fundo-eaf2e8); }
+.icon-orange { color: var(--tinta-b96a42); background: var(--terra-light); }
 .icon-lilac  { color: var(--lilac); background: var(--lilac-light); }
 .icon-blue   { color: var(--blue); background: var(--blue-light); }
 
@@ -62,7 +62,7 @@
   letter-spacing: -.7px;
 }
 
-.stat-foot { margin-top: 6px; color: #7c8a81; font-size: 10px; }
+.stat-foot { margin-top: 6px; color: var(--tinta-7c8a81); font-size: 10px; }
 
 /* Faixa colorida na lateral do cartão */
 .stat-accent { position: absolute; top: 0; right: 0; width: 4px; height: 100%; opacity: .7; }
@@ -97,7 +97,7 @@
   gap: 12px;
 }
 .panel-heading h2 { margin: 0; font-size: 15px; font-weight: 800; letter-spacing: -.25px; }
-.panel-heading p { margin: 5px 0 0; color: #87938b; font-size: 11px; }
+.panel-heading p { margin: 5px 0 0; color: var(--tinta-87938b); font-size: 11px; }
 
 .chart-wrap { position: relative; height: 240px; margin-top: 16px; }
 
@@ -182,7 +182,7 @@
   border-radius: 11px;
   font-size: 17px;
 }
-.terra-icon { color: #b96a42; background: var(--terra-light); }
+.terra-icon { color: var(--tinta-b96a42); background: var(--terra-light); }
 
 .view-all {
   display: inline-flex;
@@ -198,13 +198,13 @@
 .dashboard-table {
   --bs-table-bg: transparent;
   --bs-table-color: var(--text);
-  --bs-table-border-color: #edf1ed;
+  --bs-table-border-color: var(--border);
   font-size: 11px;
 }
 
 .dashboard-table thead th {
   padding: 12px 13px;
-  color: #859188;
+  color: var(--tinta-859188);
   background: var(--surface-soft);
   font-size: 9px;
   font-weight: 700;
@@ -224,7 +224,7 @@
 .animal-cell strong { color: var(--text); font-size: 11px; }
 /* Descrição longa do resgate: corta com reticências */
 #recentRescues .animal-cell strong { max-width: 230px; overflow: hidden; text-overflow: ellipsis; }
-.animal-cell small { color: #8a968e; font-size: 9px; }
+.animal-cell small { color: var(--tinta-8a968e); font-size: 9px; }
 
 .animal-avatar {
   display: grid;
@@ -235,8 +235,8 @@
   border-radius: 10px;
   font-size: 16px;
 }
-.animal-dog { color: var(--green-700); background: #e6f0e9; }
-.animal-cat { color: #8a704d; background: #f4ede2; }
+.animal-dog { color: var(--green-700); background: var(--fundo-e6f0e9); }
+.animal-cat { color: var(--tinta-8a704d); background: var(--fundo-f4ede2); }
 
 
 /* ---------- Responsividade ---------- */

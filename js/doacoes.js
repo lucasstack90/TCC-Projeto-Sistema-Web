@@ -34,7 +34,8 @@ const percent = (ratio) => `${Math.round(ratio * 100)}%`;
 const animalName = (id) => animals.find(a => a.id === id)?.name;
 
 // Cores do gráfico (validadas para daltonismo: entradas × saídas × saldo)
-const COLORS = { income: '#0f6f45', outcome: '#dd8433', balance: '#3b5fa8' };
+// Cores do gráfico vêm dos tokens do tema (CSS/tema.css)
+const COLOR_TOKENS = { income: '--chart-entrada', outcome: '--chart-saida', balance: '--chart-saldo' };
 
 function notify(message, detail = '') {
   $('toastText').textContent = message;
@@ -145,9 +146,9 @@ function renderFlow() {
   const data = {
     labels: flow.map(f => f.label),
     datasets: [
-      { type: 'line', label: 'Saldo ao fim do mês', data: flow.map(f => f.balance), borderColor: COLORS.balance, backgroundColor: COLORS.balance, borderWidth: 2, pointRadius: 4, pointHoverRadius: 6, tension: 0.25, order: 0 },
-      { type: 'bar', label: 'Entradas', data: flow.map(f => f.income), backgroundColor: COLORS.income, borderRadius: 4, maxBarThickness: 22, order: 1 },
-      { type: 'bar', label: 'Saídas', data: flow.map(f => f.outcome), backgroundColor: COLORS.outcome, borderRadius: 4, maxBarThickness: 22, order: 2 }
+      { type: 'line', label: 'Saldo ao fim do mês', data: flow.map(f => f.balance), borderColor: PawTema.cor(COLOR_TOKENS.balance), backgroundColor: PawTema.cor(COLOR_TOKENS.balance), tokens: { borderColor: COLOR_TOKENS.balance, backgroundColor: COLOR_TOKENS.balance }, borderWidth: 2, pointRadius: 4, pointHoverRadius: 6, tension: 0.25, order: 0 },
+      { type: 'bar', label: 'Entradas', data: flow.map(f => f.income), backgroundColor: PawTema.cor(COLOR_TOKENS.income), tokens: { backgroundColor: COLOR_TOKENS.income }, borderRadius: 4, maxBarThickness: 22, order: 1 },
+      { type: 'bar', label: 'Saídas', data: flow.map(f => f.outcome), backgroundColor: PawTema.cor(COLOR_TOKENS.outcome), tokens: { backgroundColor: COLOR_TOKENS.outcome }, borderRadius: 4, maxBarThickness: 22, order: 2 }
     ]
   };
   if (flowChart) {
@@ -156,7 +157,7 @@ function renderFlow() {
     return;
   }
   Chart.defaults.font.family = "'DM Sans', sans-serif";
-  Chart.defaults.color = '#64736b';
+  Chart.defaults.color = PawTema.cor('--chart-text');
   flowChart = new Chart($('flowChart'), {
     data,
     options: {
@@ -165,11 +166,11 @@ function renderFlow() {
       interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, padding: 14 } },
-        tooltip: { backgroundColor: '#19372e', padding: 11, callbacks: { label: ctx => ` ${ctx.dataset.label}: ${money(ctx.parsed.y)}` } }
+        tooltip: { backgroundColor: PawTema.cor('--chart-tooltip'), padding: 11, callbacks: { label: ctx => ` ${ctx.dataset.label}: ${money(ctx.parsed.y)}` } }
       },
       scales: {
         x: { grid: { display: false }, border: { display: false } },
-        y: { beginAtZero: true, ticks: { callback: v => money(v).replace(',00', '') }, grid: { color: 'rgba(44, 77, 62, 0.08)' }, border: { display: false } }
+        y: { beginAtZero: true, ticks: { callback: v => money(v).replace(',00', '') }, grid: { color: PawTema.cor('--chart-grid') }, border: { display: false } }
       }
     }
   });

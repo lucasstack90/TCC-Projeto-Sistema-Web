@@ -103,8 +103,8 @@ if (typeof Chart === 'undefined') {
   console.warn('Chart.js não foi carregado. Verifique sua conexão com a internet.');
 } else {
   Chart.defaults.font.family = "'DM Sans', sans-serif";
-  Chart.defaults.color = '#718077';
-  const tooltip = { backgroundColor: '#19372e', padding: 11 };
+  Chart.defaults.color = PawTema.cor('--chart-text');
+  const tooltip = { backgroundColor: PawTema.cor('--chart-tooltip'), padding: 11 };
 
   new Chart(document.getElementById('adoptionsChart'), {
     type: 'bar',
@@ -112,8 +112,8 @@ if (typeof Chart === 'undefined') {
       labels: months.map(m => m.label),
       datasets: [{
         data: adoptionsPerMonth,
-        backgroundColor: '#397665',
-        hoverBackgroundColor: '#244438',
+        backgroundColor: PawTema.cor('--chart-1'),
+        tokens: { backgroundColor: '--chart-1' }, // cores dos tokens: atualizam ao trocar o tema
         borderRadius: 6,
         maxBarThickness: 31
       }]
@@ -127,7 +127,7 @@ if (typeof Chart === 'undefined') {
       },
       scales: {
         x: { grid: { display: false }, border: { display: false } },
-        y: { beginAtZero: true, suggestedMax: 4, ticks: { stepSize: 1, precision: 0 }, grid: { color: 'rgba(44, 77, 62, 0.08)' }, border: { display: false } }
+        y: { beginAtZero: true, suggestedMax: 4, ticks: { stepSize: 1, precision: 0 }, grid: { color: PawTema.cor('--chart-grid') }, border: { display: false } }
       }
     }
   });
@@ -138,8 +138,9 @@ if (typeof Chart === 'undefined') {
       labels: ['Cães', 'Gatos', 'Outros'],
       datasets: [{
         data: Object.values(speciesCount),
-        backgroundColor: ['#397665', '#78977c', '#c47755'],
-        borderColor: '#ffffff',
+        backgroundColor: ['--chart-1', '--chart-2', '--chart-3'].map(PawTema.cor),
+        borderColor: PawTema.cor('--card'),
+        tokens: { backgroundColor: ['--chart-1', '--chart-2', '--chart-3'], borderColor: '--card' },
         borderWidth: 4,
         hoverOffset: 5
       }]

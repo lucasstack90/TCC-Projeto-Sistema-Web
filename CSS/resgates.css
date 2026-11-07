@@ -23,7 +23,7 @@
   gap: 11px;
   padding: 12px;
   background: var(--surface-soft);
-  border: 1px solid #edf1ed;
+  border: 1px solid var(--linha-edf1ed);
   border-radius: 12px;
 }
 .summary-stat strong { display: block; font: 800 22px/1.1 var(--font-title); }
@@ -37,7 +37,7 @@
   border-radius: 11px;
   font-size: 17px;
 }
-.icon-terra { color: #b96a42; background: var(--terra-light); }
+.icon-terra { color: var(--tinta-b96a42); background: var(--terra-light); }
 .icon-green { color: var(--green-700); background: var(--green-100); }
 .icon-blue  { color: var(--blue); background: var(--blue-light); }
 .icon-lilac { color: var(--lilac); background: var(--lilac-light); }
@@ -84,7 +84,7 @@
 }
 
 .rescue-details { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--muted); font-size: 11px; }
-.rescue-details i { margin-right: 5px; color: #8a9b91; }
+.rescue-details i { margin-right: 5px; color: var(--tinta-8a9b91); }
 
 .rescue-side { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 10px; }
 .rescue-side .btn { padding: 7px 14px; }
@@ -107,7 +107,7 @@
   align-items: center;
   gap: 11px;
   padding: 9px 12px;
-  background: #fff;
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   transition: background .18s ease;

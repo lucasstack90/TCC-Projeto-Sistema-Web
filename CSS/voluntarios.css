@@ -60,10 +60,10 @@
 .volunteer-contact { display: grid; gap: 3px; color: var(--muted); font-size: 11px; }
 .volunteer-contact span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .volunteer-contact i,
-.volunteer-availability i { margin-right: 6px; color: #8a9b91; }
+.volunteer-availability i { margin-right: 6px; color: var(--tinta-8a9b91); }
 
 .skill-tags { display: flex; flex-wrap: wrap; gap: 5px; }
-.skill-tag { padding: 4px 8px; color: #39705e; background: #e2eee5; border-radius: 20px; font-size: 10px; }
+.skill-tag { padding: 4px 8px; color: var(--tinta-39705e); background: var(--fundo-e2eee5); border-radius: 20px; font-size: 10px; }
 .volunteer-availability { margin: 0; color: var(--text); font-size: 11px; }
 
 .volunteer-foot {
@@ -73,10 +73,10 @@
   gap: 8px;
   margin-top: auto;
   padding-top: 10px;
-  border-top: 1px solid #edf0e9;
+  border-top: 1px solid var(--linha-edf0e9);
 }
-.volunteer-foot small { color: #899a91; font-size: 10px; }
-.volunteer-foot .waiting-late { color: #a65d43; font-weight: 700; }
+.volunteer-foot small { color: var(--tinta-899a91); font-size: 10px; }
+.volunteer-foot .waiting-late { color: var(--tinta-a65d43); font-weight: 700; }
 .volunteer-foot .btn { padding: 6px 11px; font-size: 11px; }
 
 /* ---------- Formulário (ficha e inscrição) ---------- */
@@ -107,10 +107,9 @@ fieldset legend.section-title { float: none; width: auto; }
   justify-content: center;
   min-height: 100vh;
   padding: 36px 16px;
-  background:
-    radial-gradient(circle at 12% 8%, #dfe9e2 0, transparent 32%),
-    radial-gradient(circle at 90% 90%, #d5e1d9 0, transparent 30%),
-    #eef2ed;
+  background: radial-gradient(circle at 12% 8%, var(--fundo-dfe9e2) 0, transparent 32%),
+    radial-gradient(circle at 90% 90%, var(--fundo-d5e1d9) 0, transparent 30%),
+    var(--fundo-eef2ed);
 }
 
 .signup-card {
