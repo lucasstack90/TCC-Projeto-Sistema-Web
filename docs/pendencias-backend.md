@@ -58,8 +58,62 @@ Precisam ser repetidas no servidor, senão qualquer pessoa contorna pelo console
 - [ ] Doações e despesas não devem ser apagadas de verdade: guardar quem alterou e quando
       (prestação de contas), em vez do "Excluir" do protótipo.
 
-## 4. Acesso e LGPD
+## 4. Acesso e LGPD (Lei 13.709/2018)
+
+A LGPD é critério de projeto do banco desde a primeira tabela, não um ajuste no final.
+Prazos e bases legais abaixo devem ser conferidos com o professor orientador.
+
+### 4.1 Minimização (art. 6º, III)
+
+- [ ] Revisar campo por campo antes de criar as tabelas: todo dado pessoal precisa de um motivo.
+      Ex.: data de nascimento do adotante existe só para confirmar 18+; quem informou o resgate é opcional.
+- [ ] Animais, estoque e resgates não são dados pessoais; não misturar dados de pessoas nessas tabelas
+      além da chave estrangeira (ex.: `volunteer_id`).
+
+### 4.2 Proteção dos dados (art. 46)
+
+- [ ] **CPF criptografado** com o cast `encrypted` do Laravel + coluna `cpf_hash` (hash do CPF)
+      com índice `UNIQUE`, usada só para impedir cadastro duplicado e para buscar por CPF.
+- [ ] **Documentos dos adotantes** no disco privado (`storage/app/private`), nunca em `public`
+      nem em base64 no banco. Download só por rota autenticada que confere a permissão.
+- [ ] Senhas com hash (bcrypt, padrão do Laravel).
+- [ ] HTTPS obrigatório na hospedagem.
+- [ ] Usuário do MySQL da aplicação sem permissão de `DROP`/`GRANT` (privilégio mínimo).
+- [ ] Backups criptografados; nada de cópias do banco em pendrive ou e-mail.
+- [ ] Logs do Laravel não podem conter CPF, telefone ou documentos.
+
+### 4.3 Base legal e consentimento (arts. 7º e 8º)
+
+- [ ] Tabela `consents`: titular (tipo + id), finalidade, versão do termo, data/hora e IP.
+      Hoje o protótipo guarda só "sim/não", o que não serve como prova.
+- [ ] Texto do termo versionado; se o termo mudar, novos cadastros registram a nova versão.
+- [ ] Registrar a base legal de cada tipo de dado: consentimento (voluntários, adotantes),
+      cumprimento de obrigação legal (prestação de contas de doações e despesas com recurso público).
+
+### 4.4 Controle de acesso e rastreabilidade
 
 - [ ] Login real com senha criptografada (hash) e sessão; todas as páginas internas
       exigem usuário autenticado.
-- [ ] Dados pessoais (CPF, documentos, contatos) visíveis só para usuários da equipe.
+- [ ] Permissões com *Policies* do Laravel: **voluntário não vê** CPF, documentos nem contatos
+      completos; **funcionário vê**. Esconder botão na tela não protege nada.
+- [ ] Tabela `audit_logs`: quem consultou ou alterou dados pessoais, quando e o quê
+      (sem gravar o dado em si no log).
+
+### 4.5 Direitos do titular e prazo de guarda (art. 15, 16 e 18)
+
+- [ ] Funções para o titular **ver, corrigir e pedir exclusão** dos próprios dados
+      (pode ser pela equipe, mediante pedido registrado).
+- [ ] **Anonimizar em vez de apagar** quando o registro precisa continuar existindo
+      (adoção concluída, doação de recurso público): nome vira "Adotante #12", CPF/contatos/documentos
+      são removidos, os números do relatório continuam corretos.
+- [ ] Prazos de guarda (sugestão, a confirmar): adotante recusado/cancelado → anonimizar após 1 ano;
+      voluntário inativo → anonimizar após 2 anos; documentos do adotante → apagar após a conclusão
+      do processo + prazo de guarda do termo.
+- [ ] Rotina agendada (`schedule` do Laravel) que aplica os prazos automaticamente.
+- [ ] Campo do **encarregado de dados (DPO)** na configuração da ONG, com contato público.
+
+### 4.6 Relatórios e exportações
+
+- [ ] Manter o que o front-end já faz: relatório técnico sem CPF, telefone, endereço do resgate
+      e denunciante; adotante abreviado ("Carlos M.").
+- [ ] CSVs exportados seguem a mesma regra.
