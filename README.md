@@ -16,6 +16,8 @@ PAWSAFE/
 │   ├── resgates.css    # Pages/resgates.html
 │   ├── voluntarios.css # Pages/voluntarios.html e voluntario-cadastro.html
 │   ├── doacoes.css     # Pages/doacoes.html
+│   ├── estoque.css     # Pages/estoque.html
+│   ├── relatorios.css  # Pages/relatorios.html (inclui layout de impressão)
 │   └── login.css       # Pages/Pg_Login.html
 ├── Img/
 ├── js/
@@ -30,6 +32,8 @@ PAWSAFE/
 │   ├── voluntario-cadastro.js
 │   ├── doacoes.js
 │   ├── financeiro.js   # cálculos financeiros (saldo, fluxo, orçamento) — usado por Doações e Dashboard
+│   ├── estoque.js
+│   ├── relatorios.js
 │   └── login.js
 ├── Pages/
 │   ├── Pg_Login.html
@@ -39,6 +43,8 @@ PAWSAFE/
 │   ├── voluntarios.html
 │   ├── doacoes.html
 │   └── voluntario-cadastro.html   # formulário público (sem login)
+│   ├── estoque.html
+│   └── relatorios.html
 └── index.html          # dashboard
 ```
 
@@ -59,7 +65,6 @@ Para manter o padrão nas páginas de `Pages/`:
 2. No `<body>`: `<div id="sidebarMount"></div>` e `<main class="main-content">` com o cabeçalho `<header class="topbar">` (botão `class="mobile-menu" id="menuToggle"` + `<div class="topbar-title">`).
 3. Antes do JS da página: `../js/dados.js`, `../js/utils.js` e `../js/sidebar.js`, nesta ordem.
 
-Páginas do menu ainda não criadas: `estoque.html`, `relatorios.html`.
 
 ## Padrão do CSS
 
@@ -110,3 +115,16 @@ Páginas do menu ainda não criadas: `estoque.html`, `relatorios.html`.
 ## Antes de começar o back-end
 
 Leia [`docs/pendencias-backend.md`](docs/pendencias-backend.md): proteção do formulário público contra envios em massa, regras que hoje só existem no JavaScript, ajustes no modelo de dados e LGPD.
+## Módulo de Relatório técnico
+
+Gera o relatório a partir dos dados dos outros módulos — nenhum número é digitado à mão.
+
+- **Período:** mês atual, mês anterior, trimestre, semestre, ano, vigência da parceria ou datas personalizadas. Se o período termina no futuro, os dados vão até hoje.
+- **Modelos:** *Prestação de contas* (para a prefeitura ou outro financiador, com declaração e assinatura), *Gestão interna* (com pendências e equipe) e *Completo*. Cada seção pode ser ligada ou desligada.
+- **Seções:** identificação da ONG e da parceria; resumo; metas pactuadas × realizadas; resgates (taxa de sucesso, tempo de atendimento, bairros, prioridade); balanço de animais (início + entradas − saídas = fim) e permanência; saúde (vacinas, atendimentos e cobertura de vacinação, castração e microchip); adoções (conversão e duração); insumos (doado, comprado, consumido, perdas, doadores); execução financeira; equipe; pendências; análise escrita da equipe; declaração.
+- **Estrutura de prestação de contas:** segue a lógica da Lei 13.019/2014 (MROSC) — relatório de execução do objeto (metas e resultados) e de execução financeira.
+- **Metas:** cadastradas por mês em “Configurar relatório”; o relatório calcula a meta proporcional ao período.
+- **Pendências:** resgates urgentes em aberto, vacinas vencidas, animais sem vacina, estoque em falta, lotes vencidos ou vencendo, adoções paradas há mais de 15 dias e animais disponíveis há mais de 6 meses — cada uma com link para o módulo.
+- **LGPD:** o relatório não mostra CPF, telefone, endereço completo do resgate nem quem denunciou; o adotante aparece abreviado (ex.: “Carlos M.”).
+- **Saídas:** Imprimir / PDF (layout A4) e CSV com os indicadores (abre no Excel).
+- **Pendente:** a seção financeira e os números de voluntários serão preenchidos quando os módulos Doações/Financeiro e Voluntários existirem.
