@@ -1,6 +1,6 @@
 /* PAWSAFE — fonte única de dados do protótipo.
    Enquanto o back-end (Laravel + MySQL) não existe, animais, adotantes, processos de
-   adoção, resgates e estoque ficam no localStorage. Todas as páginas leem daqui, então os números sempre batem.
+   adoção, resgates, estoque e a configuração do relatório ficam no localStorage. Todas as páginas leem daqui, então os números sempre batem.
    Na integração com o back-end, troque as funções load/save por chamadas à API. */
 
 const PawData = (() => {
@@ -430,6 +430,29 @@ const PawData = (() => {
     };
   }
 
+  // ================= Relatório técnico =================
+  // Dados que não vêm de outro módulo: identificação da ONG, parceria com o poder
+  // público, metas mensais e a análise escrita pela equipe em cada período.
+  // Os valores abaixo são de EXEMPLO — ajuste em "Configurar relatório".
+  const SEED_REPORT_CONFIG = {
+    org: {
+      name: 'Associação de Proteção Animal (exemplo)', cnpj: '00.000.000/0001-00',
+      address: 'Rua XV de Novembro, 1000 — Centro', city: 'Guarapuava - PR',
+      phone: '(42) 3000-0000', email: 'contato@ong-exemplo.org.br',
+      legalRep: 'Renata Oliveira', legalRole: 'Presidente'
+    },
+    partnership: {
+      publicFunding: true,
+      instrument: 'Termo de Colaboração nº 000/2026 (exemplo)',
+      grantor: 'Prefeitura Municipal de Guarapuava — Secretaria Municipal de Meio Ambiente',
+      object: 'Resgate, tratamento veterinário e encaminhamento para adoção responsável de cães e gatos em situação de vulnerabilidade.',
+      start: '2026-01-01', end: '2026-12-31'
+    },
+    // Metas MENSAIS: o relatório calcula a meta proporcional ao período escolhido.
+    goals: { rescues: 2, adoptions: 2, vaccines: 4, healthCare: 3 },
+    narratives: {} // análise da equipe, guardada por período ("2026-01-01_2026-12-31")
+  };
+
   // ================= Armazenamento (localStorage) =================
   const KEYS = {
     animals: STORAGE_KEY,
@@ -437,7 +460,8 @@ const PawData = (() => {
     adoptions: 'pawsafe_adocoes_v1',
     rescues: 'pawsafe_resgates_v1',
     stockItems: 'pawsafe_estoque_itens_v1',
-    stockMoves: 'pawsafe_estoque_movimentacoes_v1'
+    stockMoves: 'pawsafe_estoque_movimentacoes_v1',
+    report: 'pawsafe_relatorio_config_v1'
   };
 
   function load(key, seed) {
@@ -483,6 +507,18 @@ const PawData = (() => {
     saveStockItems: (list) => save(KEYS.stockItems, list),
     loadStockMoves: () => load(KEYS.stockMoves, SEED_STOCK_MOVES),
     saveStockMoves: (list) => save(KEYS.stockMoves, list),
+    loadReportConfig: () => {
+      // Mescla com o padrão para que campos novos apareçam em configurações antigas.
+      const saved = load(KEYS.report, SEED_REPORT_CONFIG);
+      const base = structuredClone(SEED_REPORT_CONFIG);
+      return {
+        org: { ...base.org, ...saved.org },
+        partnership: { ...base.partnership, ...saved.partnership },
+        goals: { ...base.goals, ...saved.goals },
+        narratives: { ...saved.narratives }
+      };
+    },
+    saveReportConfig: (config) => save(KEYS.report, config),
     resetAll,
     resetAnimals: resetAll // nome antigo, mantido por compatibilidade
   };
