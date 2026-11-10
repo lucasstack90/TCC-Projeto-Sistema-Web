@@ -1,0 +1,410 @@
+/* =========================================================
+   PAWSAFE — tema claro/escuro (padrão de tokens shadcn/tweakcn)
+   Carregar ANTES do base.css. A classe .dark no <html> ativa o
+   modo escuro (aplicada pelo script no <head> e por js/tema.js).
+   ========================================================= */
+
+/* ---------- Tokens shadcn: modo claro (cores atuais da marca) ---------- */
+:root {
+  --background: hsl(84 22% 96%);
+  --foreground: hsl(156 16% 18%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(156 16% 18%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(156 16% 18%);
+  --primary: hsl(163 35% 34%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(94 22% 94%);
+  --secondary-foreground: hsl(158 33% 26%);
+  --muted: hsl(94 22% 94%);
+  --muted-foreground: hsl(148 7% 42%);
+  --accent: hsl(142 25% 92%);
+  --accent-foreground: hsl(162 37% 16%);
+  --destructive: hsl(0 58% 42%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(127 13% 88%);
+  --input: hsl(127 13% 88%);
+  --ring: hsl(155 22% 60%);
+  --chart-1: hsl(163 35% 34%);
+  --chart-2: hsl(127 13% 53%);
+  --chart-3: hsl(18 48% 55%);
+  --chart-4: hsl(258 24% 56%);
+  --chart-5: hsl(198 31% 46%);
+  --sidebar: hsl(162 37% 16%);
+  --sidebar-foreground: hsl(135 22% 92%);
+  --sidebar-primary: hsl(163 35% 34%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(157 31% 20%);
+  --sidebar-accent-foreground: hsl(0 0% 100%);
+  --sidebar-border: hsl(0 0% 100% / .12);
+  --sidebar-ring: hsl(155 42% 69%);
+  --radius: 16px;
+
+  /* Extras do PAWSAFE (fora do padrão shadcn) */
+  --surface-soft: hsl(100 25% 98%);
+  --surface-muted: hsl(94 22% 94%);
+  --danger-light: hsl(4 64% 94%);
+  --chart-grid: hsl(152 27% 24% / .08);
+  --chart-text: hsl(143 6% 47%);
+  --chart-tooltip: hsl(162 37% 16%);
+  --chart-entrada: hsl(153 76% 25%);
+  --chart-saida: hsl(28 71% 53%);
+  --chart-saldo: hsl(220 48% 45%);
+
+  /* Escala verde da marca (no escuro os tons 800–950 viram tons claros de texto) */
+  --green-950: hsl(162 37% 16%);
+  --green-900: hsl(157 31% 20%);
+  --green-800: hsl(160 33% 26%);
+  --green-700: hsl(163 35% 34%);
+  --green-600: hsl(162 29% 42%);
+  --green-100: hsl(142 25% 92%);
+  --sage: hsl(127 13% 53%);
+  --terra: hsl(18 48% 55%);
+  --terra-light: hsl(22 72% 94%);
+  --blue: hsl(198 31% 46%);
+  --blue-light: hsl(199 39% 94%);
+  --lilac: hsl(258 24% 56%);
+  --lilac-light: hsl(258 33% 95%);
+
+  /* Status (badges de animais, adoções, resgates, estoque, voluntários) */
+  --status-ok: hsl(150 41% 30%);        --status-ok-bg: hsl(133 35% 90%);
+  --status-info: hsl(201 41% 37%);      --status-info-bg: hsl(200 41% 90%);
+  --status-alerta: hsl(32 57% 38%);     --status-alerta-bg: hsl(40 69% 88%);
+  --status-atencao: hsl(43 63% 33%);    --status-atencao-bg: hsl(46 67% 90%);
+  --status-critico: hsl(22 54% 42%);    --status-critico-bg: hsl(22 72% 95%);
+  --status-roxo: hsl(255 23% 46%);      --status-roxo-bg: hsl(256 37% 91%);
+  --status-rosa: hsl(334 33% 45%);      --status-rosa-bg: hsl(333 44% 91%);
+  --status-neutro: hsl(150 4% 44%);     --status-neutro-bg: hsl(150 7% 92%);
+  --status-suave: hsl(150 15% 36%);     --status-suave-bg: hsl(128 14% 92%);
+
+  --shadow: 0 8px 24px hsl(157 31% 20% / .045);
+  --shadow-lg: 0 16px 45px hsl(158 30% 18% / .10);
+
+  color-scheme: light;
+}
+
+/* ---------- Tokens shadcn: modo escuro (verde-floresta, base da marca) ---------- */
+.dark {
+  --background: hsl(150 14% 7%);
+  --foreground: hsl(120 12% 90%);
+  --card: hsl(150 12% 10.5%);
+  --card-foreground: hsl(120 12% 90%);
+  --popover: hsl(150 12% 12%);
+  --popover-foreground: hsl(120 12% 90%);
+  --primary: hsl(158 38% 52%);
+  --primary-foreground: hsl(160 40% 8%);
+  --secondary: hsl(150 10% 17%);
+  --secondary-foreground: hsl(120 12% 88%);
+  --muted: hsl(150 10% 15%);
+  --muted-foreground: hsl(140 8% 64%);
+  --accent: hsl(156 24% 18%);
+  --accent-foreground: hsl(150 30% 85%);
+  --destructive: hsl(0 62% 64%);
+  --destructive-foreground: hsl(0 50% 10%);
+  --border: hsl(150 9% 20%);
+  --input: hsl(150 9% 25%);
+  --ring: hsl(158 38% 52%);
+  --chart-1: hsl(158 38% 52%);
+  --chart-2: hsl(127 18% 58%);
+  --chart-3: hsl(18 52% 63%);
+  --chart-4: hsl(258 30% 70%);
+  --chart-5: hsl(198 36% 60%);
+  --sidebar: hsl(155 18% 6%);
+  --sidebar-foreground: hsl(130 15% 86%);
+  --sidebar-primary: hsl(158 36% 34%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(155 14% 11%);
+  --sidebar-accent-foreground: hsl(0 0% 100%);
+  --sidebar-border: hsl(0 0% 100% / .08);
+  --sidebar-ring: hsl(158 45% 65%);
+
+  --surface-soft: hsl(150 11% 12.5%);
+  --surface-muted: hsl(150 10% 15%);
+  --danger-light: hsl(0 30% 16%);
+  --chart-grid: hsl(0 0% 100% / .07);
+  --chart-text: hsl(140 8% 64%);
+  --chart-tooltip: hsl(150 12% 18%);
+  --chart-entrada: hsl(153 50% 50%);
+  --chart-saida: hsl(28 70% 60%);
+  --chart-saldo: hsl(218 60% 70%);
+
+  --green-950: hsl(150 30% 90%);
+  --green-900: hsl(152 28% 84%);
+  --green-800: hsl(155 30% 76%);
+  --green-700: hsl(158 38% 55%);
+  --green-600: hsl(158 32% 50%);
+  --green-100: hsl(156 26% 17%);
+  --sage: hsl(127 16% 55%);
+  --terra: hsl(18 52% 60%);
+  --terra-light: hsl(18 30% 16%);
+  --blue: hsl(198 36% 64%);
+  --blue-light: hsl(198 25% 16%);
+  --lilac: hsl(258 32% 74%);
+  --lilac-light: hsl(258 20% 18%);
+
+  --status-ok: hsl(145 38% 70%);        --status-ok-bg: hsl(150 30% 16%);
+  --status-info: hsl(200 45% 72%);      --status-info-bg: hsl(201 30% 17%);
+  --status-alerta: hsl(36 60% 68%);     --status-alerta-bg: hsl(32 32% 17%);
+  --status-atencao: hsl(45 55% 66%);    --status-atencao-bg: hsl(43 30% 16%);
+  --status-critico: hsl(22 60% 70%);    --status-critico-bg: hsl(22 32% 17%);
+  --status-roxo: hsl(256 40% 78%);      --status-roxo-bg: hsl(256 20% 20%);
+  --status-rosa: hsl(334 40% 76%);      --status-rosa-bg: hsl(334 20% 19%);
+  --status-neutro: hsl(150 5% 68%);     --status-neutro-bg: hsl(150 5% 18%);
+  --status-suave: hsl(150 14% 70%);     --status-suave-bg: hsl(140 10% 17%);
+
+  --shadow: 0 8px 24px hsl(0 0% 0% / .28);
+  --shadow-lg: 0 16px 45px hsl(0 0% 0% / .45);
+
+  color-scheme: dark;
+}
+
+/* ---------- Ajustes pontuais do modo escuro ----------
+   Lugares onde um tom verde da marca é usado como FUNDO
+   (no escuro, --green-800/950 viraram tons claros de texto). */
+.dark .sidebar { background: linear-gradient(180deg, var(--sidebar), var(--sidebar-accent)); border-right: 1px solid var(--sidebar-border); }
+.dark .sidebar .nav-link.active { background: var(--sidebar-primary); }
+.dark .btn-green { color: var(--primary-foreground); background: var(--primary); border-color: var(--primary); }
+.dark .btn-green:hover,
+.dark .btn-green:focus-visible { color: var(--primary-foreground); background: hsl(158 38% 60%); border-color: hsl(158 38% 60%); }
+.dark .step.current span,
+.dark .step.done span,
+.dark .remember-option input:checked + .custom-check,
+.dark .flow .flow-total { color: var(--primary-foreground); background: var(--primary); border-color: var(--primary); }
+.dark .report-brand .brand-mark { color: var(--primary-foreground); background: var(--primary); }
+.dark .btn-login { background: linear-gradient(110deg, hsl(160 33% 24%), hsl(162 30% 32%)); }
+
+.dark .profile-mini .avatar { color: var(--sidebar); }
+.dark .login-card { border-color: var(--border); }
+.dark .sidebar-count.is-alert,
+.dark .tab-count { color: hsl(18 50% 10%); }
+
+/* ---------- Botão claro/escuro ---------- */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 43px;
+  padding: 0 12px;
+  color: #c5d6cc;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  text-align: left;
+  font-size: 12px;
+  transition: background .18s ease, color .18s ease;
+}
+.theme-toggle:hover { color: #fff; background: rgba(255, 255, 255, .08); }
+.theme-toggle > i { flex-shrink: 0; width: 17px; font-size: 16px; text-align: center; }
+.theme-toggle .icon-sol { display: none; }
+.dark .theme-toggle .icon-sol { display: inline-block; }
+.dark .theme-toggle .icon-lua { display: none; }
+
+/* Versão flutuante (páginas sem barra lateral: login e cadastro público) */
+.theme-toggle.is-floating {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 1050;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-height: 0;
+  padding: 0;
+  color: var(--foreground);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  box-shadow: var(--shadow-lg);
+}
+.theme-toggle.is-floating:hover { background: var(--accent); color: var(--accent-foreground); }
+.theme-toggle.is-floating > i { width: auto; }
+.theme-toggle.is-floating .theme-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* PALETA-GERADA-INICIO */
+/* Gerado a partir das cores fixas que existiam nos CSS dos módulos.
+   --fundo-*: fundos | --linha-*: bordas | --tinta-*: textos/ícones.
+   O nome guarda o hex original, para achar a cor antiga facilmente. */
+:root {
+  --fundo-d2e2d7: hsl(139 22% 85.5%);
+  --fundo-d5e1d9: hsl(140 17% 85.9%);
+  --fundo-dcebe2: hsl(144 27% 89.2%);
+  --fundo-dceee0: hsl(133 35% 89.8%);
+  --fundo-dfe9e2: hsl(138 19% 89.4%);
+  --fundo-e0edf3: hsl(199 44% 91.6%);
+  --fundo-e0eee8: hsl(154 29% 90.6%);
+  --fundo-e2eee5: hsl(135 26% 91%);
+  --fundo-e3eee5: hsl(131 24% 91.2%);
+  --fundo-e4e9e0: hsl(93 17% 89.6%);
+  --fundo-e6ece6: hsl(120 14% 91.4%);
+  --fundo-e6eee6: hsl(120 19% 91.8%);
+  --fundo-e6f0e9: hsl(138 25% 92.2%);
+  --fundo-e9eee9: hsl(120 13% 92.4%);
+  --fundo-eae5f4: hsl(260 41% 92.7%);
+  --fundo-eaf1eb: hsl(129 20% 93.1%);
+  --fundo-eaf2e8: hsl(108 28% 92.9%);
+  --fundo-edf1ed: hsl(120 12% 93.7%);
+  --fundo-edf4ee: hsl(129 24% 94.3%);
+  --fundo-eef2ec: hsl(100 19% 93.7%);
+  --fundo-eef2ed: hsl(108 16% 93.9%);
+  --fundo-f4ede2: hsl(37 45% 92.2%);
+  --fundo-f5f7f1: hsl(80 27% 95.7%);
+  --fundo-f7f8f3: hsl(72 26% 96.3%);
+  --fundo-f7f9f5: hsl(90 25% 96.9%);
+  --fundo-f8e7c8: hsl(39 77% 87.8%);
+  --fundo-f8e8dc: hsl(26 67% 91.8%);
+  --fundo-f8faf7: hsl(100 23% 97.5%);
+  --fundo-fbfcfa: hsl(90 25% 98.4%);
+  --fundo-fdf3e2: hsl(38 87% 93.9%);
+  --fundo-fffaf6: hsl(27 100% 98.2%);
+  --linha-9dc2ad: hsl(146 23% 68.8%);
+  --linha-b8cec0: hsl(142 18% 76.5%);
+  --linha-c4dccd: hsl(142 26% 81.6%);
+  --linha-cbd8cc: hsl(125 14% 82.2%);
+  --linha-cbd8ce: hsl(134 14% 82.2%);
+  --linha-d9e5dc: hsl(135 19% 87.5%);
+  --linha-e6ece6: hsl(120 14% 91.4%);
+  --linha-e7c4c2: hsl(3 44% 83.3%);
+  --linha-ebc6b2: hsl(21 59% 81%);
+  --linha-edf0e9: hsl(86 19% 92.7%);
+  --linha-edf1ed: hsl(120 12% 93.7%);
+  --linha-efd29e: hsl(39 72% 77.8%);
+  --linha-f0d9cb: hsl(23 55% 86.9%);
+  --linha-f0f3ef: hsl(105 14% 94.5%);
+  --linha-f5f8f1: hsl(86 33% 95.9%);
+  --tinta-22634a: hsl(157 49% 26.1%);
+  --tinta-28674f: hsl(157 44% 28%);
+  --tinta-2d6c4c: hsl(150 41% 30%);
+  --tinta-39705e: hsl(160 33% 33.1%);
+  --tinta-3b5148: hsl(155 16% 27.5%);
+  --tinta-46758b: hsl(199 33% 41%);
+  --tinta-467665: hsl(159 26% 36.9%);
+  --tinta-477462: hsl(156 24% 36.7%);
+  --tinta-5c766a: hsl(152 12% 41.2%);
+  --tinta-5e8266: hsl(133 16% 43.9%);
+  --tinta-6b7f75: hsl(150 9% 45.9%);
+  --tinta-6b9580: hsl(150 17% 50.2%);
+  --tinta-6e8279: hsl(153 8% 47.1%);
+  --tinta-71639a: hsl(255 22% 49.6%);
+  --tinta-71857b: hsl(150 8% 48.2%);
+  --tinta-728178: hsl(144 6% 47.6%);
+  --tinta-789087: hsl(158 10% 51.8%);
+  --tinta-7b8a82: hsl(148 6% 51.2%);
+  --tinta-7c8981: hsl(143 5% 51.2%);
+  --tinta-7c8a81: hsl(141 6% 51.4%);
+  --tinta-839188: hsl(141 6% 54.1%);
+  --tinta-849188: hsl(138 6% 54.3%);
+  --tinta-859188: hsl(135 5% 54.5%);
+  --tinta-86a195: hsl(153 13% 57.8%);
+  --tinta-87938b: hsl(140 5% 55.3%);
+  --tinta-899a91: hsl(148 8% 57.1%);
+  --tinta-8a5413: hsl(33 76% 30.8%);
+  --tinta-8a704d: hsl(34 28% 42.2%);
+  --tinta-8a968e: hsl(140 5% 56.5%);
+  --tinta-8a9b91: hsl(145 8% 57.5%);
+  --tinta-95a399: hsl(137 7% 61.2%);
+  --tinta-9a642a: hsl(31 57% 38.4%);
+  --tinta-9aa69d: hsl(135 6% 62.7%);
+  --tinta-9aa9a1: hsl(148 8% 63.3%);
+  --tinta-9fb2a8: hsl(148 11% 66.1%);
+  --tinta-a0aaa2: hsl(132 6% 64.7%);
+  --tinta-a3b0a8: hsl(143 8% 66.5%);
+  --tinta-a65c31: hsl(22 54% 42.2%);
+  --tinta-a65d43: hsl(16 42% 45.7%);
+  --tinta-b07a26: hsl(37 64% 42%);
+  --tinta-b96a42: hsl(20 47% 49.2%);
+  --tinta-c0812f: hsl(34 61% 46.9%);
+  --tinta-cfe2d8: hsl(148 25% 84.9%);
+}
+.dark {
+  --fundo-d2e2d7: hsl(139 12% 23.3%);
+  --fundo-d5e1d9: hsl(140 9% 23%);
+  --fundo-dcebe2: hsl(144 15% 20.2%);
+  --fundo-dceee0: hsl(133 19% 19.7%);
+  --fundo-dfe9e2: hsl(138 10% 20%);
+  --fundo-e0edf3: hsl(199 24% 18.2%);
+  --fundo-e0eee8: hsl(154 16% 19%);
+  --fundo-e2eee5: hsl(135 14% 18.7%);
+  --fundo-e3eee5: hsl(131 13% 18.5%);
+  --fundo-e4e9e0: hsl(93 9% 19.8%);
+  --fundo-e6ece6: hsl(120 8% 18.3%);
+  --fundo-e6eee6: hsl(120 10% 18%);
+  --fundo-e6f0e9: hsl(138 14% 17.7%);
+  --fundo-e9eee9: hsl(120 7% 17.5%);
+  --fundo-eae5f4: hsl(260 22% 17.2%);
+  --fundo-eaf1eb: hsl(129 11% 16.8%);
+  --fundo-eaf2e8: hsl(108 15% 17%);
+  --fundo-edf1ed: hsl(120 7% 16.3%);
+  --fundo-edf4ee: hsl(129 13% 15.8%);
+  --fundo-eef2ec: hsl(100 10% 16.3%);
+  --fundo-eef2ed: hsl(108 9% 16.2%);
+  --fundo-f4ede2: hsl(37 25% 17.7%);
+  --fundo-f5f7f1: hsl(80 15% 14.7%);
+  --fundo-f7f8f3: hsl(72 14% 14.2%);
+  --fundo-f7f9f5: hsl(90 14% 13.7%);
+  --fundo-f8e7c8: hsl(39 30% 21.3%);
+  --fundo-f8e8dc: hsl(26 30% 18%);
+  --fundo-f8faf7: hsl(100 13% 13.2%);
+  --fundo-fbfcfa: hsl(90 14% 12.3%);
+  --fundo-fdf3e2: hsl(38 30% 16.2%);
+  --fundo-fffaf6: hsl(27 30% 12.5%);
+  --linha-9dc2ad: hsl(146 12% 37.1%);
+  --linha-b8cec0: hsl(142 9% 32.9%);
+  --linha-c4dccd: hsl(142 13% 30.1%);
+  --linha-cbd8cc: hsl(125 7% 29.8%);
+  --linha-cbd8ce: hsl(134 7% 29.8%);
+  --linha-d9e5dc: hsl(135 9% 26.9%);
+  --linha-e6ece6: hsl(120 7% 24.7%);
+  --linha-e7c4c2: hsl(3 22% 29.2%);
+  --linha-ebc6b2: hsl(21 25% 30.5%);
+  --linha-edf0e9: hsl(86 9% 24%);
+  --linha-edf1ed: hsl(120 6% 23.5%);
+  --linha-efd29e: hsl(39 25% 32.2%);
+  --linha-f0d9cb: hsl(23 25% 27.2%);
+  --linha-f0f3ef: hsl(105 7% 23%);
+  --linha-f5f8f1: hsl(86 17% 22.3%);
+  --tinta-22634a: hsl(157 39% 78.9%);
+  --tinta-28674f: hsl(157 35% 77%);
+  --tinta-2d6c4c: hsl(150 33% 75%);
+  --tinta-39705e: hsl(160 26% 71.9%);
+  --tinta-3b5148: hsl(155 13% 77.5%);
+  --tinta-46758b: hsl(199 26% 68%);
+  --tinta-467665: hsl(159 20% 68.1%);
+  --tinta-477462: hsl(156 19% 68.3%);
+  --tinta-5c766a: hsl(152 10% 68%);
+  --tinta-5e8266: hsl(133 13% 68%);
+  --tinta-6b7f75: hsl(150 7% 68%);
+  --tinta-6b9580: hsl(150 13% 68%);
+  --tinta-6e8279: hsl(153 7% 68%);
+  --tinta-71639a: hsl(255 17% 68%);
+  --tinta-71857b: hsl(150 7% 68%);
+  --tinta-728178: hsl(144 5% 68%);
+  --tinta-789087: hsl(158 8% 68%);
+  --tinta-7b8a82: hsl(148 5% 68%);
+  --tinta-7c8981: hsl(143 4% 68%);
+  --tinta-7c8a81: hsl(141 5% 68%);
+  --tinta-839188: hsl(141 5% 68%);
+  --tinta-849188: hsl(138 4% 68%);
+  --tinta-859188: hsl(135 4% 68%);
+  --tinta-86a195: hsl(153 10% 68%);
+  --tinta-87938b: hsl(140 4% 68%);
+  --tinta-899a91: hsl(148 6% 68%);
+  --tinta-8a5413: hsl(33 50% 74.2%);
+  --tinta-8a704d: hsl(34 23% 68%);
+  --tinta-8a968e: hsl(140 4% 68%);
+  --tinta-8a9b91: hsl(145 6% 68%);
+  --tinta-95a399: hsl(137 5% 53.8%);
+  --tinta-9a642a: hsl(31 46% 68%);
+  --tinta-9aa69d: hsl(135 4% 52.3%);
+  --tinta-9aa9a1: hsl(148 6% 52%);
+  --tinta-9fb2a8: hsl(148 8% 52%);
+  --tinta-a0aaa2: hsl(132 4% 52%);
+  --tinta-a3b0a8: hsl(143 5% 52%);
+  --tinta-a65c31: hsl(22 44% 68%);
+  --tinta-a65d43: hsl(16 34% 68%);
+  --tinta-b07a26: hsl(37 50% 68%);
+  --tinta-b96a42: hsl(20 38% 68%);
+  --tinta-c0812f: hsl(34 49% 68%);
+  --tinta-cfe2d8: hsl(148 17% 52%);
+}
+/* PALETA-GERADA-FIM */

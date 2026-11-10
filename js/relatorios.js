@@ -567,15 +567,15 @@ function drawCharts(c, p) {
   charts = [];
   if (typeof Chart === 'undefined') return;
   Chart.defaults.font.family = "'DM Sans', sans-serif";
-  Chart.defaults.color = '#718077';
-  const tooltip = { backgroundColor: '#19372e', padding: 11 };
+  Chart.defaults.color = PawTema.cor('--chart-text');
+  const tooltip = { backgroundColor: PawTema.cor('--chart-tooltip'), padding: 11 };
 
   const statusCanvas = $('statusChart');
   if (statusCanvas) {
     const colors = { 'Disponível': '#4c8a77', 'Em Tratamento': '#c9954d', 'Resgatado': '#8373aa', 'Em Lar Temporário': '#b56a8b' };
     charts.push(new Chart(statusCanvas, {
       type: 'doughnut',
-      data: { labels: c.animals.byStatus.map(([s]) => s), datasets: [{ data: c.animals.byStatus.map(([, n]) => n), backgroundColor: c.animals.byStatus.map(([s]) => colors[s]), borderColor: '#fff', borderWidth: 3 }] },
+      data: { labels: c.animals.byStatus.map(([s]) => s), datasets: [{ data: c.animals.byStatus.map(([, n]) => n), backgroundColor: c.animals.byStatus.map(([s]) => colors[s]), borderColor: PawTema.cor('--card'), tokens: { borderColor: '--card' }, borderWidth: 3 }] },
       options: { responsive: true, maintainAspectRatio: false, cutout: '68%', animation: false, plugins: { legend: { display: false }, tooltip } }
     }));
   }
@@ -589,9 +589,9 @@ function drawCharts(c, p) {
       data: {
         labels: months.map(m => m.label),
         datasets: [
-          { label: 'Ocorrências de resgate', data: per(c.rescues.list.map(r => r.date)), backgroundColor: '#c47755' },
-          { label: 'Animais acolhidos', data: per(c.animals.entries.map(a => a.arrival)), backgroundColor: '#78977c' },
-          { label: 'Adoções concluídas', data: per(c.adoptions.done.map(a => a.closedAt)), backgroundColor: '#244438' }
+          { label: 'Ocorrências de resgate', data: per(c.rescues.list.map(r => r.date)), backgroundColor: PawTema.cor('--chart-3'), tokens: { backgroundColor: '--chart-3' } },
+          { label: 'Animais acolhidos', data: per(c.animals.entries.map(a => a.arrival)), backgroundColor: PawTema.cor('--chart-2'), tokens: { backgroundColor: '--chart-2' } },
+          { label: 'Adoções concluídas', data: per(c.adoptions.done.map(a => a.closedAt)), backgroundColor: PawTema.cor('--green-900'), tokens: { backgroundColor: '--green-900' } }
         ].map(ds => ({ ...ds, borderRadius: 4, maxBarThickness: 18 }))
       },
       options: {
@@ -599,7 +599,7 @@ function drawCharts(c, p) {
         plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true } }, tooltip },
         scales: {
           x: { grid: { display: false }, border: { display: false } },
-          y: { beginAtZero: true, suggestedMax: 3, ticks: { stepSize: 1, precision: 0 }, grid: { color: 'rgba(44, 77, 62, 0.08)' }, border: { display: false } }
+          y: { beginAtZero: true, suggestedMax: 3, ticks: { stepSize: 1, precision: 0 }, grid: { color: PawTema.cor('--chart-grid') }, border: { display: false } }
         }
       }
     }));

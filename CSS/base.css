@@ -1,45 +1,22 @@
 /* =========================================================
    PAWSAFE — base compartilhada por todas as páginas
    Ordem no <head>: Bootstrap → Bootstrap Icons → fontes →
-   base.css → sidebar.css (páginas internas) → CSS da página.
+   tema.css → base.css → sidebar.css (páginas internas) → CSS da página.
    ========================================================= */
 
 :root {
-  /* Verdes da marca */
-  --green-950: #19372e;
-  --green-900: #244438;
-  --green-800: #2d594a;
-  --green-700: #397665;
-  --green-600: #4c8a77;
-  --green-100: #e5f0e9;
-
-  /* Cores de apoio */
-  --sage: #78977c;
-  --terra: #c47755;
-  --terra-light: #fbede5;
-  --blue: #52849a;
-  --blue-light: #e8f1f5;
-  --lilac: #8373aa;
-  --lilac-light: #f0edf7;
-  --danger: #a92d2d;
-  --danger-light: #fae9e8;
-
-  /* Superfícies e texto */
-  --bg: #f5f7f2;
-  --surface: #ffffff;
-  --surface-soft: #fafcf9;
-  --surface-muted: #f0f4ed;
-  --text: #26352f;
-  --muted: #64736b;
-  --border: #dce5dd;
+  /* As cores ficam em tema.css (tokens shadcn com versão clara e escura).
+     Os nomes antigos abaixo continuam valendo e apontam para os tokens. */
+  --bg: var(--background);
+  --surface: var(--card);
+  --text: var(--foreground);
+  --muted: var(--muted-foreground);
+  --danger: var(--destructive);
 
   /* Tipografia, forma e profundidade */
   --font-body: 'DM Sans', sans-serif;
   --font-title: 'Manrope', 'DM Sans', sans-serif;
-  --radius: 16px;
   --radius-sm: 10px;
-  --shadow: 0 8px 24px rgba(36, 68, 56, .045);
-  --shadow-lg: 0 16px 45px rgba(33, 61, 51, .10);
 
   /* Layout */
   --sidebar-width: 252px;
@@ -62,7 +39,7 @@ button { font: inherit; }
 
 a:focus-visible,
 button:focus-visible {
-  outline: 3px solid #9fc7b1;
+  outline: 3px solid var(--ring);
   outline-offset: 2px;
 }
 
@@ -111,14 +88,14 @@ h1 {
   font-size: 12px;
 }
 
-.subtitle-dot { margin: 0 5px; color: #a3b0a8; }
+.subtitle-dot { margin: 0 5px; color: var(--tinta-a3b0a8); }
 
 .page-footer {
   display: flex;
   justify-content: space-between;
   gap: 12px;
   padding: 22px 2px 4px;
-  color: #87938b;
+  color: var(--tinta-87938b);
   font-size: 10px;
 }
 
@@ -168,12 +145,12 @@ h1 {
 .btn-outline-green:hover {
   color: var(--green-950);
   background: var(--green-100);
-  border-color: #b8cec0;
+  border-color: var(--linha-b8cec0);
 }
 
 .btn-outline-danger {
   --bs-btn-color: var(--danger);
-  --bs-btn-border-color: #e7c4c2;
+  --bs-btn-border-color: color-mix(in srgb, var(--destructive) 30%, transparent);
   --bs-btn-hover-bg: var(--danger);
   --bs-btn-hover-border-color: var(--danger);
   font-weight: 500;
@@ -182,7 +159,7 @@ h1 {
 /* ---------- Formulários ---------- */
 .form-label {
   margin-bottom: 6px;
-  color: #3b5148;
+  color: var(--tinta-3b5148);
   font-size: 11px;
   font-weight: 600;
 }
@@ -191,7 +168,7 @@ h1 {
 .form-select {
   min-height: 40px;
   color: var(--text);
-  background-color: #f7f8f3;
+  background-color: var(--fundo-f7f8f3);
   border-color: var(--border);
   border-radius: 9px;
   font-size: 12px;
@@ -199,12 +176,12 @@ h1 {
 
 .form-control:focus,
 .form-select:focus {
-  background-color: #fff;
-  border-color: #83ad9b;
+  background-color: var(--card);
+  border-color: var(--ring);
   box-shadow: 0 0 0 3px rgba(57, 118, 101, .12);
 }
 
-.form-control::placeholder { color: #9aa9a1; }
+.form-control::placeholder { color: var(--tinta-9aa9a1); }
 
 /* ---------- Status dos animais (mesmas cores em todo o sistema) ---------- */
 .status-badge {
@@ -217,46 +194,46 @@ h1 {
   white-space: nowrap;
 }
 
-.status-disponivel { color: #2d6c4c; background: #dceee0; }
-.status-adotado    { color: #386b86; background: #dceaf1; }
-.status-tratamento { color: #9a642a; background: #f6e8cb; }
-.status-resgatado  { color: #685a91; background: #e5e0f1; }
-.status-temporario { color: #984c6d; background: #f4dfe8; }
+.status-disponivel { color: var(--status-ok); background: var(--status-ok-bg); }
+.status-adotado    { color: var(--status-info); background: var(--status-info-bg); }
+.status-tratamento { color: var(--status-alerta); background: var(--status-alerta-bg); }
+.status-resgatado  { color: var(--status-roxo); background: var(--status-roxo-bg); }
+.status-temporario { color: var(--status-rosa); background: var(--status-rosa-bg); }
 
 /* ---------- Etapas do processo de adoção (usam o mesmo formato .status-badge) ---------- */
-.stage-novo      { color: #386b86; background: #dceaf1; }
-.stage-analise   { color: #9a642a; background: #f6e8cb; }
-.stage-aprovada  { color: #685a91; background: #e5e0f1; }
-.stage-concluida { color: #2d6c4c; background: #dceee0; }
+.stage-novo      { color: var(--status-info); background: var(--status-info-bg); }
+.stage-analise   { color: var(--status-alerta); background: var(--status-alerta-bg); }
+.stage-aprovada  { color: var(--status-roxo); background: var(--status-roxo-bg); }
+.stage-concluida { color: var(--status-ok); background: var(--status-ok-bg); }
 .stage-recusada  { color: var(--danger); background: var(--danger-light); }
-.stage-cancelada { color: #6b7570; background: #e9ecea; }
+.stage-cancelada { color: var(--status-neutro); background: var(--status-neutro-bg); }
 
 /* ---------- Situação e prioridade dos resgates ---------- */
-.rescue-pendente    { color: #9a642a; background: #f6e8cb; }
-.rescue-atendimento { color: #386b86; background: #dceaf1; }
-.rescue-concluido   { color: #2d6c4c; background: #dceee0; }
-.rescue-sem-sucesso { color: #6b7570; background: #e9ecea; }
+.rescue-pendente    { color: var(--status-alerta); background: var(--status-alerta-bg); }
+.rescue-atendimento { color: var(--status-info); background: var(--status-info-bg); }
+.rescue-concluido   { color: var(--status-ok); background: var(--status-ok-bg); }
+.rescue-sem-sucesso { color: var(--status-neutro); background: var(--status-neutro-bg); }
 
-.priority-baixa   { color: #4f6b5d; background: #e8efe9; }
-.priority-media   { color: #8a6a1f; background: #f7efd4; }
-.priority-alta    { color: #a65c31; background: #fbefe8; }
+.priority-baixa   { color: var(--status-suave); background: var(--status-suave-bg); }
+.priority-media   { color: var(--status-atencao); background: var(--status-atencao-bg); }
+.priority-alta    { color: var(--status-critico); background: var(--status-critico-bg); }
 .priority-critica { color: var(--danger); background: var(--danger-light); }
 
 /* ---------- Situação dos itens de estoque ---------- */
-.stock-disponivel { color: #2d6c4c; background: #dceee0; }
-.stock-baixo      { color: #8a6a1f; background: #f7efd4; }
-.stock-critico    { color: #a65c31; background: #fbefe8; }
+.stock-disponivel { color: var(--status-ok); background: var(--status-ok-bg); }
+.stock-baixo      { color: var(--status-atencao); background: var(--status-atencao-bg); }
+.stock-critico    { color: var(--status-critico); background: var(--status-critico-bg); }
 .stock-falta      { color: var(--danger); background: var(--danger-light); }
 
 /* Validade dos lotes */
-.lot-ok       { color: #4f6b5d; background: #e8efe9; }
-.lot-vencendo { color: #9a642a; background: #f6e8cb; }
+.lot-ok       { color: var(--status-suave); background: var(--status-suave-bg); }
+.lot-vencendo { color: var(--status-alerta); background: var(--status-alerta-bg); }
 .lot-vencido  { color: var(--danger); background: var(--danger-light); }
 
 /* ---------- Situação dos voluntários ---------- */
-.volunteer-interessado { color: #386b86; background: #dceaf1; }
-.volunteer-ativo       { color: #2d6c4c; background: #dceee0; }
-.volunteer-inativo     { color: #6b7570; background: #e9ecea; }
+.volunteer-interessado { color: var(--status-info); background: var(--status-info-bg); }
+.volunteer-ativo       { color: var(--status-ok); background: var(--status-ok-bg); }
+.volunteer-inativo     { color: var(--status-neutro); background: var(--status-neutro-bg); }
 
 /* Área com mais de um botão no cabeçalho */
 .topbar-actions { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -297,18 +274,18 @@ h1 {
 }
 
 .search { position: relative; flex: 1; min-width: 180px; }
-.search > i { position: absolute; top: 50%; left: 13px; transform: translateY(-50%); color: #789087; }
-.search .form-control { padding-left: 37px; background-color: #fff; }
+.search > i { position: absolute; top: 50%; left: 13px; transform: translateY(-50%); color: var(--tinta-789087); }
+.search .form-control { padding-left: 37px; background-color: var(--card); }
 
 .filter-controls { display: flex; gap: 8px; }
-.filter-controls .form-select { width: 165px; background-color: #fff; }
+.filter-controls .form-select { width: 165px; background-color: var(--card); }
 
 /* ---------- Nenhum resultado ---------- */
 .empty {
   padding: 65px 20px;
   text-align: center;
   background: var(--surface);
-  border: 1px dashed #cbd8cc;
+  border: 1px dashed var(--linha-cbd8cc);
   border-radius: 14px;
 }
 .empty > i {
@@ -371,15 +348,15 @@ h1 {
   justify-content: center;
   gap: 8px;
   min-height: 42px;
-  color: #5c766a;
-  background: #f5f7f1;
+  color: var(--tinta-5c766a);
+  background: var(--fundo-f5f7f1);
   border: 1px solid var(--border);
   border-radius: 9px;
   font-size: 11px;
   cursor: pointer;
 }
-.choice-options input:checked + span { color: #28674f; background: var(--green-100); border-color: #9dc2ad; font-weight: 700; }
-.choice-options input:focus-visible + span { outline: 3px solid #9fc7b1; outline-offset: 2px; }
+.choice-options input:checked + span { color: var(--tinta-28674f); background: var(--green-100); border-color: var(--linha-9dc2ad); font-weight: 700; }
+.choice-options input:focus-visible + span { outline: 3px solid var(--ring); outline-offset: 2px; }
 
 /* ---------- Consentimento LGPD (adotantes, voluntários) ---------- */
 .consent {
@@ -400,12 +377,12 @@ h1 {
 
 .data-table {
   --bs-table-bg: transparent;
-  --bs-table-border-color: #edf1ed;
+  --bs-table-border-color: var(--border);
   font-size: 12px;
 }
 .data-table thead th {
   padding: 12px 14px;
-  color: #859188;
+  color: var(--tinta-859188);
   background: var(--surface-soft);
   font-size: 9px;
   font-weight: 700;
@@ -415,7 +392,7 @@ h1 {
 }
 .data-table td { padding: 11px 14px; color: var(--muted); }
 .data-table td strong { display: block; color: var(--text); }
-.data-table td small { display: block; color: #8a968e; font-size: 10px; }
+.data-table td small { display: block; color: var(--tinta-8a968e); font-size: 10px; }
 .data-table tbody tr:last-child td { border-bottom: 0; }
 .data-table .btn-sm { padding: 6px 10px; font-size: 11px; }
 
@@ -424,7 +401,7 @@ h1 {
 
 .tab {
   padding: 13px 11px 11px;
-  color: #71857b;
+  color: var(--tinta-71857b);
   background: transparent;
   border: 0;
   border-bottom: 2px solid transparent;
@@ -461,15 +438,15 @@ h1 {
 .alert-soft {
   margin-bottom: 12px;
   padding: 12px;
-  color: #467665;
-  background: #e0eee8;
+  color: var(--tinta-467665);
+  background: var(--fundo-e0eee8);
   border-radius: var(--radius-sm);
   font-size: 11px;
 }
-.alert-soft.warning { color: #a65d43; background: #f8e8dc; }
+.alert-soft.warning { color: var(--tinta-a65d43); background: var(--fundo-f8e8dc); }
 
 /* Linha do tempo (histórico) */
-.timeline { display: grid; gap: 16px; margin: 6px 0 18px 7px; padding-left: 17px; border-left: 2px solid #d9e5dc; }
+.timeline { display: grid; gap: 16px; margin: 6px 0 18px 7px; padding-left: 17px; border-left: 2px solid var(--linha-d9e5dc); }
 .timeline-item { position: relative; }
 .timeline-item::before {
   content: "";
@@ -479,7 +456,7 @@ h1 {
   width: 10px;
   height: 10px;
   background: #57917d;
-  border: 2px solid #f5f8f1;
+  border: 2px solid var(--linha-f5f8f1);
   border-radius: 50%;
 }
 .timeline-item p { margin: 4px 0; font-size: 11px; }

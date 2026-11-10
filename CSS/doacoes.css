@@ -22,7 +22,7 @@
 .finance-stat small { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .35px; text-transform: uppercase; }
 .finance-stat strong { display: block; margin: 3px 0 2px; font: 800 21px/1.15 var(--font-title); letter-spacing: -.5px; }
 .finance-stat strong.negative { color: var(--danger); }
-.finance-stat span:not(.finance-icon) { color: #7c8a81; font-size: 10px; }
+.finance-stat span:not(.finance-icon) { color: var(--tinta-7c8a81); font-size: 10px; }
 
 .finance-icon {
   display: grid;
@@ -33,7 +33,7 @@
   font-size: 19px;
 }
 .icon-green  { color: var(--green-700); background: var(--green-100); }
-.icon-terra  { color: #b96a42; background: var(--terra-light); }
+.icon-terra  { color: var(--tinta-b96a42); background: var(--terra-light); }
 .icon-blue   { color: var(--blue); background: var(--blue-light); }
 .icon-lilac  { color: var(--lilac); background: var(--lilac-light); }
 .icon-danger { color: var(--danger); background: var(--danger-light); }
@@ -41,15 +41,15 @@
 /* ---------- Tabelas ---------- */
 .data-table td:first-child { white-space: nowrap; }
 .data-table .amount { color: var(--green-800); font-weight: 700; white-space: nowrap; }
-.data-table .amount.expense { color: #a65c31; }
+.data-table .amount.expense { color: var(--tinta-a65c31); }
 .data-table .status-badge { font-size: 9px; }
 .clickable-row { cursor: pointer; }
 .clickable-row:hover { background: var(--surface-soft); }
 
 #typeFilter { width: 205px; }
 
-.type-financeira { color: #2d6c4c; background: #dceee0; }
-.type-material   { color: #685a91; background: #e5e0f1; }
+.type-financeira { color: var(--status-ok); background: var(--status-ok-bg); }
+.type-material   { color: var(--status-roxo); background: var(--status-roxo-bg); }
 
 /* ---------- Saldo atualizado (após registrar/editar/excluir despesa) ---------- */
 .finance-stat.updated { border-color: var(--blue); animation: balance-pulse 1.4s ease-out 2; }
@@ -75,8 +75,8 @@
   font-size: 12px;
 }
 .expense-preview i { margin-right: 4px; color: var(--muted); }
-.expense-preview.preview-warning  { background: #fdf3e2; border-color: #efd29e; }
-.expense-preview.preview-critical { background: var(--danger-light); border-color: #e7c4c2; }
+.expense-preview.preview-warning  { background: var(--fundo-fdf3e2); border-color: var(--linha-efd29e); }
+.expense-preview.preview-critical { background: var(--danger-light); border-color: var(--linha-e7c4c2); }
 
 /* ---------- Resumo ---------- */
 .summary-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
@@ -96,8 +96,8 @@
 
 /* Status sempre com ícone + texto, nunca só cor */
 .level-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; white-space: nowrap; }
-.level-ok       { color: #22634a; background: #dceee0; }
-.level-warning  { color: #8a5413; background: #f8e7c8; }
+.level-ok       { color: var(--tinta-22634a); background: var(--fundo-dceee0); }
+.level-warning  { color: var(--tinta-8a5413); background: var(--fundo-f8e7c8); }
 .level-critical { color: var(--danger); background: var(--danger-light); }
 .level-neutral  { color: var(--muted); background: var(--surface-muted); }
 
@@ -126,7 +126,7 @@
 .budget-head small { margin-left: auto; color: var(--muted); font-size: 11px; font-weight: 500; }
 
 .rank-list { margin: 0; padding: 0; list-style: none; }
-.rank-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid #edf1ed; font-size: 12.5px; }
+.rank-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--linha-edf1ed); font-size: 12.5px; }
 .rank-list li:last-child { border-bottom: 0; }
 .rank-name { min-width: 0; font-weight: 600; }
 .rank-name small { display: block; color: var(--muted); font-size: 10.5px; font-weight: 500; }

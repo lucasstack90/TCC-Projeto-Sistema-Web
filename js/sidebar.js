@@ -50,6 +50,7 @@
       <nav class="nav flex-column sidebar-nav">${navLinks}</nav>
       <div class="sidebar-bottom">
         <a class="nav-link volunteer-link" href="${base}voluntario-cadastro.html" target="_blank" rel="noopener" title="Formulário público de inscrição"><i class="bi bi-box-arrow-up-right"></i><span>Link de voluntariado</span></a>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Alternar tema claro/escuro" aria-pressed="false"><i class="bi bi-moon-stars icon-lua" aria-hidden="true"></i><i class="bi bi-sun icon-sol" aria-hidden="true"></i><span class="theme-label">Tema escuro</span></button>
         <button class="nav-link logout-link" type="button" id="logoutButton"><i class="bi bi-box-arrow-left"></i><span>Sair</span></button>
         <div class="profile-mini">
           <div class="avatar"><i class="bi bi-person-fill"></i></div>
