@@ -676,18 +676,6 @@ function render() {
 
 // ---------- Período (somente pelas datas De / Até) ----------
 ['periodStart', 'periodEnd'].forEach(id => $(id).addEventListener('change', render));
-
-// Atalho: preenche De / Até com a vigência da parceria cadastrada na configuração.
-$('usePartnership').addEventListener('click', () => {
-  const { start, end } = config.partnership;
-  if (!start || !end) {
-    showToast('Informe a vigência da parceria em “Configurar relatório”.');
-    return;
-  }
-  $('periodStart').value = start;
-  $('periodEnd').value = end;
-  render();
-});
 $('reportModel').addEventListener('change', (e) => { applyModel(e.target.value); render(); });
 $('sectionToggles').addEventListener('change', (e) => {
   if (e.target.type !== 'checkbox') return;
