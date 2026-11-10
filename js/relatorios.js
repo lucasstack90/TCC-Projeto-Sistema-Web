@@ -48,20 +48,6 @@ const daysBetween = (from, to) => Math.round((parse(to) - parse(from)) / 864e5);
 const addDays = (iso, n) => { const d = parse(iso); d.setDate(d.getDate() + n); return toIso(d); };
 const inRange = (iso, p) => Boolean(iso) && iso >= p.start && iso <= p.end;
 
-function presetPeriod(preset) {
-  const t = parse(TODAY);
-  const y = t.getFullYear();
-  const m = t.getMonth();
-  const range = (a, b) => ({ start: toIso(a), end: toIso(b) });
-  switch (preset) {
-    case 'mes': return range(new Date(y, m, 1), new Date(y, m + 1, 0));
-    case 'mes-anterior': return range(new Date(y, m - 1, 1), new Date(y, m, 0));
-    case 'trimestre': { const q = Math.floor(m / 3) * 3; return range(new Date(y, q, 1), new Date(y, q + 3, 0)); }
-    case 'semestre': { const s = m < 6 ? 0 : 6; return range(new Date(y, s, 1), new Date(y, s + 6, 0)); }
-    case 'parceria': return { start: config.partnership.start, end: config.partnership.end };
-    default: return range(new Date(y, 0, 1), new Date(y, 11, 31));
-  }
-}
 
 function currentPeriod() {
   const start = $('periodStart').value;
@@ -688,16 +674,8 @@ function render() {
   drawCharts(c, p);
 }
 
-// ---------- Período ----------
-function setPreset(preset) {
-  if (preset === 'personalizado') return;
-  const p = presetPeriod(preset);
-  $('periodStart').value = p.start;
-  $('periodEnd').value = p.end;
-}
-
-$('periodPreset').addEventListener('change', (e) => { setPreset(e.target.value); render(); });
-['periodStart', 'periodEnd'].forEach(id => $(id).addEventListener('change', () => { $('periodPreset').value = 'personalizado'; render(); }));
+// ---------- Período (somente pelas datas De / Até) ----------
+['periodStart', 'periodEnd'].forEach(id => $(id).addEventListener('change', render));
 $('reportModel').addEventListener('change', (e) => { applyModel(e.target.value); render(); });
 $('sectionToggles').addEventListener('change', (e) => {
   if (e.target.type !== 'checkbox') return;
@@ -752,7 +730,6 @@ $('configForm').addEventListener('submit', (e) => {
   config.partnership.publicFunding = $('cfFunding').checked;
   PawData.saveReportConfig(config) ? showToast('Configuração salva.') : showToast('Não foi possível salvar a configuração.');
   configModal.hide();
-  if ($('periodPreset').value === 'parceria') setPreset('parceria');
   render();
 });
 $('cfEnd').addEventListener('input', () => $('cfEnd').setCustomValidity(''));
@@ -804,5 +781,7 @@ $('exportCsv').addEventListener('click', () => {
 
 // ---------- Início ----------
 applyModel($('reportModel').value);
-setPreset($('periodPreset').value);
+// Datas iniciais: ano corrente (o usuário ajusta em De / Até).
+$('periodStart').value = `${parse(TODAY).getFullYear()}-01-01`;
+$('periodEnd').value = `${parse(TODAY).getFullYear()}-12-31`;
 render();
