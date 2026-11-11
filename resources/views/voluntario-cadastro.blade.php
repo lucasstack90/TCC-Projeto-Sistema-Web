@@ -1,0 +1,68 @@
+@extends('layouts.app')
+
+@section('title', 'Seja voluntário | PAWSAFE')
+@section('body_class', 'signup-page')
+
+@push('css')
+  <link rel="stylesheet" href="{{ asset('css/voluntarios.css') }}">
+@endpush
+
+@section('content')
+@verbatim
+<main class="signup-card">
+  <header class="signup-header">
+    <span class="signup-mark"><i class="bi bi-heart-pulse-fill"></i></span>
+    <div>
+      <div class="eyebrow">PAWSAFE</div>
+      <h1>Seja voluntário</h1>
+      <p class="page-subtitle">Conte um pouco sobre você. A equipe entra em contato para combinar os próximos passos.</p>
+    </div>
+  </header>
+
+  <form id="signupForm" novalidate>
+    <div class="row g-3">
+      <div class="col-12"><label class="form-label" for="vName">Nome completo *</label><input id="vName" class="form-control" required maxlength="80" autocomplete="name"></div>
+      <div class="col-md-7"><label class="form-label" for="vEmail">E-mail *</label><input id="vEmail" type="email" class="form-control" required maxlength="80" autocomplete="email" placeholder="nome@email.com"></div>
+      <div class="col-md-5"><label class="form-label" for="vPhone">Telefone *</label><input id="vPhone" type="tel" class="form-control" required inputmode="tel" maxlength="15" autocomplete="tel" placeholder="(42) 99999-9999"></div>
+    </div>
+
+    <fieldset class="mt-4">
+      <legend class="section-title">HABILIDADES * <small>marque ao menos uma</small></legend>
+      <div class="choice-options skill-options" id="vSkills"></div>
+    </fieldset>
+
+    <label class="form-label mt-3" for="vExperience">Experiências anteriores</label>
+    <textarea id="vExperience" class="form-control" rows="3" maxlength="500" placeholder="Já trabalhou com animais, ONGs, eventos, transporte...?"></textarea>
+
+    <fieldset class="mt-4">
+      <legend class="section-title">DISPONIBILIDADE * <small>dias e turnos</small></legend>
+      <div class="choice-options day-options" id="vDays"></div>
+      <div class="choice-options mt-2" id="vShifts"></div>
+    </fieldset>
+
+    <label class="consent mt-4">
+      <input id="vConsent" type="checkbox" required>
+      <span>Autorizo a organização a guardar estes dados para contato sobre voluntariado (LGPD). *</span>
+    </label>
+
+    <div id="signupError" class="alert-soft warning mt-3 d-none" role="alert"></div>
+    <button type="submit" class="btn btn-green w-100 mt-3"><i class="bi bi-send me-2"></i>Enviar inscrição</button>
+  </form>
+
+  <section id="signupDone" class="signup-done d-none" aria-live="polite">
+    <i class="bi bi-check-circle-fill"></i>
+    <h2>Inscrição enviada!</h2>
+    <p id="signupDoneText"></p>
+    <button type="button" class="btn btn-outline-green" id="signupAgain">Enviar outra inscrição</button>
+  </section>
+</main>
+@endverbatim
+@endsection
+
+@push('scripts')
+<script src="{{ asset('js/tema.js') }}"></script>
+<script src="{{ asset('js/dados.js') }}"></script>
+<script src="{{ asset('js/utils.js') }}"></script>
+<script src="{{ asset('js/api.js') }}"></script>
+<script src="{{ asset('js/voluntario-cadastro.js') }}"></script>
+@endpush

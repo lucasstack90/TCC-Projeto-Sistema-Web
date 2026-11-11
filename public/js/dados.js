@@ -1,0 +1,684 @@
+/* PAWSAFE — fonte única de dados das telas.
+   Integração com o back-end em andamento (Laravel + MySQL), módulo a módulo:
+   - ANIMAIS: já vêm do MySQL. O Laravel entrega a lista em window.PAWSAFE.animais
+     (montada em app/Providers/AppServiceProvider.php) e o módulo de Animais grava pela API.
+   - Demais módulos (adotantes, adoções, resgates, estoque, voluntários, doações, despesas e
+     relatório) ainda ficam no localStorage até serem integrados.
+   Todas as páginas leem daqui, então os números sempre batem. */
+
+const PawData = (() => {
+  const STORAGE_KEY = 'pawsafe_animais_v1';
+
+  const STATUS = ['Disponível', 'Adotado', 'Em Tratamento', 'Resgatado', 'Em Lar Temporário'];
+  const SPECIES = ['Cão', 'Gato', 'Outros'];
+
+  // Classe CSS de cada status (cores definidas em CSS/base.css).
+  const STATUS_CLASS = {
+    'Disponível': 'status-disponivel',
+    'Adotado': 'status-adotado',
+    'Em Tratamento': 'status-tratamento',
+    'Resgatado': 'status-resgatado',
+    'Em Lar Temporário': 'status-temporario'
+  };
+  const statusClass = (status) => STATUS_CLASS[status] || 'status-disponivel';
+
+  const photo = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=900&q=80`;
+
+  // Dados de demonstração usados na primeira abertura do sistema.
+  const SEED = [
+    {
+      id: 1, name: 'Thor', species: 'Cão', breed: 'Labrador', color: 'Dourado', age: '3 anos',
+      arrival: '2026-03-14', sex: 'Macho', size: 'Grande', status: 'Disponível',
+      photo: photo('1552053831-71594a27632d'), weight: 26.4,
+      vaccinated: true, neutered: true, chip: false, notes: 'Sociável e ativo. Gosta de passeios.',
+      vaccines: [{ name: 'V8', date: '2026-03-15', next: '2027-03-15', lot: 'V8-2048', vet: 'Dra. Marina Lopes' }],
+      history: [{ type: 'Consulta', date: '2026-03-14', description: 'Avaliação geral de chegada', vet: 'Dra. Marina Lopes', notes: 'Saúde geral boa.' }],
+      weights: [{ weight: 26.4, date: '2026-03-14', note: 'Avaliação inicial' }]
+    },
+    {
+      id: 2, name: 'Mia', species: 'Gato', breed: 'Siamês', color: 'Creme e marrom', age: '2 anos',
+      arrival: '2026-02-09', sex: 'Fêmea', size: 'Pequeno', status: 'Disponível',
+      photo: photo('1573865526739-10659f8f3bcf'), weight: 4.2,
+      vaccinated: true, neutered: true, chip: false, notes: 'Tranquila e aparentemente saudável.',
+      vaccines: [
+        { name: 'Tríplice Felina', date: '2026-02-10', next: '2027-02-10', lot: 'TF-2026-220', vet: 'Dr. Henrique Farias' },
+        { name: 'Antirrábica', date: '2026-02-10', next: '2027-02-10', lot: 'AR-2026-046', vet: 'Dr. Henrique Farias' }
+      ],
+      history: [
+        { type: 'Consulta', date: '2026-03-10', description: 'Retorno — avaliação nutricional', vet: 'Dr. Henrique Farias', notes: 'Ganhou 400 g. Ótima evolução.' },
+        { type: 'Consulta', date: '2026-02-09', description: 'Avaliação geral de chegada', vet: 'Dr. Henrique Farias', notes: 'Dieta de recuperação prescrita.' }
+      ],
+      weights: [
+        { weight: 4.2, date: '2026-03-10', note: 'Retorno' },
+        { weight: 3.8, date: '2026-02-09', note: 'Chegada' }
+      ]
+    },
+    {
+      id: 3, name: 'Bolinha', species: 'Cão', breed: 'Vira-lata', color: 'Branco e marrom', age: '1 ano',
+      arrival: '2026-04-02', sex: 'Macho', size: 'Médio', status: 'Em Tratamento',
+      photo: photo('1543466835-00a7907e9de1'), weight: 12.1,
+      vaccinated: false, neutered: false, chip: false, notes: 'Em acompanhamento veterinário.',
+      vaccines: [],
+      history: [{ type: 'Tratamento', date: '2026-04-02', description: 'Início de tratamento dermatológico', vet: 'Dra. Marina Lopes', notes: 'Retorno agendado.' }],
+      weights: [{ weight: 12.1, date: '2026-04-02', note: 'Pesagem de chegada' }]
+    },
+    {
+      id: 4, name: 'Nina', species: 'Gato', breed: 'Persa', color: 'Caramelo', age: '4 anos',
+      arrival: '2026-01-20', sex: 'Fêmea', size: 'Médio', status: 'Em Lar Temporário',
+      photo: photo('1574158622682-e40e69881006'), weight: 3.9,
+      vaccinated: true, neutered: true, chip: true, notes: 'Em lar temporário.',
+      vaccines: [{ name: 'Antirrábica', date: '2026-01-20', next: '2027-01-20', lot: 'AR-9012', vet: 'Dr. Henrique Farias' }],
+      history: [],
+      weights: [{ weight: 3.9, date: '2026-01-20', note: 'Chegada' }]
+    },
+    {
+      id: 5, name: 'Rex', species: 'Cão', breed: 'Pastor Alemão', color: 'Preto e caramelo', age: '5 anos',
+      arrival: '2025-12-11', sex: 'Macho', size: 'Grande', status: 'Adotado',
+      photo: photo('1568572933382-74d440642117'), weight: 31.5,
+      vaccinated: true, neutered: true, chip: true, notes: 'Adoção concluída.',
+      vaccines: [],
+      history: [{ type: 'Adoção', date: '2025-12-20', description: 'Adoção concluída', vet: 'Equipe PAWSAFE', notes: 'Termo arquivado.' }],
+      weights: [{ weight: 31.5, date: '2025-12-11', note: 'Chegada' }]
+    },
+    {
+      id: 6, name: 'Pérola', species: 'Outros', breed: 'Coelho angorá', color: 'Branco', age: '8 meses',
+      arrival: '2026-05-02', sex: 'Fêmea', size: 'Pequeno', status: 'Disponível',
+      photo: photo('1591382386627-349b692688ff'), weight: 1.8,
+      vaccinated: true, neutered: false, chip: false, notes: 'Coelha dócil.',
+      vaccines: [], history: [],
+      weights: [{ weight: 1.8, date: '2026-05-02', note: 'Chegada' }]
+    },
+    {
+      id: 7, name: 'Mel', species: 'Cão', breed: 'Golden Retriever', color: 'Dourado', age: '2 anos',
+      arrival: '2026-04-12', sex: 'Fêmea', size: 'Grande', status: 'Resgatado',
+      photo: photo('1516734212186-a967f81ad0d7'), weight: 24.7,
+      vaccinated: false, neutered: false, chip: false, notes: 'Resgate recente. Aguardando avaliação veterinária.',
+      vaccines: [],
+      history: [{ type: 'Resgate', date: '2026-04-12', description: 'Resgate em área urbana', vet: 'Equipe PAWSAFE', notes: 'Encaminhada para avaliação.' }],
+      weights: [{ weight: 24.7, date: '2026-04-12', note: 'Chegada' }]
+    },
+    {
+      id: 8, name: 'Simba', species: 'Gato', breed: 'Maine Coon', color: 'Laranja', age: '3 anos',
+      arrival: '2026-02-18', sex: 'Macho', size: 'Grande', status: 'Disponível',
+      photo: photo('1514888286974-6c03e2ca1dba'), weight: 6.2,
+      vaccinated: true, neutered: true, chip: true, notes: 'Sociável com pessoas.',
+      vaccines: [{ name: 'Tríplice Felina', date: '2026-02-18', next: '2027-02-18', lot: 'TF-2210', vet: 'Dr. Henrique Farias' }],
+      history: [],
+      weights: [{ weight: 6.2, date: '2026-02-18', note: 'Chegada' }]
+    }
+  ];
+
+  // ================= Adoções =================
+  // Etapas do processo, na ordem. As três primeiras são "em andamento".
+  const ADOPTION_STAGES = ['Novo', 'Em análise', 'Aprovada', 'Concluída', 'Recusada', 'Cancelada'];
+  const ACTIVE_STAGES = ['Novo', 'Em análise', 'Aprovada'];
+
+  const STAGE_CLASS = {
+    'Novo': 'stage-novo',
+    'Em análise': 'stage-analise',
+    'Aprovada': 'stage-aprovada',
+    'Concluída': 'stage-concluida',
+    'Recusada': 'stage-recusada',
+    'Cancelada': 'stage-cancelada'
+  };
+  const stageClass = (stage) => STAGE_CLASS[stage] || 'stage-novo';
+
+  // Etapas de verificação feitas pela equipe antes de entregar o animal.
+  const CHECKLIST = [
+    { key: 'interview', label: 'Entrevista com o adotante' },
+    { key: 'visit', label: 'Visita à residência' },
+    { key: 'documents', label: 'Documentos conferidos' },
+    { key: 'term', label: 'Termo de adoção assinado' }
+  ];
+
+  const SEED_ADOPTERS = [
+    {
+      id: 1, name: 'Carlos Mendes', cpf: '529.982.247-25', birth: '1988-05-14',
+      phone: '(42) 99912-3456', email: 'carlos.mendes@email.com',
+      street: 'Rua XV de Novembro', number: '1240', district: 'Centro', city: 'Guarapuava - PR',
+      housingType: 'Casa', ownership: 'Própria', hasYard: true, hasScreens: false,
+      residents: 3, hasChildren: true, otherPets: 'Uma gata castrada',
+      hoursAlone: 4, experience: 'Já teve cães de grande porte.',
+      motivation: 'Família procura um cão companheiro para as crianças.',
+      documents: [], consent: true, createdAt: '2025-12-10'
+    },
+    {
+      id: 2, name: 'Fernanda Lima', cpf: '312.987.654-55', birth: '1995-09-02',
+      phone: '(42) 99845-1122', email: 'fernanda.lima@email.com',
+      street: 'Rua Saldanha Marinho', number: '310', district: 'Trianon', city: 'Guarapuava - PR',
+      housingType: 'Casa', ownership: 'Alugada', hasYard: true, hasScreens: false,
+      residents: 2, hasChildren: false, otherPets: '',
+      hoursAlone: 6, experience: 'Primeiro animal.',
+      motivation: 'Quer um cão ativo para acompanhar nas caminhadas.',
+      documents: [], consent: true, createdAt: '2026-10-01'
+    },
+    {
+      id: 3, name: 'Juliana Alves', cpf: '471.236.598-64', birth: '1990-01-23',
+      phone: '(42) 99734-8890', email: 'juliana.alves@email.com',
+      street: 'Rua Pedro Alves', number: '85', district: 'Bairro Santa Cruz', city: 'Guarapuava - PR',
+      housingType: 'Apartamento', ownership: 'Própria', hasYard: false, hasScreens: true,
+      residents: 1, hasChildren: false, otherPets: '',
+      hoursAlone: 8, experience: 'Já teve gatos.',
+      motivation: 'Mora sozinha e quer um gato tranquilo.',
+      documents: [], consent: true, createdAt: '2026-10-14'
+    }
+  ];
+
+  const SEED_ADOPTIONS = [
+    {
+      id: 1, animalId: 5, adopterId: 1, stage: 'Concluída',
+      openedAt: '2025-12-12', closedAt: '2025-12-20',
+      checklist: { interview: true, visit: true, documents: true, term: true },
+      log: [
+        { date: '2025-12-20', stage: 'Concluída', text: 'Animal entregue. Termo arquivado.' },
+        { date: '2025-12-17', stage: 'Aprovada', text: 'Residência adequada, família preparada.' },
+        { date: '2025-12-13', stage: 'Em análise', text: 'Entrevista agendada.' },
+        { date: '2025-12-12', stage: 'Novo', text: 'Processo aberto.' }
+      ]
+    },
+    {
+      id: 2, animalId: 1, adopterId: 2, stage: 'Em análise',
+      openedAt: '2026-10-02', closedAt: '',
+      checklist: { interview: true, visit: false, documents: false, term: false },
+      log: [
+        { date: '2026-10-05', stage: 'Em análise', text: 'Entrevista feita. Falta agendar a visita.' },
+        { date: '2026-10-02', stage: 'Novo', text: 'Processo aberto.' }
+      ]
+    },
+    {
+      id: 3, animalId: 8, adopterId: 3, stage: 'Novo',
+      openedAt: '2026-10-15', closedAt: '',
+      checklist: { interview: false, visit: false, documents: false, term: false },
+      log: [{ date: '2026-10-15', stage: 'Novo', text: 'Processo aberto.' }]
+    }
+  ];
+
+  // ================= Resgates =================
+  // Situação da ocorrência. As duas primeiras são "em aberto".
+  const RESCUE_STAGES = ['Pendente', 'Em atendimento', 'Concluído', 'Sem sucesso'];
+  const OPEN_RESCUE_STAGES = ['Pendente', 'Em atendimento'];
+  const PRIORITIES = ['Baixa', 'Média', 'Alta', 'Crítica'];
+
+  const RESCUE_CLASS = {
+    'Pendente': 'rescue-pendente',
+    'Em atendimento': 'rescue-atendimento',
+    'Concluído': 'rescue-concluido',
+    'Sem sucesso': 'rescue-sem-sucesso'
+  };
+  const rescueClass = (stage) => RESCUE_CLASS[stage] || 'rescue-pendente';
+  const priorityClass = (priority) => `priority-${String(priority).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()}`;
+
+  const SEED_RESCUES = [
+    {
+      id: 1, date: '2026-04-02', street: 'Rua Coronel Saldanha', number: '', district: 'Batel', city: 'Guarapuava - PR',
+      reference: 'Terreno baldio ao lado do mercado', species: 'Cão', quantity: 1, priority: 'Alta',
+      description: 'Cão abandonado em terreno baldio, com feridas na pele e muito magro.',
+      responsible: 'Marcos Ribeiro', reporter: 'Vizinha (ligação)', stage: 'Concluído', closedAt: '2026-04-02', animalIds: [3],
+      log: [
+        { date: '2026-04-02', stage: 'Concluído', text: 'Animal recolhido e levado para avaliação veterinária.' },
+        { date: '2026-04-02', stage: 'Pendente', text: 'Ocorrência registrada.' }
+      ]
+    },
+    {
+      id: 2, date: '2026-04-12', street: 'Avenida Manoel Ribas', number: '2100', district: 'Primavera', city: 'Guarapuava - PR',
+      reference: 'Próximo ao ponto de ônibus', species: 'Cão', quantity: 1, priority: 'Média',
+      description: 'Cadela assustada vagando em avenida movimentada, sem coleira.',
+      responsible: 'Renata Oliveira', reporter: '', stage: 'Concluído', closedAt: '2026-04-12', animalIds: [7],
+      log: [
+        { date: '2026-04-12', stage: 'Concluído', text: 'Cadela recolhida com segurança.' },
+        { date: '2026-04-12', stage: 'Pendente', text: 'Ocorrência registrada.' }
+      ]
+    },
+    {
+      id: 3, date: '2026-09-08', street: 'Rua Benjamin Constant', number: '455', district: 'Vila Carli', city: 'Guarapuava - PR',
+      reference: 'Telhado de uma loja', species: 'Gato', quantity: 1, priority: 'Média',
+      description: 'Gato preso no telhado de um comércio havia dois dias.',
+      responsible: 'Marcos Ribeiro', reporter: 'Dono da loja', stage: 'Sem sucesso', closedAt: '2026-09-09', animalIds: [],
+      log: [
+        { date: '2026-09-09', stage: 'Sem sucesso', text: 'O gato desceu sozinho antes da chegada da equipe.' },
+        { date: '2026-09-08', stage: 'Pendente', text: 'Ocorrência registrada.' }
+      ]
+    },
+    {
+      id: 4, date: '2026-10-18', street: 'Rua XV de Novembro', number: '980', district: 'Centro', city: 'Guarapuava - PR',
+      reference: 'Calçada em frente à farmácia', species: 'Gato', quantity: 4, priority: 'Crítica',
+      description: 'Ninhada de filhotes de gato abandonada em uma caixa de papelão.',
+      responsible: 'Ana Paula Souza', reporter: 'Post no Instagram', stage: 'Em atendimento', closedAt: '', animalIds: [],
+      log: [
+        { date: '2026-10-18', stage: 'Em atendimento', text: 'Equipe a caminho. Filhotes aparentam ter menos de um mês.' },
+        { date: '2026-10-18', stage: 'Pendente', text: 'Ocorrência registrada.' }
+      ]
+    },
+    {
+      id: 5, date: '2026-10-20', street: 'Rua Pedro Siqueira', number: '', district: 'Boqueirão', city: 'Guarapuava - PR',
+      reference: 'Perto da escola municipal', species: 'Cão', quantity: 1, priority: 'Alta',
+      description: 'Cão sem identificação, mancando da pata traseira.',
+      responsible: 'Renata Oliveira', reporter: '', stage: 'Pendente', closedAt: '', animalIds: [],
+      log: [{ date: '2026-10-20', stage: 'Pendente', text: 'Ocorrência registrada.' }]
+    },
+    {
+      id: 6, date: '2026-10-27', street: 'Rua das Hortênsias', number: '77', district: 'Morro Alto', city: 'Guarapuava - PR',
+      reference: '', species: 'Cão', quantity: 1, priority: 'Alta',
+      description: 'Denúncia de cão acorrentado sem água e sem abrigo.',
+      responsible: 'Ana Paula Souza', reporter: 'Denúncia anônima', stage: 'Pendente', closedAt: '', animalIds: [],
+      log: [{ date: '2026-10-27', stage: 'Pendente', text: 'Ocorrência registrada.' }]
+    }
+  ];
+
+  // ================= Estoque =================
+  // Regra principal: o saldo NUNCA é digitado. Ele é a soma das movimentações
+  // (entradas menos saídas). Um lançamento errado não é apagado: recebe um estorno.
+  const STOCK_CATEGORIES = ['Ração', 'Medicamento', 'Vacina', 'Higiene e limpeza', 'Utensílio'];
+  const STOCK_UNITS = ['kg', 'g', 'L', 'mL', 'un'];
+  const STOCK_REASONS = {
+    entrada: { doacao: 'Doação recebida', compra: 'Compra', ajuste: 'Ajuste de inventário', estorno: 'Estorno' },
+    saida: { consumo: 'Consumo', uso_animal: 'Uso em animal', perda: 'Perda / descarte', repasse: 'Repasse a outra ONG', ajuste: 'Ajuste de inventário', estorno: 'Estorno' }
+  };
+  const STOCK_STATUS = ['Em falta', 'Crítico', 'Baixo', 'Disponível']; // do mais grave ao normal
+  const STOCK_STATUS_CLASS = {
+    'Disponível': 'stock-disponivel',
+    'Baixo': 'stock-baixo',
+    'Crítico': 'stock-critico',
+    'Em falta': 'stock-falta'
+  };
+  const stockClass = (status) => STOCK_STATUS_CLASS[status] || 'stock-disponivel';
+  const EXPIRY_WARNING_DAYS = 30; // lote "vencendo" quando faltam até 30 dias
+  const LOW_FACTOR = 1.5;         // "Baixo" = até 1,5 × o estoque mínimo
+  const CONSUMPTION_DAYS = 30;    // janela usada no consumo médio
+
+  // Quantidades com até 3 casas (evita 0.1 + 0.2 = 0.30000000000000004).
+  const round3 = (n) => Math.round(n * 1000) / 1000;
+
+  const SEED_STOCK_ITEMS = [
+    { id: 1, name: 'Ração cão adulto', category: 'Ração', unit: 'kg', min: 30, tracksExpiry: true, packages: [{ name: 'Saco 15 kg', size: 15 }, { name: 'Saco 25 kg', size: 25 }], notes: 'Consumo diário do canil.', active: true },
+    { id: 2, name: 'Ração gato adulto', category: 'Ração', unit: 'kg', min: 10, tracksExpiry: true, packages: [{ name: 'Saco 10 kg', size: 10 }], notes: '', active: true },
+    { id: 3, name: 'Ração filhote', category: 'Ração', unit: 'kg', min: 8, tracksExpiry: true, packages: [{ name: 'Saco 3 kg', size: 3 }], notes: 'Cães e gatos até 1 ano.', active: true },
+    { id: 4, name: 'Vacina V8 (polivalente)', category: 'Vacina', unit: 'un', min: 10, tracksExpiry: true, packages: [{ name: 'Caixa 10 doses', size: 10 }], notes: '1 unidade = 1 dose. Manter refrigerada.', active: true },
+    { id: 5, name: 'Vacina antirrábica', category: 'Vacina', unit: 'un', min: 10, tracksExpiry: true, packages: [], notes: '1 unidade = 1 dose. Manter refrigerada.', active: true },
+    { id: 6, name: 'Vermífugo (comprimido)', category: 'Medicamento', unit: 'un', min: 15, tracksExpiry: true, packages: [{ name: 'Caixa 4 comprimidos', size: 4 }], notes: '', active: true },
+    { id: 7, name: 'Antipulgas (pipeta)', category: 'Medicamento', unit: 'un', min: 10, tracksExpiry: true, packages: [], notes: '', active: true },
+    { id: 8, name: 'Amoxicilina suspensão oral', category: 'Medicamento', unit: 'mL', min: 60, tracksExpiry: true, packages: [{ name: 'Frasco 60 mL', size: 60 }], notes: 'Somente com prescrição veterinária.', active: true },
+    { id: 9, name: 'Desinfetante', category: 'Higiene e limpeza', unit: 'L', min: 10, tracksExpiry: false, packages: [{ name: 'Galão 5 L', size: 5 }], notes: '', active: true },
+    { id: 10, name: 'Areia sanitária', category: 'Higiene e limpeza', unit: 'kg', min: 12, tracksExpiry: false, packages: [{ name: 'Pacote 4 kg', size: 4 }], notes: '', active: true },
+    { id: 11, name: 'Tapete higiênico', category: 'Higiene e limpeza', unit: 'un', min: 30, tracksExpiry: false, packages: [{ name: 'Pacote 30 un', size: 30 }], notes: '', active: true },
+    { id: 12, name: 'Coleira', category: 'Utensílio', unit: 'un', min: 5, tracksExpiry: false, packages: [], notes: 'Entregue junto com o animal na adoção.', active: true }
+  ];
+
+  // Atalhos só para deixar os dados de exemplo mais legíveis.
+  const lot = (code, expiry, qty) => ({ lot: code, expiry, qty });
+  const mv = (id, itemId, type, reason, qty, date, extra = {}) => ({
+    id, itemId, type, reason, qty, date,
+    packageLabel: '', lots: [], user: 'Renata Oliveira', animalId: null, party: '', note: '',
+    reversalOf: null, reversedBy: null, ...extra
+  });
+
+  const SEED_STOCK_MOVES = [
+    mv(1, 8, 'entrada', 'doacao', 120, '2026-07-20', { packageLabel: '2 × Frasco 60 mL', lots: [lot('AMX-1102', '2026-10-31', 120)], party: 'Doação anônima' }),
+    mv(2, 12, 'entrada', 'doacao', 10, '2026-08-15', { party: 'Pet Shop Amigo Fiel' }),
+    mv(3, 5, 'entrada', 'doacao', 15, '2026-08-30', { lots: [lot('RAB-311', '2027-08-31', 15)], party: 'Clínica Veterinária São Francisco' }),
+    mv(4, 8, 'saida', 'uso_animal', 40, '2026-09-02', { lots: [lot('AMX-1102', '2026-10-31', 40)], animalId: 3, user: 'Marcos Ribeiro', note: 'Tratamento de pele, 10 dias.' }),
+    mv(5, 9, 'entrada', 'doacao', 20, '2026-09-05', { packageLabel: '4 × Galão 5 L', party: 'Supermercado Bom Preço' }),
+    mv(6, 4, 'entrada', 'compra', 20, '2026-09-10', { packageLabel: '2 × Caixa 10 doses', lots: [lot('V8-2048', '2026-11-25', 20)], party: 'Distribuidora VetSul' }),
+    mv(7, 10, 'entrada', 'doacao', 16, '2026-09-12', { packageLabel: '4 × Pacote 4 kg', party: 'Campanha de arrecadação' }),
+    mv(8, 5, 'saida', 'uso_animal', 1, '2026-09-15', { lots: [lot('RAB-311', '2027-08-31', 1)], animalId: 7, user: 'Ana Paula Souza' }),
+    mv(9, 7, 'entrada', 'compra', 24, '2026-09-18', { lots: [lot('AP-5531', '2027-09-30', 24)], party: 'Distribuidora VetSul' }),
+    mv(10, 1, 'entrada', 'doacao', 60, '2026-09-20', { packageLabel: '4 × Saco 15 kg', lots: [lot('RC-0925', '2027-03-10', 60)], party: 'Agropecuária Campos Gerais' }),
+    mv(11, 9, 'saida', 'consumo', 5, '2026-09-20', { user: 'Marcos Ribeiro' }),
+    mv(12, 12, 'saida', 'consumo', 2, '2026-09-22', { note: 'Entregues junto com animais adotados.' }),
+    mv(13, 2, 'entrada', 'doacao', 30, '2026-09-25', { packageLabel: '3 × Saco 10 kg', lots: [lot('RG-0925', '2027-02-15', 30)], party: 'Agropecuária Campos Gerais' }),
+    mv(14, 10, 'saida', 'consumo', 8, '2026-09-30', { user: 'Ana Paula Souza' }),
+    mv(15, 6, 'entrada', 'doacao', 40, '2026-10-01', { packageLabel: '10 × Caixa 4 comprimidos', lots: [lot('VM-077', '2028-01-31', 40)], party: 'Clínica Veterinária São Francisco' }),
+    mv(16, 3, 'entrada', 'compra', 9, '2026-10-02', { packageLabel: '3 × Saco 3 kg', lots: [lot('RF-1002', '2027-01-20', 9)], party: 'Agropecuária Campos Gerais' }),
+    mv(17, 11, 'entrada', 'doacao', 90, '2026-10-03', { packageLabel: '3 × Pacote 30 un', party: 'Doação anônima' }),
+    mv(18, 4, 'saida', 'uso_animal', 1, '2026-10-05', { lots: [lot('V8-2048', '2026-11-25', 1)], animalId: 7, user: 'Ana Paula Souza' }),
+    mv(19, 5, 'saida', 'uso_animal', 1, '2026-10-05', { lots: [lot('RAB-311', '2027-08-31', 1)], animalId: 8, user: 'Ana Paula Souza' }),
+    mv(20, 12, 'saida', 'perda', 1, '2026-10-05', { note: 'Fivela quebrada.' }),
+    mv(21, 1, 'saida', 'consumo', 21, '2026-10-06', { lots: [lot('RC-0925', '2027-03-10', 21)], user: 'Marcos Ribeiro', note: 'Consumo semanal do canil.' }),
+    mv(22, 2, 'saida', 'consumo', 6, '2026-10-08', { lots: [lot('RG-0925', '2027-02-15', 6)], user: 'Marcos Ribeiro' }),
+    mv(23, 6, 'saida', 'consumo', 6, '2026-10-10', { lots: [lot('VM-077', '2028-01-31', 6)], user: 'Ana Paula Souza', note: 'Vermifugação dos animais do canil.' }),
+    mv(24, 9, 'saida', 'consumo', 5, '2026-10-10', { user: 'Marcos Ribeiro' }),
+    mv(25, 7, 'saida', 'consumo', 4, '2026-10-12', { lots: [lot('AP-5531', '2027-09-30', 4)], user: 'Ana Paula Souza', note: 'Aplicação mensal no canil.' }),
+    mv(26, 1, 'saida', 'consumo', 21, '2026-10-13', { lots: [lot('RC-0925', '2027-03-10', 21)], user: 'Marcos Ribeiro', note: 'Consumo semanal do canil.' }),
+    mv(27, 1, 'entrada', 'compra', 30, '2026-10-15', { packageLabel: '2 × Saco 15 kg', lots: [lot('RC-1015', '2027-05-20', 30)], party: 'Agropecuária Campos Gerais', reversedBy: 28 }),
+    mv(28, 1, 'saida', 'estorno', 30, '2026-10-15', { lots: [lot('RC-1015', '2027-05-20', 30)], reversalOf: 27, note: 'Lançado com a embalagem errada: eram sacos de 25 kg.' }),
+    mv(29, 1, 'entrada', 'compra', 50, '2026-10-15', { packageLabel: '2 × Saco 25 kg', lots: [lot('RC-1015', '2027-05-20', 50)], party: 'Agropecuária Campos Gerais' }),
+    mv(30, 11, 'saida', 'consumo', 30, '2026-10-17', { user: 'Ana Paula Souza' }),
+    mv(31, 3, 'saida', 'consumo', 3, '2026-10-19', { lots: [lot('RF-1002', '2027-01-20', 3)], user: 'Ana Paula Souza', note: 'Ninhada resgatada (RES-0004).' }),
+    mv(32, 1, 'saida', 'consumo', 21, '2026-10-20', { lots: [lot('RC-0925', '2027-03-10', 18), lot('RC-1015', '2027-05-20', 3)], user: 'Marcos Ribeiro', note: 'Consumo semanal do canil.' }),
+    mv(33, 10, 'saida', 'consumo', 8, '2026-10-20', { user: 'Ana Paula Souza' }),
+    mv(34, 9, 'entrada', 'compra', 10, '2026-10-20', { packageLabel: '2 × Galão 5 L', party: 'Supermercado Bom Preço' }),
+    mv(35, 4, 'saida', 'uso_animal', 1, '2026-10-21', { lots: [lot('V8-2048', '2026-11-25', 1)], animalId: 3, user: 'Ana Paula Souza' }),
+    mv(36, 5, 'saida', 'uso_animal', 1, '2026-10-21', { lots: [lot('RAB-311', '2027-08-31', 1)], animalId: 2, user: 'Ana Paula Souza' }),
+    mv(37, 2, 'saida', 'consumo', 6, '2026-10-22', { lots: [lot('RG-0925', '2027-02-15', 6)], user: 'Marcos Ribeiro' }),
+    mv(38, 6, 'saida', 'consumo', 8, '2026-10-24', { lots: [lot('VM-077', '2028-01-31', 8)], user: 'Ana Paula Souza' }),
+    mv(39, 8, 'entrada', 'compra', 120, '2026-10-25', { packageLabel: '2 × Frasco 60 mL', lots: [lot('AMX-2210', '2027-04-30', 120)], party: 'Distribuidora VetSul' }),
+    mv(40, 3, 'saida', 'consumo', 2, '2026-10-26', { lots: [lot('RF-1002', '2027-01-20', 2)], user: 'Ana Paula Souza' }),
+    mv(41, 1, 'saida', 'consumo', 21, '2026-10-27', { lots: [lot('RC-1015', '2027-05-20', 21)], user: 'Marcos Ribeiro', note: 'Consumo semanal do canil.' }),
+    mv(42, 7, 'saida', 'consumo', 3, '2026-10-28', { lots: [lot('AP-5531', '2027-09-30', 3)], user: 'Ana Paula Souza' }),
+    mv(43, 8, 'saida', 'uso_animal', 20, '2026-10-28', { lots: [lot('AMX-2210', '2027-04-30', 20)], animalId: 3, user: 'Marcos Ribeiro' }),
+    mv(44, 1, 'entrada', 'doacao', 45, '2026-10-30', { packageLabel: '3 × Saco 15 kg', lots: [lot('RC-1030', '2027-06-15', 45)], party: 'Feira de adoção (arrecadação)' }),
+    mv(45, 9, 'saida', 'consumo', 3, '2026-10-30', { user: 'Marcos Ribeiro' }),
+    mv(46, 11, 'saida', 'consumo', 20, '2026-10-31', { user: 'Ana Paula Souza' }),
+    mv(47, 2, 'saida', 'consumo', 5, '2026-11-01', { lots: [lot('RG-0925', '2027-02-15', 5)], user: 'Marcos Ribeiro' })
+  ];
+
+  const isoToday = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+  const daysBetween = (from, to) => Math.round((Date.parse(`${to}T12:00:00`) - Date.parse(`${from}T12:00:00`)) / 864e5);
+
+  // Calcula tudo o que é derivado das movimentações de UM item:
+  // saldo por lote, saldo utilizável (sem vencidos), status, consumo médio e cobertura.
+  // No back-end, este cálculo vira consultas SUM() na tabela de movimentações.
+  function stockInfo(item, moves, today = isoToday()) {
+    const own = moves.filter(m => m.itemId === item.id);
+    let total = 0;
+    const lotMap = {};
+
+    own.forEach(m => {
+      const sign = m.type === 'entrada' ? 1 : -1;
+      total += sign * m.qty;
+      m.lots.forEach(l => {
+        const entry = lotMap[l.lot] || (lotMap[l.lot] = { lot: l.lot, expiry: l.expiry, qty: 0 });
+        entry.qty += sign * l.qty;
+      });
+    });
+
+    const lots = Object.values(lotMap)
+      .map(l => {
+        const daysLeft = daysBetween(today, l.expiry);
+        const state = daysLeft < 0 ? 'vencido' : daysLeft <= EXPIRY_WARNING_DAYS ? 'vencendo' : 'ok';
+        return { ...l, qty: round3(l.qty), daysLeft, state };
+      })
+      .filter(l => l.qty > 0)
+      .sort((a, b) => a.expiry.localeCompare(b.expiry)); // ordem FEFO: vence primeiro, sai primeiro
+
+    total = round3(total);
+    const expired = round3(lots.filter(l => l.state === 'vencido').reduce((s, l) => s + l.qty, 0));
+    const usable = round3(total - expired);
+
+    // Consumo real: só consumo e uso em animal (perda, repasse e ajuste não contam),
+    // ignorando lançamentos que foram estornados.
+    const consumed = own
+      .filter(m => m.type === 'saida' && (m.reason === 'consumo' || m.reason === 'uso_animal') && !m.reversedBy)
+      .filter(m => { const d = daysBetween(m.date, today); return d >= 0 && d < CONSUMPTION_DAYS; })
+      .reduce((s, m) => s + m.qty, 0);
+    const dailyUse = consumed / CONSUMPTION_DAYS;
+    const coverageDays = dailyUse > 0 ? Math.floor(usable / dailyUse) : null;
+
+    let status = 'Disponível';
+    if (usable <= 0) status = 'Em falta';
+    else if (usable < item.min) status = 'Crítico';
+    else if (usable <= item.min * LOW_FACTOR) status = 'Baixo';
+
+    const nextLot = lots.find(l => l.state !== 'vencido');
+    return {
+      total, usable, expired, lots, status, dailyUse, coverageDays,
+      nextExpiry: nextLot?.expiry ?? '',
+      expiringLots: lots.filter(l => l.state === 'vencendo'),
+      expiredLots: lots.filter(l => l.state === 'vencido'),
+      moveCount: own.length
+    };
+  }
+
+  // Itens que precisam de reposição (usado no menu lateral e no dashboard).
+  function stockAlerts(items, moves) {
+    const active = items.filter(i => i.active);
+    const infos = active.map(item => ({ item, info: stockInfo(item, moves) }));
+    return {
+      restock: infos.filter(x => x.info.status === 'Em falta' || x.info.status === 'Crítico'),
+      expiring: infos.filter(x => x.info.expiringLots.length),
+      expired: infos.filter(x => x.info.expiredLots.length)
+    };
+  }
+
+  // ================= Voluntários e equipe =================
+  // Interessado = chegou pelo formulário e aguarda contato da equipe.
+  const VOLUNTEER_STATUS = ['Interessado', 'Ativo', 'Inativo'];
+  const VOLUNTEER_CLASS = { 'Interessado': 'volunteer-interessado', 'Ativo': 'volunteer-ativo', 'Inativo': 'volunteer-inativo' };
+  const volunteerClass = (status) => VOLUNTEER_CLASS[status] || 'volunteer-interessado';
+
+  const ROLES = ['Voluntário', 'Coordenação', 'Veterinário(a)', 'Administração'];
+  const SKILLS = ['Resgate', 'Cuidados e limpeza', 'Cuidados veterinários', 'Transporte', 'Lar temporário', 'Eventos e feiras', 'Redes sociais', 'Arrecadação'];
+  const DAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+  const SHIFTS = ['Manhã', 'Tarde', 'Noite'];
+
+  // Os nomes batem com os responsáveis dos resgates e com os veterinários das fichas dos animais.
+  const SEED_VOLUNTEERS = [
+    {
+      id: 1, name: 'Renata Oliveira', email: 'renata.oliveira@email.com', phone: '(42) 99901-2233',
+      role: 'Administração', status: 'Ativo', skills: ['Resgate', 'Redes sociais', 'Arrecadação'],
+      experience: 'Coordena a organização desde a fundação.', days: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'], shifts: ['Manhã', 'Tarde'],
+      notes: '', source: 'Cadastro interno', consent: true, createdAt: '2025-03-01'
+    },
+    {
+      id: 2, name: 'Marcos Ribeiro', email: 'marcos.ribeiro@email.com', phone: '(42) 99812-4455',
+      role: 'Voluntário', status: 'Ativo', skills: ['Resgate', 'Transporte'],
+      experience: 'Tem caminhonete e ajuda nos resgates de fim de semana.', days: ['Qua', 'Sáb', 'Dom'], shifts: ['Manhã', 'Tarde'],
+      notes: '', source: 'Formulário', consent: true, createdAt: '2025-08-12'
+    },
+    {
+      id: 3, name: 'Ana Paula Souza', email: 'anapaula.souza@email.com', phone: '(42) 99733-6677',
+      role: 'Coordenação', status: 'Ativo', skills: ['Resgate', 'Cuidados e limpeza', 'Lar temporário'],
+      experience: 'Já foi lar temporário de mais de 20 gatos.', days: ['Seg', 'Qua', 'Sex'], shifts: ['Tarde', 'Noite'],
+      notes: 'Responsável pela escala de limpeza.', source: 'Formulário', consent: true, createdAt: '2025-06-20'
+    },
+    {
+      id: 4, name: 'Dra. Marina Lopes', email: 'marina.lopes@email.com', phone: '(42) 99654-8899',
+      role: 'Veterinário(a)', status: 'Ativo', skills: ['Cuidados veterinários'],
+      experience: 'Médica-veterinária, atende os animais da organização.', days: ['Ter', 'Qui'], shifts: ['Manhã'],
+      notes: '', source: 'Cadastro interno', consent: true, createdAt: '2025-04-10'
+    },
+    {
+      id: 5, name: 'Dr. Henrique Farias', email: 'henrique.farias@email.com', phone: '(42) 99545-1010',
+      role: 'Veterinário(a)', status: 'Ativo', skills: ['Cuidados veterinários'],
+      experience: 'Médico-veterinário, foco em felinos.', days: ['Seg', 'Sex'], shifts: ['Tarde'],
+      notes: '', source: 'Cadastro interno', consent: true, createdAt: '2025-09-02'
+    },
+    {
+      id: 6, name: 'Paulo Henrique Lima', email: 'paulo.lima@email.com', phone: '(42) 99476-2020',
+      role: 'Voluntário', status: 'Inativo', skills: ['Cuidados e limpeza'],
+      experience: '', days: ['Sáb'], shifts: ['Manhã'],
+      notes: 'Mudou de cidade em agosto de 2026.', source: 'Formulário', consent: true, createdAt: '2025-11-15'
+    },
+    {
+      id: 7, name: 'Bruna Carvalho', email: 'bruna.carvalho@email.com', phone: '(42) 99367-3030',
+      role: 'Voluntário', status: 'Interessado', skills: ['Redes sociais', 'Eventos e feiras'],
+      experience: 'Ajudou a organizar uma feira de adoção na faculdade.', days: ['Sáb'], shifts: ['Manhã', 'Tarde'],
+      notes: '', source: 'Formulário', consent: true, createdAt: '2026-10-24'
+    },
+    {
+      id: 8, name: 'Diego Martins', email: 'diego.martins@email.com', phone: '(42) 99258-4040',
+      role: 'Voluntário', status: 'Interessado', skills: ['Transporte', 'Resgate'],
+      experience: 'Tem carro e já levou animais à clínica para uma vizinha.', days: ['Dom'], shifts: ['Manhã'],
+      notes: '', source: 'Formulário', consent: true, createdAt: '2026-10-27'
+    }
+  ];
+
+  // ================= Doações e despesas =================
+  const ORIGINS = ['Pessoa física', 'Pessoa jurídica'];
+  const DONATION_TYPES = ['Financeira', 'Material'];
+  const PAYMENT_METHODS = ['PIX', 'Dinheiro', 'Transferência', 'Cartão', 'Boleto'];
+  const UNITS = ['kg', 'un', 'L', 'mL']; // as mesmas unidades do módulo de Estoque (artigo)
+  const EXPENSE_CATEGORIES = ['Veterinário', 'Medicamentos', 'Ração e alimentação', 'Higiene e limpeza', 'Transporte', 'Manutenção', 'Outros'];
+
+  // Doações financeiras de outubro/2026 somam R$ 1.550 (valor que o dashboard mostrava antes).
+  const SEED_DONATIONS = [
+    { id: 1, date: '2026-08-05', origin: 'Pessoa física', donor: 'Carlos Mendes', type: 'Financeira', amount: 150, method: 'PIX', item: '', quantity: null, unit: '', notes: '' },
+    { id: 2, date: '2026-08-20', origin: 'Pessoa jurídica', donor: 'Agropecuária Campo Verde Ltda.', type: 'Material', amount: null, method: '', item: 'Ração para cães adultos', quantity: 50, unit: 'kg', notes: '' },
+    { id: 3, date: '2026-09-03', origin: 'Pessoa física', donor: '', type: 'Financeira', amount: 80, method: 'Dinheiro', item: '', quantity: null, unit: '', notes: 'Caixinha da feira de adoção.' },
+    { id: 4, date: '2026-09-15', origin: 'Pessoa jurídica', donor: 'Clínica Veterinária Bem-Estar', type: 'Material', amount: null, method: '', item: 'Vermífugo', quantity: 20, unit: 'un', notes: '' },
+    { id: 5, date: '2026-10-02', origin: 'Pessoa jurídica', donor: 'Supermercado Guará', type: 'Financeira', amount: 500, method: 'Transferência', item: '', quantity: null, unit: '', notes: 'Campanha do troco solidário.' },
+    { id: 6, date: '2026-10-10', origin: 'Pessoa física', donor: 'Fernanda Lima', type: 'Financeira', amount: 120, method: 'PIX', item: '', quantity: null, unit: '', notes: '' },
+    { id: 7, date: '2026-10-18', origin: 'Pessoa física', donor: 'Juliana Alves', type: 'Material', amount: null, method: '', item: 'Areia sanitária', quantity: 15, unit: 'kg', notes: '' },
+    { id: 8, date: '2026-10-25', origin: 'Pessoa física', donor: '', type: 'Financeira', amount: 930, method: 'PIX', item: '', quantity: null, unit: '', notes: 'Vaquinha on-line para a ninhada do RES-0004.' }
+  ];
+
+  const SEED_EXPENSES = [
+    { id: 1, date: '2026-08-10', category: 'Veterinário', description: 'Consulta e exames — Bolinha', amount: 260, paidTo: 'Clínica Veterinária Bem-Estar', animalId: 3, notes: '' },
+    { id: 2, date: '2026-09-05', category: 'Medicamentos', description: 'Antibiótico e pomada dermatológica', amount: 95, paidTo: 'Farmácia Veterinária Centro', notes: '' },
+    { id: 3, date: '2026-09-22', category: 'Ração e alimentação', description: 'Ração para gatos (25 kg)', amount: 180, paidTo: 'Agropecuária Campo Verde Ltda.', notes: '' },
+    { id: 4, date: '2026-10-05', category: 'Veterinário', description: 'Castração — Simba', amount: 350, paidTo: 'Clínica Veterinária Bem-Estar', animalId: 8, notes: '' },
+    { id: 5, date: '2026-10-20', category: 'Transporte', description: 'Combustível para resgates', amount: 120, paidTo: 'Posto Bela Vista', notes: '' }
+  ];
+
+  // Saldo inicial: dinheiro em caixa quando a organização começou a usar o sistema.
+  const SEED_OPENING = { amount: 400, date: '2026-08-01' };
+
+  // Orçamento mensal por categoria de despesa (R$). Editável na aba Resumo de Doações.
+  const SEED_BUDGETS = {
+    'Veterinário': 600, 'Medicamentos': 200, 'Ração e alimentação': 400, 'Higiene e limpeza': 100,
+    'Transporte': 150, 'Manutenção': 100, 'Outros': 100
+  };
+
+  // ================= Relatório técnico =================
+  // Dados que não vêm de outro módulo: identificação da ONG, parceria com o poder
+  // público, metas mensais e a análise escrita pela equipe em cada período.
+  // Os valores abaixo são de EXEMPLO — ajuste em "Configurar relatório".
+  const SEED_REPORT_CONFIG = {
+    org: {
+      name: 'Associação de Proteção Animal (exemplo)', cnpj: '00.000.000/0001-00',
+      address: 'Rua XV de Novembro, 1000 — Centro', city: 'Guarapuava - PR',
+      phone: '(42) 3000-0000', email: 'contato@ong-exemplo.org.br',
+      legalRep: 'Renata Oliveira', legalRole: 'Presidente'
+    },
+    partnership: {
+      publicFunding: true,
+      instrument: 'Termo de Colaboração nº 000/2026 (exemplo)',
+      grantor: 'Prefeitura Municipal de Guarapuava — Secretaria Municipal de Meio Ambiente',
+      object: 'Resgate, tratamento veterinário e encaminhamento para adoção responsável de cães e gatos em situação de vulnerabilidade.',
+      start: '2026-01-01', end: '2026-12-31'
+    },
+    // Metas MENSAIS: o relatório calcula a meta proporcional ao período escolhido.
+    goals: { rescues: 2, adoptions: 2, vaccines: 4, healthCare: 3 },
+    narratives: {} // análise da equipe, guardada por período ("2026-01-01_2026-12-31")
+  };
+
+  // ================= Armazenamento (localStorage) =================
+  const KEYS = {
+    animals: STORAGE_KEY,
+    adopters: 'pawsafe_adotantes_v1',
+    adoptions: 'pawsafe_adocoes_v1',
+    rescues: 'pawsafe_resgates_v1',
+    stockItems: 'pawsafe_estoque_itens_v1',
+    stockMoves: 'pawsafe_estoque_movimentacoes_v1',
+    volunteers: 'pawsafe_voluntarios_v1',
+    donations: 'pawsafe_doacoes_v1',
+    expenses: 'pawsafe_despesas_v1',
+    budgets: 'pawsafe_orcamento_v1',
+    opening: 'pawsafe_saldo_inicial_v1',
+    report: 'pawsafe_relatorio_config_v1'
+  };
+
+  function load(key, seed) {
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) return JSON.parse(saved);
+    } catch (error) {
+      console.warn(`Não foi possível recuperar "${key}".`, error);
+    }
+    return structuredClone(seed);
+  }
+
+  function save(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  // ================= Animais vindos do servidor =================
+  const server = window.PAWSAFE && Array.isArray(window.PAWSAFE.animais) ? window.PAWSAFE : null;
+  let serverAnimals = server ? structuredClone(server.animais) : null;
+
+  function loadAnimals() {
+    return serverAnimals ? structuredClone(serverAnimals) : load(KEYS.animals, SEED);
+  }
+
+  // Ponte para os módulos que ainda não foram integrados (hoje: Adoções).
+  // Eles alteram a lista inteira e chamam saveAnimals(); aqui descobrimos o que mudou
+  // (status e eventos novos no histórico) e enviamos só isso para o servidor.
+  function saveAnimals(list) {
+    if (!serverAnimals) return save(KEYS.animals, list);
+    if (typeof PawApi === 'undefined') {
+      console.error('js/api.js não foi carregado: a alteração do animal não foi enviada ao servidor.');
+      return false;
+    }
+
+    list.forEach(animal => {
+      const before = serverAnimals.find(a => a.id === animal.id);
+      if (!before || before.status === animal.status) return;
+      const newEvent = animal.history.find(h => !h.id); // eventos do banco têm id; o novo ainda não
+      PawApi.patch(`api/animais/${animal.id}/status`, {
+        status: animal.status,
+        history: newEvent ? { type: newEvent.type, date: newEvent.date, description: newEvent.description, vet: newEvent.vet, notes: newEvent.notes } : null
+      }).catch(error => window.alert(`O status de ${animal.name} não foi salvo no servidor: ${error.message}`));
+    });
+
+    serverAnimals = structuredClone(list);
+    return true;
+  }
+
+  // Usado pelo módulo de Animais depois de cada gravação na API.
+  function setServerAnimals(list) {
+    if (serverAnimals) serverAnimals = structuredClone(list);
+  }
+
+  // Útil na apresentação: no console do navegador, rode PawData.resetAll() e recarregue.
+  function resetAll() {
+    Object.values(KEYS).forEach(key => localStorage.removeItem(key));
+  }
+
+  return {
+    STATUS, SPECIES, statusClass,
+    ADOPTION_STAGES, ACTIVE_STAGES, CHECKLIST, stageClass,
+    RESCUE_STAGES, OPEN_RESCUE_STAGES, PRIORITIES, rescueClass, priorityClass,
+    VOLUNTEER_STATUS, ROLES, SKILLS, DAYS, SHIFTS, volunteerClass,
+    ORIGINS, DONATION_TYPES, PAYMENT_METHODS, UNITS, EXPENSE_CATEGORIES,
+    loadAnimals,
+    saveAnimals,
+    setServerAnimals,
+    usesServer: () => Boolean(serverAnimals),
+    loadAdopters: () => load(KEYS.adopters, SEED_ADOPTERS),
+    saveAdopters: (list) => save(KEYS.adopters, list),
+    loadAdoptions: () => load(KEYS.adoptions, SEED_ADOPTIONS),
+    saveAdoptions: (list) => save(KEYS.adoptions, list),
+    loadRescues: () => load(KEYS.rescues, SEED_RESCUES),
+    saveRescues: (list) => save(KEYS.rescues, list),
+    STOCK_CATEGORIES, STOCK_UNITS, STOCK_REASONS, STOCK_STATUS, stockClass,
+    EXPIRY_WARNING_DAYS, CONSUMPTION_DAYS, round3, stockInfo, stockAlerts,
+    loadStockItems: () => load(KEYS.stockItems, SEED_STOCK_ITEMS),
+    saveStockItems: (list) => save(KEYS.stockItems, list),
+    loadStockMoves: () => load(KEYS.stockMoves, SEED_STOCK_MOVES),
+    saveStockMoves: (list) => save(KEYS.stockMoves, list),
+    loadVolunteers: () => load(KEYS.volunteers, SEED_VOLUNTEERS),
+    saveVolunteers: (list) => save(KEYS.volunteers, list),
+    loadDonations: () => load(KEYS.donations, SEED_DONATIONS),
+    saveDonations: (list) => save(KEYS.donations, list),
+    loadExpenses: () => load(KEYS.expenses, SEED_EXPENSES),
+    saveExpenses: (list) => save(KEYS.expenses, list),
+    loadBudgets: () => ({ ...SEED_BUDGETS, ...load(KEYS.budgets, {}) }),
+    saveBudgets: (budgets) => save(KEYS.budgets, budgets),
+    loadOpening: () => load(KEYS.opening, SEED_OPENING),
+    saveOpening: (opening) => save(KEYS.opening, opening),
+    KEYS,
+    loadReportConfig: () => {
+      // Mescla com o padrão para que campos novos apareçam em configurações antigas.
+      const saved = load(KEYS.report, SEED_REPORT_CONFIG);
+      const base = structuredClone(SEED_REPORT_CONFIG);
+      return {
+        org: { ...base.org, ...saved.org },
+        partnership: { ...base.partnership, ...saved.partnership },
+        goals: { ...base.goals, ...saved.goals },
+        narratives: { ...saved.narratives }
+      };
+    },
+    saveReportConfig: (config) => save(KEYS.report, config),
+    resetAll,
+    resetAnimals: resetAll // nome antigo, mantido por compatibilidade
+  };
+})();
