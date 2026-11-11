@@ -1,5 +1,8 @@
 # Pendências para o back-end (Laravel + MySQL)
 
+> Situação em nov/2026: projeto Laravel criado, migrations de todos os módulos, login com perfis
+> e módulo de Animais integrado. Itens marcados com [x] já estão no código (ao menos na estrutura do banco).
+
 Decisões e cuidados levantados durante o desenvolvimento do front-end que **precisam** ser
 resolvidos quando o back-end for implementado. Marque cada item ao concluir.
 
@@ -37,29 +40,34 @@ Precisam ser repetidas no servidor, senão qualquer pessoa contorna pelo console
 
 ## 3. Modelo de dados
 
-- [ ] Resgate guarda o **id** do voluntário responsável (chave estrangeira), não o nome.
+- [x] Resgate guarda o **id** do voluntário responsável (chave estrangeira), não o nome.
       Remove o remendo atual que renomeia os resgates quando o voluntário muda de nome.
-- [ ] Animal ↔ resgate de origem também por chave estrangeira.
-- [ ] Fotos de animais e documentos de adotantes em armazenamento de arquivos
-      (`storage`), não em base64 dentro do banco.
-- [ ] Valores em dinheiro em colunas `DECIMAL(10,2)`, nunca `FLOAT` (o JavaScript do protótipo
+- [x] Animal ↔ resgate de origem também por chave estrangeira.
+- [x] Fotos de animais e documentos de adotantes em armazenamento de arquivos
+      (`storage`), não em base64 dentro do banco. *(fotos de animais prontas; documentos: tabela
+      `adotante_documentos` criada, upload entra com o módulo de Adoções)*
+- [x] Valores em dinheiro em colunas `DECIMAL(10,2)`, nunca `FLOAT` (o JavaScript do protótipo
       usa números decimais comuns, que podem gerar erros de centavos em somas grandes).
-- [ ] **Saldo calculado, não guardado:** o saldo vem de `SUM` das doações financeiras menos `SUM`
+- [x] **Saldo calculado, não guardado:** o saldo vem de `SUM` das doações financeiras menos `SUM`
       das despesas (mais o saldo inicial), numa consulta ou *view* do MySQL. Não criar uma coluna
       `saldo` atualizada pelo PHP: se uma gravação falhar no meio, o saldo fica errado para sempre.
       Se um dia for preciso guardar (por desempenho), atualizar na **mesma transação** da despesa.
-- [ ] Tabelas novas: `orcamentos` (categoria, valor mensal) e `configuracoes_financeiras`
+- [x] Tabelas novas: `orcamentos` (categoria, valor mensal) e `configuracoes_financeiras`
       (saldo inicial e data). Despesa ganha `animal_id` (chave estrangeira opcional para `animais`).
 - [ ] Regras do protótipo a repetir no servidor: valor maior que zero, data não futura, categoria da
       lista; aviso de saldo negativo e de orçamento estourado devolvidos pela API.
 - [ ] Exportação da prestação de contas gerada no servidor (CSV/PDF), base do módulo de Relatório técnico.
 - [ ] Doação **material** deve gerar uma entrada no Estoque (mesmo item, quantidade e unidade),
       para não ser registrada duas vezes à mão.
-- [ ] Doações e despesas não devem ser apagadas de verdade: guardar quem alterou e quando
+- [x] *(estrutura: `softDeletes` + `alterado_por` nas tabelas)* Doações e despesas não devem ser apagadas de verdade: guardar quem alterou e quando
       (prestação de contas), em vez do "Excluir" do protótipo.
 
 ## 4. Acesso e LGPD
 
-- [ ] Login real com senha criptografada (hash) e sessão; todas as páginas internas
+- [x] Login real com senha criptografada (hash) e sessão; todas as páginas internas
       exigem usuário autenticado.
 - [ ] Dados pessoais (CPF, documentos, contatos) visíveis só para usuários da equipe.
+
+- [x] Dados pessoais (CPF) criptografados no banco; `cpf_hash` para unicidade.
+- [x] Registro de auditoria (`log_auditoria`) para login, cadastro, alteração e exclusão.
+- [ ] Tela/rotina para o titular pedir a exclusão: usar `Voluntario::anonimizar()` (e o equivalente para adotantes).

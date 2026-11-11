@@ -1,0 +1,180 @@
+@extends('layouts.app')
+
+@section('title', 'PAWSAFE | Estoque')
+
+@push('css')
+  <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/estoque.css') }}">
+@endpush
+
+@section('content')
+@verbatim
+<div id="sidebarMount"></div>
+
+<main class="main-content">
+  <header class="topbar">
+    <button class="mobile-menu" id="menuToggle" type="button" aria-label="Abrir menu" aria-expanded="false"><i class="bi bi-list"></i></button>
+    <div class="topbar-title">
+      <div class="eyebrow">Insumos e materiais</div>
+      <h1>Estoque</h1>
+      <p class="page-subtitle"><span id="itemsText"></span> <span class="subtitle-dot">•</span> <span id="restockText"></span></p>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline-green" id="addItem" type="button"><i class="bi bi-plus-lg me-2"></i>Cadastrar item</button>
+      <button class="btn btn-green" id="addMove" type="button"><i class="bi bi-arrow-left-right me-2"></i>Registrar movimentação</button>
+    </div>
+  </header>
+
+  <section class="summary-stats" id="summaryStats" aria-label="Resumo do estoque"></section>
+
+  <!-- Itens que pedem ação: reposição, lotes vencendo e vencidos -->
+  <section class="alert-panel d-none" id="alertPanel" aria-labelledby="alertTitle">
+    <h2 id="alertTitle"><i class="bi bi-exclamation-triangle me-2"></i>Precisa de atenção</h2>
+    <div class="alert-list" id="alertList"></div>
+  </section>
+
+  <div class="filter-panel">
+    <div class="search"><i class="bi bi-search"></i><input id="search" type="search" class="form-control" placeholder="Buscar por nome, lote ou código (EST-0001)..." aria-label="Buscar itens"></div>
+    <div class="filter-controls">
+      <select id="categoryFilter" class="form-select" aria-label="Filtrar por categoria"><option value="Todas">Todas as categorias</option></select>
+      <select id="statusFilter" class="form-select" aria-label="Filtrar por situação"><option value="Todos">Todas as situações</option></select>
+      <button class="btn btn-outline-green" id="clearFilters" type="button"><i class="bi bi-arrow-counterclockwise me-1"></i>Limpar</button>
+    </div>
+  </div>
+
+  <div class="results">
+    <span id="resultsText"></span>
+    <label class="show-inactive"><input type="checkbox" id="showInactive"> Mostrar itens inativos</label>
+  </div>
+
+  <section class="stock-table-wrap" id="stockTableWrap">
+    <table class="stock-table">
+      <thead>
+        <tr><th>Item</th><th>Saldo</th><th>Mínimo</th><th>Situação</th><th>Cobertura</th><th>Próx. validade</th><th class="text-end">Ações</th></tr>
+      </thead>
+      <tbody id="stockRows"></tbody>
+    </table>
+  </section>
+  <div id="empty" class="empty d-none">
+    <i class="bi bi-box-seam"></i>
+    <h2>Nenhum item encontrado</h2>
+    <p>Altere a busca ou os filtros, ou cadastre um novo item.</p>
+  </div>
+
+  <footer class="page-footer"><span><i class="bi bi-shield-check me-1"></i> PAWSAFE · O saldo é calculado pelas movimentações registradas.</span><span>Protótipo com dados demonstrativos</span></footer>
+</main>
+
+<!-- Cadastro / edição de item -->
+<div class="modal fade" id="itemModal" tabindex="-1" aria-labelledby="itemFormTitle" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header"><div><h2 id="itemFormTitle">Cadastrar item</h2><p>O saldo começa em zero e muda apenas pelas movimentações.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+  <form id="itemForm" novalidate>
+    <div class="modal-body">
+      <input type="hidden" id="itemId">
+      <div class="section-title">IDENTIFICAÇÃO</div>
+      <div class="row g-3">
+        <div class="col-md-7"><label class="form-label" for="itName">Nome do item *</label><input id="itName" class="form-control" required maxlength="80" placeholder="Ex.: Ração cão adulto"></div>
+        <div class="col-md-5"><label class="form-label" for="itCategory">Categoria *</label><select id="itCategory" class="form-select" required></select></div>
+        <div class="col-md-4"><label class="form-label" for="itUnit">Unidade de controle *</label><select id="itUnit" class="form-select" required></select><small class="field-hint" id="unitHint">Em que unidade o saldo é contado.</small></div>
+        <div class="col-md-4"><label class="form-label" for="itMin">Estoque mínimo *</label><div class="input-group"><input id="itMin" type="number" min="0" step="0.001" class="form-control" required><span class="input-group-text unit-tag" data-unit-tag></span></div><small class="field-hint">Abaixo disso o item fica crítico.</small></div>
+        <div class="col-md-4 d-flex align-items-center"><label class="switch-line"><input type="checkbox" id="itExpiry"> <span>Controla lote e validade</span></label></div>
+      </div>
+
+      <div class="section-title mt-4">EMBALAGENS</div>
+      <p class="section-help">Como o item costuma chegar. Na entrada, a equipe informa “2 sacos” e o sistema converte para a unidade de controle.</p>
+      <div id="packageRows" class="package-rows"></div>
+      <button type="button" class="btn btn-outline-green btn-sm-pad" id="addPackage"><i class="bi bi-plus-lg me-1"></i>Adicionar embalagem</button>
+
+      <label class="form-label mt-4" for="itNotes">Observações</label>
+      <textarea id="itNotes" class="form-control" rows="2" maxlength="300" placeholder="Armazenamento, uso, cuidados..."></textarea>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-outline-green" data-bs-dismiss="modal">Cancelar</button><button id="saveItemButton" type="submit" class="btn btn-green"><i class="bi bi-check2 me-2"></i>Cadastrar item</button></div>
+  </form>
+</div></div></div>
+
+<!-- Entrada / saída -->
+<div class="modal fade" id="moveModal" tabindex="-1" aria-labelledby="moveFormTitle" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header"><div><h2 id="moveFormTitle">Registrar movimentação</h2><p>Depois de salva, a movimentação não é editada. Se houver erro, use o estorno.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+  <form id="moveForm" novalidate>
+    <div class="modal-body">
+      <div class="type-toggle" role="radiogroup" aria-label="Tipo de movimentação">
+        <label><input type="radio" name="mvType" value="entrada" checked><span><i class="bi bi-box-arrow-in-down"></i> Entrada</span></label>
+        <label><input type="radio" name="mvType" value="saida"><span><i class="bi bi-box-arrow-up"></i> Saída</span></label>
+      </div>
+
+      <div class="row g-3 mt-1">
+        <div class="col-md-7"><label class="form-label" for="mvItem">Item *</label><select id="mvItem" class="form-select" required></select></div>
+        <div class="col-md-5"><label class="form-label" for="mvReason">Motivo *</label><select id="mvReason" class="form-select" required></select></div>
+
+        <div class="col-md-4"><label class="form-label" for="mvQty">Quantidade *</label><input id="mvQty" type="number" min="0.001" step="0.001" class="form-control" required></div>
+        <div class="col-md-8"><label class="form-label" for="mvMeasure">Medida</label><select id="mvMeasure" class="form-select"></select></div>
+        <div class="col-12"><div class="conversion" id="conversion"></div></div>
+
+        <!-- Entrada de item com validade -->
+        <div class="col-md-6 lot-in"><label class="form-label" for="mvLot">Lote *</label><input id="mvLot" class="form-control" maxlength="30" placeholder="Código impresso na embalagem"></div>
+        <div class="col-md-6 lot-in"><label class="form-label" for="mvExpiry">Validade *</label><input id="mvExpiry" type="date" class="form-control"></div>
+
+        <!-- Saída de item com validade -->
+        <div class="col-12 lot-out"><label class="form-label" for="mvLotOut">Lote de saída</label><select id="mvLotOut" class="form-select"></select><div class="allocation" id="allocation"></div></div>
+
+        <div class="col-md-6 field-party"><label class="form-label" for="mvParty" id="partyLabel">Doador / origem</label><input id="mvParty" class="form-control" maxlength="80"></div>
+        <div class="col-md-6 field-animal"><label class="form-label" for="mvAnimal">Animal *</label><select id="mvAnimal" class="form-select"></select></div>
+        <div class="col-md-6"><label class="form-label" for="mvDate">Data *</label><input id="mvDate" type="date" class="form-control" required></div>
+        <div class="col-12"><label class="form-label" for="mvNote" id="noteLabel">Observação</label><textarea id="mvNote" class="form-control" rows="2" maxlength="300"></textarea></div>
+      </div>
+      <p class="responsible-line"><i class="bi bi-person-check me-1"></i>Registrado por <strong id="mvUser"></strong></p>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-outline-green" data-bs-dismiss="modal">Cancelar</button><button type="submit" id="saveMoveButton" class="btn btn-green"><i class="bi bi-check2 me-2"></i>Registrar</button></div>
+  </form>
+</div></div></div>
+
+<!-- Inventário (contagem física) -->
+<div class="modal fade" id="countModal" tabindex="-1" aria-labelledby="countTitle" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header"><div><h2 id="countTitle">Inventário</h2><p>Informe o que foi contado na prateleira. A diferença vira um ajuste.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+  <form id="countForm" novalidate>
+    <div class="modal-body">
+      <div class="alert-soft"><i class="bi bi-lock me-1"></i>Ajustes alteram o saldo sem uma entrada ou saída real. No sistema final, só funcionários poderão fazer.</div>
+      <div id="countRows" class="count-rows"></div>
+      <label class="form-label mt-3" for="countNote">Justificativa *</label>
+      <textarea id="countNote" class="form-control" rows="2" maxlength="300" required placeholder="Ex.: contagem mensal; saco rasgado não registrado"></textarea>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-outline-green" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-green"><i class="bi bi-check2 me-2"></i>Registrar ajuste</button></div>
+  </form>
+</div></div></div>
+
+<!-- Ficha do item -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailName" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header">
+    <div><h2 class="detail-title"><span id="detailName"></span> <span id="detailStatus" class="status-badge"></span></h2><p id="detailSubtitle"></p></div>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+  </div>
+  <div class="tabs" role="tablist">
+    <button type="button" class="tab active" data-tab="overview"><i class="bi bi-info-circle"></i> Visão geral</button>
+    <button type="button" class="tab" data-tab="moves"><i class="bi bi-clock-history"></i> Movimentações <span id="moveCount"></span></button>
+  </div>
+  <div class="modal-body">
+    <section id="panel-overview"></section>
+    <section id="panel-moves" class="d-none"></section>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-danger me-auto" id="deleteItem"><i class="bi bi-trash me-1"></i>Excluir</button>
+    <button type="button" class="btn btn-outline-green" id="toggleActive"></button>
+    <button type="button" class="btn btn-outline-green" id="countItem"><i class="bi bi-clipboard-check me-1"></i>Inventário</button>
+    <button type="button" class="btn btn-outline-green" id="editItem"><i class="bi bi-pencil me-1"></i>Editar</button>
+    <button type="button" class="btn btn-outline-green" id="detailOut"><i class="bi bi-box-arrow-up me-1"></i>Saída</button>
+    <button type="button" class="btn btn-green" id="detailIn"><i class="bi bi-box-arrow-in-down me-1"></i>Entrada</button>
+  </div>
+</div></div></div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3"><div id="toast" class="toast" role="status" aria-live="polite"><div class="toast-body"><i class="bi bi-check-circle-fill me-2"></i><span id="toastText"></span></div></div></div>
+@endverbatim
+@endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ asset('js/tema.js') }}"></script>
+<script src="{{ asset('js/dados.js') }}"></script>
+<script src="{{ asset('js/utils.js') }}"></script>
+<script src="{{ asset('js/api.js') }}"></script>
+<script src="{{ asset('js/sidebar.js') }}"></script>
+<script src="{{ asset('js/estoque.js') }}"></script>
+@endpush

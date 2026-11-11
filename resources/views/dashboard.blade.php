@@ -1,0 +1,133 @@
+@extends('layouts.app')
+
+@section('title', 'PAWSAFE | Dashboard')
+
+@push('css')
+  <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+@endpush
+
+@section('content')
+@verbatim
+  <div class="app-shell">
+    <div id="sidebarMount"></div>
+
+    <main class="main-content" id="dashboard">
+      <header class="topbar">
+        <button class="mobile-menu" id="menuToggle" type="button" aria-label="Abrir menu" aria-expanded="false"><i class="bi bi-list"></i></button>
+        <div class="topbar-title">
+          <div class="eyebrow">Painel administrativo</div>
+          <h1>Visão geral</h1>
+          <p class="page-subtitle mb-0">Acompanhe as atividades da organização <span class="subtitle-dot">•</span> <span id="currentDate"></span></p>
+        </div>
+      </header>
+
+      <!-- Valores com data-stat são calculados a partir do cadastro de animais (js/dashboard.js).
+           Os demais são ilustrativos até os módulos correspondentes existirem. -->
+      <section class="stats-grid" aria-label="Indicadores principais">
+        <article class="stat-card">
+          <div class="stat-icon icon-green"><i class="bi bi-paw"></i></div>
+          <div class="stat-content"><span class="stat-label">Animais cadastrados</span><strong class="stat-value" data-stat="total">–</strong><span class="stat-foot">Total registrado</span></div>
+          <span class="stat-accent accent-green"></span>
+        </article>
+        <article class="stat-card">
+          <div class="stat-icon icon-sage"><i class="bi bi-heart"></i></div>
+          <div class="stat-content"><span class="stat-label">Disponíveis para adoção</span><strong class="stat-value" data-stat="available">–</strong><span class="stat-foot">Aguardando um lar</span></div>
+          <span class="stat-accent accent-sage"></span>
+        </article>
+        <article class="stat-card">
+          <div class="stat-icon icon-orange"><i class="bi bi-house-heart"></i></div>
+          <div class="stat-content"><span class="stat-label">Resgates em aberto</span><strong class="stat-value" data-stat="openRescues">–</strong><span class="stat-foot">Pendentes ou em atendimento</span></div>
+          <span class="stat-accent accent-orange"></span>
+        </article>
+        <article class="stat-card">
+          <div class="stat-icon icon-lilac"><i class="bi bi-people"></i></div>
+          <div class="stat-content"><span class="stat-label">Voluntários ativos</span><strong class="stat-value" data-stat="activeVolunteers">–</strong><span class="stat-foot" data-stat="pendingVolunteers">–</span></div>
+          <span class="stat-accent accent-lilac"></span>
+        </article>
+        <article class="stat-card">
+          <div class="stat-icon icon-blue"><i class="bi bi-cash-coin"></i></div>
+          <div class="stat-content"><span class="stat-label">Doações neste mês</span><strong class="stat-value" data-stat="monthDonations">–</strong><span class="stat-foot" data-stat="monthDonationsFoot">–</span></div>
+          <span class="stat-accent accent-blue"></span>
+        </article>
+        <article class="stat-card">
+          <div class="stat-icon icon-green"><i class="bi bi-graph-up-arrow"></i></div>
+          <div class="stat-content"><span class="stat-label">Animais adotados</span><strong class="stat-value" data-stat="adopted">–</strong><span class="stat-foot">Status “Adotado”</span></div>
+          <span class="stat-accent accent-green"></span>
+        </article>
+      </section>
+
+      <section class="charts-grid" aria-label="Gráficos do dashboard">
+        <article class="panel chart-panel adoption-chart-panel">
+          <div class="panel-heading">
+            <div><h2>Adoções concluídas</h2><p>Últimos 6 meses</p></div>
+          </div>
+          <div class="chart-wrap"><canvas id="adoptionsChart" aria-label="Gráfico de adoções por mês" role="img"></canvas></div>
+        </article>
+        <article class="panel chart-panel species-panel">
+          <div class="panel-heading">
+            <div><h2>Espécies cadastradas</h2><p>Distribuição dos animais</p></div>
+          </div>
+          <div class="species-content">
+            <div class="donut-wrap"><canvas id="speciesChart" aria-label="Gráfico de espécies cadastradas" role="img"></canvas><div class="donut-center"><strong data-stat="total">–</strong><span>animais</span></div></div>
+            <div class="legend-list">
+              <div><span class="legend-label"><i class="legend-dot dot-primary"></i>Cães</span><strong data-species="Cão">–</strong></div>
+              <div><span class="legend-label"><i class="legend-dot dot-sage"></i>Gatos</span><strong data-species="Gato">–</strong></div>
+              <div><span class="legend-label"><i class="legend-dot dot-terra"></i>Outros</span><strong data-species="Outros">–</strong></div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel status-panel">
+        <div class="panel-heading">
+          <div><h2>Distribuição por status</h2><p>Situação atual dos animais cadastrados</p></div>
+          <span class="section-icon"><i class="bi bi-sliders"></i></span>
+        </div>
+        <div class="status-list" id="statusList"></div>
+      </section>
+
+      <section class="recent-grid">
+        <article class="panel recent-panel">
+          <div class="panel-heading recent-heading">
+            <div class="heading-with-icon"><span class="table-heading-icon"><i class="bi bi-heart"></i></span><div><h2>Últimas adoções</h2><p>Processos abertos mais recentes</p></div></div>
+            <a href="Pages/adocoes.html" class="view-all">Ver todas <i class="bi bi-arrow-right"></i></a>
+          </div>
+          <div class="table-responsive">
+            <table class="table dashboard-table align-middle mb-0">
+              <thead><tr><th>Animal</th><th>Adotante</th><th>Aberto em</th><th>Etapa</th></tr></thead>
+              <tbody id="recentAdoptions"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel recent-panel">
+          <div class="panel-heading recent-heading">
+            <div class="heading-with-icon"><span class="table-heading-icon terra-icon"><i class="bi bi-house-heart"></i></span><div><h2>Resgates</h2><p>Em aberto primeiro, por prioridade</p></div></div>
+            <a href="Pages/resgates.html" class="view-all">Ver todos <i class="bi bi-arrow-right"></i></a>
+          </div>
+          <div class="table-responsive">
+            <table class="table dashboard-table align-middle mb-0">
+              <thead><tr><th>Ocorrência / local</th><th>Data</th><th>Prioridade</th><th>Situação</th></tr></thead>
+              <tbody id="recentRescues"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <footer class="page-footer"><span>© <span id="currentYear"></span> PAWSAFE</span><span>Gestão responsável, cuidado e proteção animal.</span></footer>
+    </main>
+  </div>
+@endverbatim
+@endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="{{ asset('js/tema.js') }}"></script>
+<script src="{{ asset('js/dados.js') }}"></script>
+<script src="{{ asset('js/utils.js') }}"></script>
+<script src="{{ asset('js/api.js') }}"></script>
+<script src="{{ asset('js/financeiro.js') }}"></script>
+<script src="{{ asset('js/sidebar.js') }}"></script>
+<script src="{{ asset('js/dashboard.js') }}"></script>
+@endpush

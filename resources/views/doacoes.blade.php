@@ -1,0 +1,220 @@
+@extends('layouts.app')
+
+@section('title', 'PAWSAFE | Doações / Financeiro')
+
+@push('css')
+  <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/doacoes.css') }}">
+@endpush
+
+@section('content')
+@verbatim
+<div id="sidebarMount"></div>
+
+<main class="main-content">
+  <header class="topbar">
+    <button class="mobile-menu" id="menuToggle" type="button" aria-label="Abrir menu" aria-expanded="false"><i class="bi bi-list"></i></button>
+    <div class="topbar-title">
+      <div class="eyebrow">Gestão financeira</div>
+      <h1>Doações / Financeiro</h1>
+      <p class="page-subtitle"><span id="donationText"></span> <span class="subtitle-dot">•</span> <span id="expenseText"></span></p>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline-green" id="addExpense" type="button"><i class="bi bi-dash-circle me-2"></i>Registrar despesa</button>
+      <button class="btn btn-green" id="addDonation" type="button"><i class="bi bi-plus-lg me-2"></i>Registrar doação</button>
+    </div>
+  </header>
+
+  <!-- Totais: o artigo pede o total doado e o registro dos recursos usados (despesas).
+       O saldo é calculado (saldo inicial + doações − despesas) e muda sozinho a cada lançamento. -->
+  <section class="finance-stats" id="financeStats" aria-label="Totais"></section>
+
+  <nav class="tabs view-tabs" aria-label="Visualização">
+    <button type="button" class="tab active" data-view="summary"><i class="bi bi-graph-up-arrow"></i>Resumo</button>
+    <button type="button" class="tab" data-view="donations"><i class="bi bi-gift"></i>Doações</button>
+    <button type="button" class="tab" data-view="expenses"><i class="bi bi-receipt"></i>Despesas</button>
+  </nav>
+
+  <!-- Resumo: indicadores para decidir, não só para registrar -->
+  <section id="summaryView">
+    <div class="summary-toolbar">
+      <label class="month-picker" for="monthSelect"><i class="bi bi-calendar3"></i><span>Mês de referência</span>
+        <select id="monthSelect" class="form-select"></select>
+      </label>
+      <div class="summary-actions">
+        <button class="btn btn-outline-green" id="openSettings" type="button"><i class="bi bi-sliders me-2"></i>Orçamento e saldo inicial</button>
+        <button class="btn btn-outline-green" id="exportCsv" type="button"><i class="bi bi-filetype-csv me-2"></i>Exportar prestação de contas</button>
+      </div>
+    </div>
+
+    <div class="insight-grid" id="insights"></div>
+
+    <div class="summary-grid">
+      <article class="summary-panel">
+        <header><h2>Fluxo de caixa</h2><p>Entradas e saídas dos últimos 6 meses e o saldo ao final de cada mês</p></header>
+        <div class="flow-chart"><canvas id="flowChart" role="img" aria-label="Gráfico de entradas, saídas e saldo por mês. Os mesmos números estão na tabela abaixo."></canvas></div>
+        <div class="table-responsive">
+          <table class="table flow-table mb-0">
+            <thead><tr><th>Mês</th><th class="text-end">Entradas</th><th class="text-end">Saídas</th><th class="text-end">Resultado</th><th class="text-end">Saldo</th></tr></thead>
+            <tbody id="flowRows"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="summary-panel">
+        <header><h2>Orçamento do mês</h2><p id="budgetSubtitle"></p></header>
+        <div id="budgetList" class="budget-list"></div>
+      </article>
+    </div>
+
+    <div class="summary-grid">
+      <article class="summary-panel">
+        <header><h2>Custo por animal</h2><p>Despesas vinculadas a cada animal no registro da despesa</p></header>
+        <div id="animalCost"></div>
+      </article>
+      <article class="summary-panel">
+        <header><h2>Maiores doadores</h2><p>Doações financeiras por doador identificado</p></header>
+        <div id="donorList"></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Doações -->
+  <section id="donationsView" class="d-none">
+    <div class="filter-panel">
+      <div class="search"><i class="bi bi-search"></i><input id="donationSearch" type="search" class="form-control" placeholder="Buscar por doador, item ou observação..." aria-label="Buscar doações"></div>
+      <div class="filter-controls">
+        <select id="typeFilter" class="form-select" aria-label="Filtrar por categoria"><option value="">Financeiras e materiais</option></select>
+        <select id="originFilter" class="form-select" aria-label="Filtrar por origem"><option value="">Qualquer origem</option></select>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="table data-table align-middle mb-0">
+          <thead><tr><th>Data</th><th>Doador</th><th>Categoria</th><th>Recurso</th><th class="text-end">Valor</th></tr></thead>
+          <tbody id="donationRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Despesas -->
+  <section id="expensesView" class="d-none">
+    <div class="filter-panel">
+      <div class="search"><i class="bi bi-search"></i><input id="expenseSearch" type="search" class="form-control" placeholder="Buscar por descrição ou fornecedor..." aria-label="Buscar despesas"></div>
+      <div class="filter-controls">
+        <select id="categoryFilter" class="form-select" aria-label="Filtrar por categoria"><option value="">Todas as categorias</option></select>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="table data-table align-middle mb-0">
+          <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Pago a</th><th class="text-end">Valor</th></tr></thead>
+          <tbody id="expenseRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div id="empty" class="empty d-none">
+    <i class="bi bi-search"></i>
+    <h2>Nenhum registro encontrado</h2>
+    <p>Altere a busca ou os filtros.</p>
+  </div>
+
+  <footer class="page-footer"><span><i class="bi bi-shield-check me-1"></i> Clique em uma linha para editar ou excluir o registro.</span><span>Protótipo com dados demonstrativos</span></footer>
+</main>
+
+<!-- Doação -->
+<div class="modal fade" id="donationModal" tabindex="-1" aria-labelledby="donationTitle" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header"><div><h2 id="donationTitle">Registrar doação</h2><p>Origem, categoria e o que foi recebido.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+  <form id="donationForm">
+    <div class="modal-body">
+      <input type="hidden" id="donationId">
+      <div class="row g-3">
+        <div class="col-md-6"><label class="form-label" for="dDate">Data *</label><input id="dDate" type="date" class="form-control" required></div>
+        <div class="col-md-6"><label class="form-label" for="dOrigin">Origem *</label><select id="dOrigin" class="form-select" required></select></div>
+        <div class="col-12"><label class="form-label" for="dDonor">Doador</label><input id="dDonor" class="form-control" maxlength="100" placeholder="Nome da pessoa ou empresa — em branco se anônimo"></div>
+        <div class="col-12"><label class="form-label" for="dType">Categoria do recurso *</label><select id="dType" class="form-select" required></select></div>
+
+        <!-- Financeira -->
+        <div class="col-md-6 financial-field"><label class="form-label" for="dAmount">Valor (R$) *</label><input id="dAmount" type="number" min="0.01" step="0.01" class="form-control" placeholder="0,00"></div>
+        <div class="col-md-6 financial-field"><label class="form-label" for="dMethod">Forma de pagamento *</label><select id="dMethod" class="form-select"></select></div>
+
+        <!-- Material -->
+        <div class="col-12 material-field"><label class="form-label" for="dItem">Item doado *</label><input id="dItem" class="form-control" maxlength="100" placeholder="Ex.: ração para filhotes, cobertores"></div>
+        <div class="col-md-6 material-field"><label class="form-label" for="dQuantity">Quantidade *</label><input id="dQuantity" type="number" min="0.01" step="0.01" class="form-control"></div>
+        <div class="col-md-6 material-field"><label class="form-label" for="dUnit">Unidade *</label><select id="dUnit" class="form-select"></select></div>
+
+        <div class="col-12"><label class="form-label" for="dNotes">Observação</label><textarea id="dNotes" class="form-control" rows="2" maxlength="300"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="deleteDonation" class="btn btn-outline-danger me-auto d-none"><i class="bi bi-trash me-1"></i>Excluir</button>
+      <button type="button" class="btn btn-outline-green" data-bs-dismiss="modal">Cancelar</button>
+      <button type="submit" id="saveDonationButton" class="btn btn-green"><i class="bi bi-check2 me-2"></i>Registrar doação</button>
+    </div>
+  </form>
+</div></div></div>
+
+<!-- Despesa -->
+<div class="modal fade" id="expenseModal" tabindex="-1" aria-labelledby="expenseTitle" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header"><div><h2 id="expenseTitle">Registrar despesa</h2><p>Recurso financeiro usado pela organização.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+  <form id="expenseForm">
+    <div class="modal-body">
+      <input type="hidden" id="expenseId">
+      <div class="row g-3">
+        <div class="col-md-6"><label class="form-label" for="eDate">Data *</label><input id="eDate" type="date" class="form-control" required></div>
+        <div class="col-md-6"><label class="form-label" for="eCategory">Categoria *</label><select id="eCategory" class="form-select" required></select></div>
+        <div class="col-12"><label class="form-label" for="eDescription">Descrição *</label><input id="eDescription" class="form-control" required maxlength="120" placeholder="Ex.: castração — Simba"></div>
+        <div class="col-md-6"><label class="form-label" for="eAmount">Valor (R$) *</label><input id="eAmount" type="number" min="0.01" step="0.01" class="form-control" required placeholder="0,00"></div>
+        <div class="col-md-6"><label class="form-label" for="ePaidTo">Pago a</label><input id="ePaidTo" class="form-control" maxlength="100" placeholder="Fornecedor ou prestador"></div>
+        <div class="col-12"><label class="form-label" for="eAnimal">Animal relacionado</label><select id="eAnimal" class="form-select"></select><div class="form-text">Opcional. Permite saber quanto custa cada animal atendido.</div></div>
+        <div class="col-12"><div id="expensePreview" class="expense-preview" aria-live="polite"></div></div>
+        <div class="col-12"><label class="form-label" for="eNotes">Observação</label><textarea id="eNotes" class="form-control" rows="2" maxlength="300"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="deleteExpense" class="btn btn-outline-danger me-auto d-none"><i class="bi bi-trash me-1"></i>Excluir</button>
+      <button type="button" class="btn btn-outline-green" data-bs-dismiss="modal">Cancelar</button>
+      <button type="submit" id="saveExpenseButton" class="btn btn-green"><i class="bi bi-check2 me-2"></i>Registrar despesa</button>
+    </div>
+  </form>
+</div></div></div>
+
+<!-- Orçamento mensal e saldo inicial -->
+<div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsTitle" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header"><div><h2 id="settingsTitle">Orçamento e saldo inicial</h2><p>Limites de gasto por mês e o dinheiro que já havia em caixa.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+  <form id="settingsForm">
+    <div class="modal-body">
+      <h3 class="form-section-title">Saldo inicial</h3>
+      <p class="form-hint">Valor em caixa quando a organização começou a usar o PAWSAFE. Sem ele, o saldo do sistema não bate com o extrato do banco.</p>
+      <div class="row g-3 mb-4">
+        <div class="col-md-6"><label class="form-label" for="openingAmount">Valor (R$) *</label><input id="openingAmount" type="number" min="0" step="0.01" class="form-control" required></div>
+        <div class="col-md-6"><label class="form-label" for="openingDate">Data *</label><input id="openingDate" type="date" class="form-control" required></div>
+      </div>
+      <h3 class="form-section-title">Orçamento mensal por categoria</h3>
+      <p class="form-hint">Use 0 para categorias sem limite definido. O sistema avisa ao chegar a 80% e ao passar de 100%.</p>
+      <div class="row g-3" id="budgetFields"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-green" data-bs-dismiss="modal">Cancelar</button>
+      <button type="submit" class="btn btn-green"><i class="bi bi-check2 me-2"></i>Salvar</button>
+    </div>
+  </form>
+</div></div></div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3"><div id="toast" class="toast" role="status" aria-live="polite"><div class="toast-body"><i class="bi bi-check-circle-fill me-2"></i><span id="toastText"></span><small id="toastDetail" class="toast-detail"></small></div></div></div>
+@endverbatim
+@endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="{{ asset('js/tema.js') }}"></script>
+<script src="{{ asset('js/dados.js') }}"></script>
+<script src="{{ asset('js/utils.js') }}"></script>
+<script src="{{ asset('js/api.js') }}"></script>
+<script src="{{ asset('js/financeiro.js') }}"></script>
+<script src="{{ asset('js/sidebar.js') }}"></script>
+<script src="{{ asset('js/doacoes.js') }}"></script>
+@endpush
