@@ -11,3 +11,5 @@
 /.vscode
 Thumbs.db
 .DS_Store
+composer.phar
+composer-setup.php
