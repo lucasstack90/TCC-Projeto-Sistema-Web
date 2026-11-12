@@ -20,6 +20,10 @@ Precisa de: **XAMPP** (com PHP 8.2 ou mais novo) e **Composer** (https://getcomp
 
 1. Abra o painel do XAMPP e clique em **Start** no **MySQL** (e no Apache, se for usar o phpMyAdmin).
 2. Entre em http://localhost/phpmyadmin, clique em **Novo** e crie o banco **`pawsafe`** com o agrupamento **`utf8mb4_unicode_ci`**.
+> **Atalho para o banco:** em vez de `php artisan migrate --seed`, dá para importar o arquivo
+> [`database/pawsafe.sql`](database/pawsafe.sql) no phpMyAdmin (aba **Importar**). Ele cria o banco
+> `pawsafe`, todas as tabelas e os dados de exemplo de uma vez. Importar de novo volta tudo ao exemplo.
+
 3. Coloque o projeto em `C:\xampp\htdocs\Sistema-web` e, no terminal do VS Code, dentro dessa pasta:
 
    ```bash
