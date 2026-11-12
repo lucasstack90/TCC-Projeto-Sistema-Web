@@ -83,15 +83,14 @@ function renderSummary() {
   const monthMoves = moves.filter(m => m.date.startsWith(month)).length;
 
   const stats = [
-    ['Itens ativos', active.length, 'bi-box-seam', 'icon-green'],
-    ['Para repor', restock, 'bi-cart-plus', restock ? 'icon-danger' : 'icon-green'],
-    ['Lotes vencendo / vencidos', lotsWarning, 'bi-calendar-x', lotsWarning ? 'icon-terra' : 'icon-green'],
-    ['Movimentações no mês', monthMoves, 'bi-arrow-left-right', 'icon-blue']
+    ['Itens ativos', active.length, ''],
+    ['Para repor', restock, restock ? 'is-danger' : ''],
+    ['Lotes vencendo / vencidos', lotsWarning, lotsWarning ? 'is-warning' : ''],
+    ['Movimentações no mês', monthMoves, '']
   ];
-  $('summaryStats').innerHTML = stats.map(([label, value, icon, color]) => `
+  $('summaryStats').innerHTML = stats.map(([label, value, tone]) => `
     <div class="summary-stat">
-      <span class="summary-icon ${color}"><i class="bi ${icon}"></i></span>
-      <div><strong>${value}</strong><small>${label}</small></div>
+      <small>${label}</small><strong class="${tone}">${value}</strong>
     </div>`).join('');
 
   $('itemsText').textContent = plural(active.length, 'item ativo', 'itens ativos');

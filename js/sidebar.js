@@ -46,7 +46,6 @@
         <span class="brand-mark"><i class="bi bi-heart-pulse-fill"></i></span>
         <span class="brand-copy"><strong>PAWSAFE</strong><small>Gestão e proteção animal</small></span>
       </a>
-      <div class="sidebar-label">MENU PRINCIPAL</div>
       <nav class="nav flex-column sidebar-nav">${navLinks}</nav>
       <div class="sidebar-bottom">
         <a class="nav-link volunteer-link" href="${base}voluntario-cadastro.html" target="_blank" rel="noopener" title="Formulário público de inscrição"><i class="bi bi-box-arrow-up-right"></i><span>Link de voluntariado</span></a>

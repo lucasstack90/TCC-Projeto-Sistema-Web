@@ -29,7 +29,6 @@
   <header class="topbar">
     <button class="mobile-menu" id="menuToggle" type="button" aria-label="Abrir menu" aria-expanded="false"><i class="bi bi-list"></i></button>
     <div class="topbar-title">
-      <div class="eyebrow">Processo de adoção</div>
       <h1>Adoções</h1>
       <p class="page-subtitle"><span id="activeText"></span> <span class="subtitle-dot">•</span> <span id="adopterText"></span></p>
     </div>
@@ -90,7 +89,7 @@
     <div class="modal-body">
       <input type="hidden" id="adopterId">
 
-      <div class="section-title">DADOS PESSOAIS</div>
+      <div class="section-title">Dados pessoais</div>
       <div class="row g-3">
         <div class="col-md-8"><label class="form-label" for="adName">Nome completo *</label><input id="adName" class="form-control" required maxlength="80"></div>
         <div class="col-md-4"><label class="form-label" for="adBirth">Data de nascimento *</label><input id="adBirth" type="date" class="form-control" required></div>
@@ -99,7 +98,7 @@
         <div class="col-md-4"><label class="form-label" for="adEmail">E-mail *</label><input id="adEmail" type="email" class="form-control" required maxlength="80" placeholder="nome@email.com"></div>
       </div>
 
-      <div class="section-title mt-4">ENDEREÇO</div>
+      <div class="section-title mt-4">Endereço</div>
       <div class="row g-3">
         <div class="col-md-8"><label class="form-label" for="adStreet">Rua *</label><input id="adStreet" class="form-control" required maxlength="80"></div>
         <div class="col-md-4"><label class="form-label" for="adNumber">Número *</label><input id="adNumber" class="form-control" required maxlength="10"></div>
@@ -107,7 +106,7 @@
         <div class="col-md-6"><label class="form-label" for="adCity">Cidade *</label><input id="adCity" class="form-control" required maxlength="60"></div>
       </div>
 
-      <div class="section-title mt-4">RESIDÊNCIA E FAMÍLIA</div>
+      <div class="section-title mt-4">Residência e família</div>
       <div class="row g-3">
         <div class="col-md-4"><label class="form-label" for="adHousing">Tipo de moradia *</label><select id="adHousing" class="form-select" required><option value="">Selecione</option><option>Casa</option><option>Apartamento</option><option>Chácara / sítio</option></select></div>
         <div class="col-md-4"><label class="form-label" for="adOwnership">Imóvel *</label><select id="adOwnership" class="form-select" required><option value="">Selecione</option><option>Própria</option><option>Alugada</option><option>Cedida</option></select></div>
@@ -125,12 +124,12 @@
         <div class="col-12"><label class="form-label" for="adMotivation">Por que deseja adotar? *</label><textarea id="adMotivation" class="form-control" rows="2" required maxlength="500"></textarea></div>
       </div>
 
-      <div class="section-title mt-4">DOCUMENTOS</div>
+      <div class="section-title mt-4">Documentos</div>
       <label class="form-label" for="adDocs">Fotos de documentos (RG, comprovante de residência...) — até 3 imagens</label>
       <input id="adDocs" type="file" class="form-control" accept="image/png,image/jpeg,image/webp" multiple>
       <div id="docPreview" class="doc-preview"></div>
 
-      <div class="section-title mt-4">CONSENTIMENTO</div>
+      <div class="section-title mt-4">Consentimento</div>
       <label class="consent">
         <input id="adConsent" type="checkbox" required>
         <span>O adotante autorizou o armazenamento destes dados pela organização, apenas para o processo de adoção (LGPD). *</span>

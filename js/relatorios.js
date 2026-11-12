@@ -663,9 +663,8 @@ function render() {
       <div class="report-brand"><span class="brand-mark"><i class="bi bi-heart-pulse-fill"></i></span>
         <div><strong>${escapeHtml(config.org.name)}</strong><small>${config.partnership.publicFunding ? escapeHtml(config.partnership.instrument) : 'Relatório de atividades'}</small></div></div>
       <div class="report-title">
-        <div class="eyebrow">${escapeHtml(model)}</div>
         <h2>Relatório técnico de atividades</h2>
-        <p>${formatDate(p.start)} a ${formatDate(p.end)}</p>
+        <p>${escapeHtml(model)} · ${formatDate(p.start)} a ${formatDate(p.end)}</p>
       </div>
     </header>
     ${body || '<div class="empty"><i class="bi bi-ui-checks"></i><h2>Nenhuma seção selecionada</h2><p>Marque ao menos uma seção acima.</p></div>'}

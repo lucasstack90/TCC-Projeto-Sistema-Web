@@ -16,7 +16,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 9px;
-  font-size: 11px;
+  font-size: 12px;
   transition: background .18s ease, border-color .18s ease;
 }
 .stage-chip:hover { background: var(--green-100); }
@@ -46,7 +46,7 @@
 .process-animal strong,
 .process-field strong { display: block; font-size: 12px; }
 .process-animal small,
-.process-field small { display: block; color: var(--muted); font-size: 10px; }
+.process-field small { display: block; color: var(--muted); font-size: 12px; }
 .process-field small { margin-bottom: 3px; }
 
 .process-photo { flex: 0 0 46px; width: 46px; height: 46px; border-radius: 10px; object-fit: cover; }
@@ -63,7 +63,7 @@
 .mini-progress span { display: block; height: 100%; background: var(--green-700); border-radius: 6px; }
 
 /* ---------- Tabela de adotantes ---------- */
-#adopterRows .status-badge { margin-left: 4px; font-size: 9px; }
+#adopterRows .status-badge { margin-left: 4px; font-size: 12px; }
 
 /* ---------- Formulário do adotante ---------- */
 .doc-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 10px; }
@@ -71,7 +71,7 @@
 
 .doc-item { position: relative; margin: 0; padding: 6px; background: var(--surface-muted); border-radius: var(--radius-sm); }
 .doc-item img { display: block; width: 100%; height: 90px; object-fit: cover; border-radius: 7px; }
-.doc-item figcaption { margin-top: 4px; overflow: hidden; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.doc-item figcaption { margin-top: 4px; overflow: hidden; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 
 .doc-remove {
   position: absolute;
@@ -93,9 +93,9 @@
 .process-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
 
 .summary-card { display: flex; gap: 12px; padding: 13px; background: var(--surface-muted); border-radius: 12px; }
-.summary-card small { display: block; color: var(--muted); font-size: 9px; letter-spacing: .5px; text-transform: uppercase; }
+.summary-card small { display: block; color: var(--muted); font-size: 12px; }
 .summary-card strong { display: block; margin: 2px 0 3px; font-size: 15px; }
-.summary-card p { margin: 0 0 4px; color: var(--muted); font-size: 11px; }
+.summary-card p { margin: 0 0 4px; color: var(--muted); font-size: 12px; }
 
 .summary-photo { flex: 0 0 64px; width: 64px; height: 64px; border-radius: 12px; object-fit: cover; }
 .summary-avatar {
@@ -109,7 +109,7 @@
   font-size: 26px;
 }
 
-.link-button { padding: 0; color: var(--green-700); background: none; border: 0; font-size: 11px; font-weight: 700; }
+.link-button { padding: 0; color: var(--green-700); background: none; border: 0; font-size: 12px; font-weight: 700; }
 .link-button:hover { color: var(--green-950); text-decoration: underline; }
 
 /* Etapas: Novo → Em análise → Aprovada → Concluída */
@@ -125,7 +125,7 @@
   background: var(--surface-soft);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  font-size: 11px;
+  font-size: 12px;
 }
 .step span {
   display: grid;
@@ -135,7 +135,7 @@
   color: var(--tinta-8a968e);
   background: var(--fundo-e9eee9);
   border-radius: 50%;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
 }
 .step.done { color: var(--green-800); background: var(--green-100); border-color: var(--linha-c4dccd); }
@@ -164,10 +164,10 @@
 .check-item:has(input:disabled) { cursor: default; opacity: .8; }
 
 .process-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-.process-hint { display: block; margin-top: 8px; color: var(--tinta-a65d43); font-size: 11px; }
+.process-hint { display: block; margin-top: 8px; color: var(--tinta-a65d43); font-size: 12px; }
 .process-hint:empty { display: none; }
 
-#processLog .status-badge { font-size: 9px; }
+#processLog .status-badge { font-size: 12px; }
 
 /* ---------- Responsividade ---------- */
 @media (max-width: 1200px) {

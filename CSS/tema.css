@@ -67,15 +67,15 @@
   --lilac-light: hsl(258 33% 95%);
 
   /* Status (badges de animais, adoções, resgates, estoque, voluntários) */
-  --status-ok: hsl(150 41% 30%);        --status-ok-bg: hsl(133 35% 90%);
-  --status-info: hsl(201 41% 37%);      --status-info-bg: hsl(200 41% 90%);
-  --status-alerta: hsl(32 57% 38%);     --status-alerta-bg: hsl(40 69% 88%);
-  --status-atencao: hsl(43 63% 33%);    --status-atencao-bg: hsl(46 67% 90%);
-  --status-critico: hsl(22 54% 42%);    --status-critico-bg: hsl(22 72% 95%);
-  --status-roxo: hsl(255 23% 46%);      --status-roxo-bg: hsl(256 37% 91%);
-  --status-rosa: hsl(334 33% 45%);      --status-rosa-bg: hsl(333 44% 91%);
-  --status-neutro: hsl(150 4% 44%);     --status-neutro-bg: hsl(150 7% 92%);
-  --status-suave: hsl(150 15% 36%);     --status-suave-bg: hsl(128 14% 92%);
+  --status-ok: hsl(150 41% 30%);      --status-ok-bg: hsl(133 35% 90%);
+  --status-info: hsl(201 41% 36.5%);    --status-info-bg: hsl(200 41% 90%);
+  --status-alerta: hsl(32 57% 34%);      --status-alerta-bg: hsl(40 69% 88%);
+  --status-atencao: hsl(43 63% 30.5%);    --status-atencao-bg: hsl(46 67% 90%);
+  --status-critico: hsl(22 54% 40%);      --status-critico-bg: hsl(22 72% 95%);
+  --status-roxo: hsl(255 23% 45%);      --status-roxo-bg: hsl(256 37% 91%);
+  --status-rosa: hsl(334 33% 43%);      --status-rosa-bg: hsl(333 44% 91%);
+  --status-neutro: hsl(150 4% 39%);      --status-neutro-bg: hsl(150 7% 92%);
+  --status-suave: hsl(150 15% 36%);      --status-suave-bg: hsl(128 14% 92%);
 
   --shadow: 0 8px 24px hsl(157 31% 20% / .045);
   --shadow-lg: 0 16px 45px hsl(158 30% 18% / .10);
@@ -161,7 +161,7 @@
 /* ---------- Ajustes pontuais do modo escuro ----------
    Lugares onde um tom verde da marca é usado como FUNDO
    (no escuro, --green-800/950 viraram tons claros de texto). */
-.dark .sidebar { background: linear-gradient(180deg, var(--sidebar), var(--sidebar-accent)); border-right: 1px solid var(--sidebar-border); }
+.dark .sidebar { background: var(--sidebar); border-right: 1px solid var(--sidebar-border); }
 .dark .sidebar .nav-link.active { background: var(--sidebar-primary); }
 .dark .btn-green { color: var(--primary-foreground); background: var(--primary); border-color: var(--primary); }
 .dark .btn-green:hover,
@@ -171,12 +171,15 @@
 .dark .remember-option input:checked + .custom-check,
 .dark .flow .flow-total { color: var(--primary-foreground); background: var(--primary); border-color: var(--primary); }
 .dark .report-brand .brand-mark { color: var(--primary-foreground); background: var(--primary); }
-.dark .btn-login { background: linear-gradient(110deg, hsl(160 33% 24%), hsl(162 30% 32%)); }
+.dark .btn-login { background: hsl(162 30% 30%); }
+.dark .btn-login:hover { background: hsl(162 30% 35%); }
+.dark .visual-panel { background: var(--sidebar); border-left: 1px solid var(--sidebar-border); }
 
 .dark .profile-mini .avatar { color: var(--sidebar); }
 .dark .login-card { border-color: var(--border); }
 .dark .sidebar-count.is-alert,
 .dark .tab-count { color: hsl(18 50% 10%); }
+.dark .sidebar-count.is-alert { background: var(--terra); }
 
 /* ---------- Botão claro/escuro ---------- */
 .theme-toggle {
@@ -191,8 +194,8 @@
   border: 0;
   border-radius: 10px;
   text-align: left;
-  font-size: 12px;
-  transition: background .18s ease, color .18s ease;
+  font-size: 13px;
+  transition: background-color .15s ease-out, color .15s ease-out;
 }
 .theme-toggle:hover { color: #fff; background: rgba(255, 255, 255, .08); }
 .theme-toggle > i { flex-shrink: 0; width: 17px; font-size: 16px; text-align: center; }
@@ -275,45 +278,45 @@
   --tinta-22634a: hsl(157 49% 26.1%);
   --tinta-28674f: hsl(157 44% 28%);
   --tinta-2d6c4c: hsl(150 41% 30%);
-  --tinta-39705e: hsl(160 33% 33.1%);
+  --tinta-39705e: hsl(160 33% 32.1%);
   --tinta-3b5148: hsl(155 16% 27.5%);
-  --tinta-46758b: hsl(199 33% 41%);
-  --tinta-467665: hsl(159 26% 36.9%);
-  --tinta-477462: hsl(156 24% 36.7%);
-  --tinta-5c766a: hsl(152 12% 41.2%);
-  --tinta-5e8266: hsl(133 16% 43.9%);
-  --tinta-6b7f75: hsl(150 9% 45.9%);
+  --tinta-46758b: hsl(199 33% 36.5%);
+  --tinta-467665: hsl(159 26% 33.4%);
+  --tinta-477462: hsl(156 24% 33.7%);
+  --tinta-5c766a: hsl(152 12% 40.7%);
+  --tinta-5e8266: hsl(133 16% 35.4%);
+  --tinta-6b7f75: hsl(150 9% 41.4%);
   --tinta-6b9580: hsl(150 17% 50.2%);
-  --tinta-6e8279: hsl(153 8% 47.1%);
-  --tinta-71639a: hsl(255 22% 49.6%);
-  --tinta-71857b: hsl(150 8% 48.2%);
-  --tinta-728178: hsl(144 6% 47.6%);
-  --tinta-789087: hsl(158 10% 51.8%);
-  --tinta-7b8a82: hsl(148 6% 51.2%);
-  --tinta-7c8981: hsl(143 5% 51.2%);
-  --tinta-7c8a81: hsl(141 6% 51.4%);
-  --tinta-839188: hsl(141 6% 54.1%);
-  --tinta-849188: hsl(138 6% 54.3%);
-  --tinta-859188: hsl(135 5% 54.5%);
-  --tinta-86a195: hsl(153 13% 57.8%);
-  --tinta-87938b: hsl(140 5% 55.3%);
-  --tinta-899a91: hsl(148 8% 57.1%);
+  --tinta-6e8279: hsl(153 8% 41.6%);
+  --tinta-71639a: hsl(255 22% 45.6%);
+  --tinta-71857b: hsl(150 8% 41.7%);
+  --tinta-728178: hsl(144 6% 42.1%);
+  --tinta-789087: hsl(158 10% 41.3%);
+  --tinta-7b8a82: hsl(148 6% 42.2%);
+  --tinta-7c8981: hsl(143 5% 42.2%);
+  --tinta-7c8a81: hsl(141 6% 41.9%);
+  --tinta-839188: hsl(141 6% 42.1%);
+  --tinta-849188: hsl(138 6% 42.3%);
+  --tinta-859188: hsl(135 5% 42.5%);
+  --tinta-86a195: hsl(153 13% 51.8%);
+  --tinta-87938b: hsl(140 5% 42.3%);
+  --tinta-899a91: hsl(148 8% 41.6%);
   --tinta-8a5413: hsl(33 76% 30.8%);
-  --tinta-8a704d: hsl(34 28% 42.2%);
-  --tinta-8a968e: hsl(140 5% 56.5%);
-  --tinta-8a9b91: hsl(145 8% 57.5%);
-  --tinta-95a399: hsl(137 7% 61.2%);
-  --tinta-9a642a: hsl(31 57% 38.4%);
-  --tinta-9aa69d: hsl(135 6% 62.7%);
-  --tinta-9aa9a1: hsl(148 8% 63.3%);
-  --tinta-9fb2a8: hsl(148 11% 66.1%);
-  --tinta-a0aaa2: hsl(132 6% 64.7%);
-  --tinta-a3b0a8: hsl(143 8% 66.5%);
-  --tinta-a65c31: hsl(22 54% 42.2%);
-  --tinta-a65d43: hsl(16 42% 45.7%);
-  --tinta-b07a26: hsl(37 64% 42%);
-  --tinta-b96a42: hsl(20 47% 49.2%);
-  --tinta-c0812f: hsl(34 61% 46.9%);
+  --tinta-8a704d: hsl(34 28% 35.7%);
+  --tinta-8a968e: hsl(140 5% 42.5%);
+  --tinta-8a9b91: hsl(145 8% 53.5%);
+  --tinta-95a399: hsl(137 7% 41.7%);
+  --tinta-9a642a: hsl(31 57% 33.9%);
+  --tinta-9aa69d: hsl(135 6% 42.2%);
+  --tinta-9aa9a1: hsl(148 8% 41.8%);
+  --tinta-9fb2a8: hsl(148 11% 52.6%);
+  --tinta-a0aaa2: hsl(132 6% 42.2%);
+  --tinta-a3b0a8: hsl(143 8% 41.5%);
+  --tinta-a65c31: hsl(22 54% 37.2%);
+  --tinta-a65d43: hsl(16 42% 40.2%);
+  --tinta-b07a26: hsl(37 64% 31%);
+  --tinta-b96a42: hsl(20 47% 38.7%);
+  --tinta-c0812f: hsl(34 61% 46.4%);
   --tinta-cfe2d8: hsl(148 25% 84.9%);
 }
 .dark {
@@ -395,10 +398,10 @@
   --tinta-8a9b91: hsl(145 6% 68%);
   --tinta-95a399: hsl(137 5% 53.8%);
   --tinta-9a642a: hsl(31 46% 68%);
-  --tinta-9aa69d: hsl(135 4% 52.3%);
+  --tinta-9aa69d: hsl(135 4% 60%);
   --tinta-9aa9a1: hsl(148 6% 52%);
   --tinta-9fb2a8: hsl(148 8% 52%);
-  --tinta-a0aaa2: hsl(132 4% 52%);
+  --tinta-a0aaa2: hsl(132 4% 60%);
   --tinta-a3b0a8: hsl(143 5% 52%);
   --tinta-a65c31: hsl(22 44% 68%);
   --tinta-a65d43: hsl(16 34% 68%);
