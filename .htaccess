@@ -1,0 +1,28 @@
+# PAWSAFE — acesso pela raiz do projeto no XAMPP (http://localhost/Sistema-web).
+
+# Não lista as pastas do projeto no navegador.
+Options -Indexes
+DirectoryIndex index.php
+
+# Arquivos ocultos (.env com a senha do banco, .git...) nunca são entregues.
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Estilos, scripts e fotos dos animais ficam em public/.
+    RewriteRule ^(css|js|storage)/(.*)$ public/$1/$2 [L]
+    RewriteRule ^(robots\.txt|favicon\.ico)$ public/$1 [L]
+
+    # Pastas e arquivos internos do Laravel: acesso negado.
+    RewriteRule ^(app|bootstrap|config|database|docs|lang|resources|routes|storage|tests|vendor)(/|$) - [F,L]
+    RewriteRule (^|/)\. - [F,L]
+    RewriteRule ^(artisan|composer\.(json|lock)|package(-lock)?\.json|README\.md)$ - [F,L]
+
+    # Todo o resto (login, animais, adocoes...) vai para o Laravel.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
+</IfModule>

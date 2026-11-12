@@ -20,7 +20,7 @@ Precisa de: **XAMPP** (com PHP 8.2 ou mais novo) e **Composer** (https://getcomp
 
 1. Abra o painel do XAMPP e clique em **Start** no **MySQL** (e no Apache, se for usar o phpMyAdmin).
 2. Entre em http://localhost/phpmyadmin, clique em **Novo** e crie o banco **`pawsafe`** com o agrupamento **`utf8mb4_unicode_ci`**.
-3. No terminal do VS Code, dentro da pasta do projeto:
+3. Coloque o projeto em `C:\xampp\htdocs\Sistema-web` e, no terminal do VS Code, dentro dessa pasta:
 
    ```bash
    composer install
@@ -28,10 +28,9 @@ Precisa de: **XAMPP** (com PHP 8.2 ou mais novo) e **Composer** (https://getcomp
    php artisan key:generate
    php artisan migrate --seed    # cria as tabelas e os dados de exemplo
    php artisan storage:link      # libera as fotos dos animais em /storage
-   php artisan serve
    ```
 
-4. Acesse **http://127.0.0.1:8000** e entre com um dos logins de demonstração:
+4. Com o **Apache** e o **MySQL** ligados no XAMPP, acesse **http://localhost/Sistema-web** e entre com um dos logins de demonstração:
 
    | Perfil | E-mail | Senha |
    |---|---|---|
@@ -40,9 +39,11 @@ Precisa de: **XAMPP** (com PHP 8.2 ou mais novo) e **Composer** (https://getcomp
 
    Troque essas senhas antes de usar com dados reais.
 
-> O `.env` já vem configurado para o MySQL do XAMPP (usuário `root`, sem senha). Se o seu MySQL tiver senha, preencha `DB_PASSWORD`.
+> O `index.php` e o `.htaccess` da raiz permitem abrir o sistema sem o `/public` no endereço. O `.htaccess` bloqueia as pastas internas (`app`, `vendor`, `.env`...) e entrega `css`, `js` e fotos a partir de `public/`.
 >
-> **Sem `php artisan serve`:** copie a pasta para `C:\xampp\htdocs\pawsafe`, ajuste `APP_URL=http://localhost/pawsafe/public` no `.env` e acesse esse endereço com o Apache ligado.
+> O `.env` já vem configurado para o MySQL do XAMPP (usuário `root`, sem senha) e para `APP_URL=http://localhost/Sistema-web`. Se a pasta tiver outro nome, ajuste o `APP_URL`.
+>
+> **Com `php artisan serve`:** troque `APP_URL` para `http://127.0.0.1:8000` e acesse esse endereço.
 >
 > **Recomeçar do zero:** `php artisan migrate:fresh --seed` apaga e recria todas as tabelas. Os módulos que ainda usam o localStorage voltam ao exemplo com `PawData.resetAll()` no console do navegador.
 
@@ -50,6 +51,7 @@ Precisa de: **XAMPP** (com PHP 8.2 ou mais novo) e **Composer** (https://getcomp
 
 ```text
 PAWSAFE/
+├── index.php + .htaccess   # entrada pela raiz no XAMPP (http://localhost/Sistema-web)
 ├── app/
 │   ├── Http/Controllers/AuthController.php        # login e logout
 │   ├── Http/Controllers/Api/AnimalController.php  # API JSON do módulo de Animais
