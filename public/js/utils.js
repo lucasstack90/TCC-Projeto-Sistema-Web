@@ -54,10 +54,12 @@ const PawUtils = (() => {
     }
   }, true);
 
-  // (42) 99999-9999 enquanto digita
-  const maskPhone = (value) => value.replace(/\D/g, '').slice(0, 11)
-    .replace(/^(\d{2})(\d)/, '($1) $2')
-    .replace(/(\d{5})(\d{1,4})$/, '$1-$2');
+  // (42) 99999-9999 (celular) ou (42) 3333-4444 (fixo) enquanto digita
+  const maskPhone = (value) => {
+    const d = String(value ?? '').replace(/\D/g, '').slice(0, 11);
+    return d.replace(/^(\d{2})(\d)/, '($1) $2')
+      .replace(d.length === 11 ? /(\d{5})(\d{4})$/ : /(\d{4})(\d{1,4})$/, '$1-$2');
+  };
 
   // Caixas de marcar no estilo .choice-options: checkboxes('skill', ['Resgate', ...], ['Resgate'])
   const checkboxes = (name, options, checked = []) => options.map(option => `
@@ -65,8 +67,47 @@ const PawUtils = (() => {
 
   const checkedValues = (root, name) => [...root.querySelectorAll(`input[name="${name}"]:checked`)].map(input => input.value);
 
+  // ---------- CPF, CNPJ e CEP ----------
+  // A mesma conta é refeita no servidor (app/Rules/DocumentoValido.php).
+  const digits = (value) => String(value ?? '').replace(/\D/g, '');
+
+  function isValidCpf(value) {
+    const d = digits(value);
+    if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false;
+    for (let t = 9; t < 11; t++) {
+      let sum = 0;
+      for (let i = 0; i < t; i++) sum += Number(d[i]) * (t + 1 - i);
+      if (Number(d[t]) !== ((10 * sum) % 11) % 10) return false;
+    }
+    return true;
+  }
+
+  function isValidCnpj(value) {
+    const d = digits(value);
+    if (d.length !== 14 || /^(\d)\1{13}$/.test(d)) return false;
+    for (const t of [12, 13]) {
+      const weights = t === 12 ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2] : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+      const rest = weights.reduce((sum, w, i) => sum + Number(d[i]) * w, 0) % 11;
+      if (Number(d[t]) !== (rest < 2 ? 0 : 11 - rest)) return false;
+    }
+    return true;
+  }
+
+  // 000.000.000-00 enquanto digita
+  const maskCpf = (value) => digits(value).slice(0, 11)
+    .replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  // 00.000.000/0000-00 enquanto digita
+  const maskCnpj = (value) => digits(value).slice(0, 14)
+    .replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+    .replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2');
+  // 00000-000
+  const maskCep = (value) => digits(value).slice(0, 8).replace(/(\d{5})(\d)/, '$1-$2');
+
   // Valores em reais: money(1550) → "R$ 1.550,00"
   const money = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
 
-  return { today, formatDate, escapeHtml, plural, code, nextId, compressImage, animalPhoto, maskPhone, checkboxes, checkedValues, money };
+  return {
+    today, formatDate, escapeHtml, plural, code, nextId, compressImage, animalPhoto, maskPhone, checkboxes, checkedValues, money,
+    digits, isValidCpf, isValidCnpj, maskCpf, maskCnpj, maskCep
+  };
 })();

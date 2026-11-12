@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AnimalController;
+use App\Http\Controllers\Api\ContribuinteController;
+use App\Http\Controllers\Api\VeterinarioController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -51,6 +53,21 @@ Route::middleware('auth')->group(function () {
         Route::post('/animais/{animal}/historico', [AnimalController::class, 'storeHistorico'])->name('animais.historico');
         Route::post('/animais/{animal}/pesagens', [AnimalController::class, 'storePesagem'])->name('animais.pesagens');
         Route::patch('/animais/{animal}/status', [AnimalController::class, 'updateStatus'])->name('animais.status');
+
+        // Cadastro de veterinários (usado nas vacinas, no histórico e na assinatura do relatório).
+        Route::get('/veterinarios', [VeterinarioController::class, 'index'])->name('veterinarios.index');
+        Route::post('/veterinarios', [VeterinarioController::class, 'store'])->name('veterinarios.store');
+        Route::put('/veterinarios/{veterinario}', [VeterinarioController::class, 'update'])->name('veterinarios.update');
+        Route::delete('/veterinarios/{veterinario}', [VeterinarioController::class, 'destroy'])
+            ->middleware('perfil:funcionario')->name('veterinarios.destroy');
+
+        // Contribuintes do financeiro (doadores e fornecedores): dados pessoais, só a equipe fixa.
+        Route::middleware('perfil:funcionario')->group(function () {
+            Route::get('/contribuintes', [ContribuinteController::class, 'index'])->name('contribuintes.index');
+            Route::post('/contribuintes', [ContribuinteController::class, 'store'])->name('contribuintes.store');
+            Route::put('/contribuintes/{contribuinte}', [ContribuinteController::class, 'update'])->name('contribuintes.update');
+            Route::delete('/contribuintes/{contribuinte}', [ContribuinteController::class, 'destroy'])->name('contribuintes.destroy');
+        });
     });
 });
 

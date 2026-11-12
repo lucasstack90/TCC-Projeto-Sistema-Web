@@ -4,8 +4,11 @@
    O saldo é calculado em js/financeiro.js (PawFinance) e se atualiza sozinho a cada despesa.
    Aba Resumo: fôlego de caixa, fluxo mensal, orçamento por categoria, custo por animal,
    maiores doadores e exportação da prestação de contas.
-   Depende de: Bootstrap 5, Chart.js, js/dados.js (PawData), js/utils.js (PawUtils),
-   js/financeiro.js (PawFinance) e js/sidebar.js. */
+   Aba Contribuintes: cadastro de doadores frequentes e fornecedores (CPF/CNPJ), selecionados
+   nas doações e despesas em vez de digitar o nome (js/contribuintes.js, dados no MySQL).
+   Doações e despesas ainda ficam no localStorage e guardam o id do contribuinte + o nome da época.
+   Depende de: Bootstrap 5, Chart.js, js/dados.js (PawData), js/utils.js (PawUtils), js/api.js (PawApi),
+   js/financeiro.js (PawFinance), js/contribuintes.js (PawContributors) e js/sidebar.js. */
 
 const $ = (id) => document.getElementById(id);
 const { today, formatDate, escapeHtml, plural, money } = PawUtils;
@@ -17,7 +20,7 @@ let expenses = PawData.loadExpenses();
 let budgets = PawData.loadBudgets();
 let opening = PawData.loadOpening();
 const animals = PawData.loadAnimals();
-let view = 'summary'; // 'summary' | 'donations' | 'expenses'
+let view = 'summary'; // 'summary' | 'donations' | 'expenses' | 'contributors'
 let month = F.monthKey(today());
 let balanceChange = null; // { before, after } — destaque no card de Saldo após uma despesa
 let flowChart = null;
@@ -29,7 +32,11 @@ const toast = new bootstrap.Toast($('toast'), { delay: 4500 });
 
 const normalize = (text) => String(text ?? '').toLocaleLowerCase('pt-BR');
 const byDateDesc = (a, b) => b.date.localeCompare(a.date) || b.id - a.id;
-const donorName = (d) => d.donor || 'Doador não identificado';
+const C = PawContributors;
+let contributorsFailed = false;
+// Nome atual do cadastro (se o contribuinte foi editado) ou o nome gravado no lançamento.
+const donorName = (d) => (d.contributorId && C.label(C.find(d.contributorId))) || d.donor || 'Doador não identificado';
+const payeeName = (e) => (e.contributorId && C.label(C.find(e.contributorId))) || e.paidTo || '';
 const percent = (ratio) => `${Math.round(ratio * 100)}%`;
 const animalName = (id) => animals.find(a => a.id === id)?.name;
 
@@ -246,7 +253,7 @@ function donationRows() {
   const list = donations
     .filter(d => !type || d.type === type)
     .filter(d => !origin || d.origin === origin)
-    .filter(d => !term || normalize([d.donor, d.item, d.notes, d.method].join(' ')).includes(term))
+    .filter(d => !term || normalize([donorName(d), d.item, d.notes, d.method].join(' ')).includes(term))
     .sort(byDateDesc);
 
   $('donationRows').innerHTML = list.map(d => `
@@ -265,7 +272,7 @@ function expenseRows() {
   const category = $('categoryFilter').value;
   const list = expenses
     .filter(e => !category || e.category === category)
-    .filter(e => !term || normalize([e.description, e.paidTo, e.notes, animalName(e.animalId)].join(' ')).includes(term))
+    .filter(e => !term || normalize([e.description, payeeName(e), e.notes, animalName(e.animalId)].join(' ')).includes(term))
     .sort(byDateDesc);
 
   $('expenseRows').innerHTML = list.map(e => {
@@ -276,8 +283,45 @@ function expenseRows() {
       <td>${formatDate(e.date)}</td>
       <td><strong>${escapeHtml(e.description)}</strong>${details ? `<small>${details}</small>` : ''}</td>
       <td>${escapeHtml(e.category)}</td>
-      <td>${escapeHtml(e.paidTo || '—')}</td>
+      <td>${escapeHtml(payeeName(e) || '—')}</td>
       <td class="text-end amount expense">− ${money(e.amount)}</td>
+    </tr>`;
+  }).join('');
+  return list.length;
+}
+
+// ================= Contribuintes =================
+function contributorRows() {
+  const term = normalize($('contributorSearch').value.trim());
+  const termDigits = PawUtils.digits(term);
+  const type = $('contributorTypeFilter').value;
+  const role = $('contributorRoleFilter').value;
+  const list = C.list()
+    .filter(c => !type || c.type === type)
+    .filter(c => role === 'inactive' ? !c.active : (c.active || role === '') && (!role || c[role]))
+    .filter(c => !term
+      || normalize([c.name, c.tradeName, c.contact, c.city, c.email, c.phone].join(' ')).includes(term)
+      || (termDigits.length >= 3 && PawUtils.digits(c.document).includes(termDigits)));
+
+  $('contributorRows').innerHTML = list.map(c => {
+    const given = donations.filter(d => d.contributorId === c.id);
+    const financial = given.filter(F.isFinancial);
+    const paid = expenses.filter(e => e.contributorId === c.id);
+    const totalGiven = financial.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+    const totalPaid = paid.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+    const place = [c.city, c.uf].filter(Boolean).join(' - ');
+    return `
+    <tr class="clickable-row" data-contributor="${c.id}">
+      <td><strong>${escapeHtml(C.label(c))}</strong><small>${[c.contact && `Contato: ${escapeHtml(c.contact)}`, place && escapeHtml(place)].filter(Boolean).join(' · ') || '&nbsp;'}</small></td>
+      <td>${escapeHtml(c.documentMasked)}<small>${c.type}</small></td>
+      <td>${escapeHtml(c.phone)}<small>${escapeHtml(c.email || '—')}</small></td>
+      <td><div class="role-tags">
+        ${c.donor ? '<span class="status-badge type-financeira">Doador</span>' : ''}
+        ${c.supplier ? '<span class="status-badge type-material">Fornecedor</span>' : ''}
+        ${c.active ? '' : '<span class="status-badge volunteer-inativo">Inativo</span>'}
+      </div></td>
+      <td class="text-end"><span class="amount">${financial.length ? money(totalGiven) : '—'}</span>
+        <small>${[given.length && plural(given.length, 'doação', 'doações'), paid.length && `pago ${money(totalPaid)}`].filter(Boolean).join(' · ') || 'sem lançamentos'}</small></td>
     </tr>`;
   }).join('');
   return list.length;
@@ -290,7 +334,7 @@ function render() {
     $('empty').classList.add('d-none');
     return;
   }
-  const count = view === 'donations' ? donationRows() : expenseRows();
+  const count = view === 'donations' ? donationRows() : view === 'expenses' ? expenseRows() : contributorRows();
   $(`${view}View`).querySelector('.table-card').classList.toggle('d-none', !count);
   $('empty').classList.toggle('d-none', count > 0);
 }
@@ -298,8 +342,90 @@ function render() {
 function setView(next) {
   view = next;
   document.querySelectorAll('[data-view]').forEach(tab => tab.classList.toggle('active', tab.dataset.view === next));
-  ['summary', 'donations', 'expenses'].forEach(v => $(`${v}View`).classList.toggle('d-none', v !== next));
+  ['summary', 'donations', 'expenses', 'contributors'].forEach(v => $(`${v}View`).classList.toggle('d-none', v !== next));
   render();
+}
+
+// ================= Seleção do contribuinte (doação e despesa) =================
+// '' = anônimo / não informado · número = contribuinte cadastrado · 'other' = nome digitado, sem cadastro
+function fillContributorSelects() {
+  const keep = { d: $('dContributor').value, e: $('eContributor').value };
+  $('dContributor').innerHTML = `<option value="">Anônimo / não identificado</option>
+    <optgroup label="Contribuintes cadastrados">${C.options('donor', keep.d)}</optgroup>
+    <option value="other">Doador avulso (digitar o nome, sem cadastro)…</option>`;
+  $('eContributor').innerHTML = `<option value="">Não informado</option>
+    <optgroup label="Fornecedores cadastrados">${C.options('supplier', keep.e)}</optgroup>
+    <option value="other">Fornecedor avulso (digitar o nome, sem cadastro)…</option>`;
+  if (keep.d) $('dContributor').value = keep.d;
+  if (keep.e) $('eContributor').value = keep.e;
+}
+
+// Valor do <select> a partir do lançamento salvo
+const selectValue = (item, name) => (item?.contributorId ? String(item.contributorId) : item?.[name] ? 'other' : '');
+
+function syncDonorField() {
+  const value = $('dContributor').value;
+  const contributor = C.find(value);
+  const other = value === 'other';
+  $('dDonorWrap').classList.toggle('d-none', !other);
+  $('dDonor').required = other;
+  // Contribuinte cadastrado: a origem (PF/PJ) vem do cadastro.
+  $('dOrigin').disabled = Boolean(contributor);
+  if (contributor) $('dOrigin').value = contributor.type;
+  $('dContributorHint').innerHTML = contributor
+    ? `${escapeHtml(contributor.type)} · ${escapeHtml(contributor.documentMasked)} · ${escapeHtml(contributor.phone)}`
+    : other ? 'Use para quem doa uma única vez. Quem doa com frequência: clique em <strong>Cadastrar</strong>.'
+      : C.isLoaded() ? 'Selecione um contribuinte cadastrado, ou deixe anônimo.'
+        : contributorsFailed ? 'Não foi possível carregar os contribuintes cadastrados. Registre como avulso ou recarregue a página.'
+          : 'Carregando contribuintes cadastrados…';
+}
+
+function syncPayeeField() {
+  const other = $('eContributor').value === 'other';
+  $('ePaidToWrap').classList.toggle('d-none', !other);
+  $('ePaidTo').required = other;
+}
+
+// "Cadastrar" ao lado do select: fecha o lançamento, abre o cadastro e volta com o novo contribuinte
+// já selecionado (sem perder o que foi digitado — o formulário não é reiniciado).
+function newContributorFrom(which) {
+  const isDonation = which === 'donation';
+  const formModal = isDonation ? donationModal : expenseModal;
+  $(isDonation ? 'donationModal' : 'expenseModal').addEventListener('hidden.bs.modal', () => {
+    C.openForm(null, {
+      role: isDonation ? 'donor' : 'supplier',
+      type: isDonation && !$('dOrigin').disabled ? $('dOrigin').value : undefined,
+      onDone: (saved) => {
+        fillContributorSelects();
+        if (saved && !saved.removed) $(isDonation ? 'dContributor' : 'eContributor').value = String(saved.id);
+        syncDonorField();
+        syncPayeeField();
+        formModal.show();
+      }
+    });
+  }, { once: true });
+  formModal.hide();
+}
+
+function openContributor(c = null) {
+  C.openForm(c, { onDone: (saved) => { if (saved) syncContributorSnapshots(saved); render(); } });
+}
+
+// Doações e despesas guardam o nome da época. Ao editar o cadastro, o nome acompanha;
+// ao excluir (anonimizar, LGPD), o nome sai também dos lançamentos deste navegador.
+function syncContributorSnapshots(c) {
+  let changedD = false;
+  let changedE = false;
+  donations.filter(d => d.contributorId === c.id).forEach(d => {
+    if (c.removed) { d.donor = `Contribuinte removido #${c.id}`; d.contributorId = null; } else { d.donor = C.label(c); d.origin = c.type; }
+    changedD = true;
+  });
+  expenses.filter(e => e.contributorId === c.id).forEach(e => {
+    if (c.removed) { e.paidTo = `Contribuinte removido #${c.id}`; e.contributorId = null; } else e.paidTo = C.label(c);
+    changedE = true;
+  });
+  if (changedD) PawData.saveDonations(donations);
+  if (changedE) PawData.saveExpenses(expenses);
 }
 
 // ================= Doação =================
@@ -318,7 +444,10 @@ function openDonation(d = null) {
   $('dDate').max = today();
   $('dDate').value = d?.date ?? today();
   $('dOrigin').value = d?.origin ?? 'Pessoa física';
-  $('dDonor').value = d?.donor ?? '';
+  fillContributorSelects();
+  $('dContributor').value = selectValue(d, 'donor');
+  $('dDonor').value = d?.contributorId ? '' : (d?.donor ?? '');
+  syncDonorField();
   $('dType').value = d?.type ?? 'Financeira';
   $('dAmount').value = d?.amount ?? '';
   $('dMethod').value = d?.method || 'PIX';
@@ -339,10 +468,12 @@ $('donationForm').addEventListener('submit', (event) => {
   const financial = $('dType').value === 'Financeira';
   const existing = donations.find(d => d.id === Number($('donationId').value));
   const before = F.totals(donations, expenses, opening).balance;
+  const contributor = C.find($('dContributor').value);
   const data = {
     date: $('dDate').value,
-    origin: $('dOrigin').value,
-    donor: $('dDonor').value.trim(),
+    origin: contributor ? contributor.type : $('dOrigin').value,
+    contributorId: contributor ? contributor.id : null,
+    donor: contributor ? C.label(contributor) : $('dContributor').value === 'other' ? $('dDonor').value.trim() : '',
     type: $('dType').value,
     // Os campos da outra categoria são limpos para não guardar dado sem sentido
     amount: financial ? Number($('dAmount').value) : null,
@@ -386,7 +517,10 @@ function openExpense(e = null) {
   $('eCategory').value = e?.category ?? 'Veterinário';
   $('eDescription').value = e?.description ?? '';
   $('eAmount').value = e?.amount ?? '';
-  $('ePaidTo').value = e?.paidTo ?? '';
+  fillContributorSelects();
+  $('eContributor').value = selectValue(e, 'paidTo');
+  $('ePaidTo').value = e?.contributorId ? '' : (e?.paidTo ?? '');
+  syncPayeeField();
   $('eAnimal').value = e?.animalId ?? '';
   $('eNotes').value = e?.notes ?? '';
 
@@ -432,12 +566,14 @@ $('expenseForm').addEventListener('submit', (event) => {
   event.preventDefault();
   const existing = expenses.find(e => e.id === Number($('expenseId').value));
   const { before, after, budget, expenseMonth } = expenseImpact();
+  const payee = C.find($('eContributor').value);
   const data = {
     date: $('eDate').value,
     category: $('eCategory').value,
     description: $('eDescription').value.trim(),
     amount: Number($('eAmount').value),
-    paidTo: $('ePaidTo').value.trim(),
+    contributorId: payee ? payee.id : null,
+    paidTo: payee ? C.label(payee) : $('eContributor').value === 'other' ? $('ePaidTo').value.trim() : '',
     animalId: Number($('eAnimal').value) || null,
     notes: $('eNotes').value.trim()
   };
@@ -501,7 +637,14 @@ $('settingsForm').addEventListener('submit', (event) => {
 
 // ================= Prestação de contas =================
 function exportCsv() {
-  const csv = F.toCSV(donations, expenses, animals, opening, month);
+  // CPF/CNPJ na prestação de contas: de quem recebeu pagamento e das empresas doadoras.
+  // CPF de doador pessoa física não sai do sistema (LGPD: não é necessário para a prestação de contas).
+  const documentOf = (item, kind) => {
+    const c = C.find(item.contributorId);
+    if (!c) return '';
+    return kind === 'expense' || c.type === C.PJ ? c.document : '';
+  };
+  const csv = F.toCSV(donations, expenses, animals, opening, month, documentOf);
   const link = document.createElement('a');
   link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
   link.download = `pawsafe-prestacao-de-contas-${month}.csv`;
@@ -527,17 +670,22 @@ window.addEventListener('storage', (event) => {
 
 // ================= Eventos =================
 document.addEventListener('click', (event) => {
-  const target = event.target.closest('[data-view], [data-donation], [data-expense]');
+  const target = event.target.closest('[data-view], [data-donation], [data-expense], [data-contributor], [data-new-contributor]');
   if (!target) return;
   const d = target.dataset;
-  if (d.view) setView(d.view);
+  if (d.newContributor) newContributorFrom(d.newContributor);
+  else if (d.contributor) openContributor(C.find(d.contributor));
+  else if (d.view) setView(d.view);
   else if (d.donation) openDonation(donations.find(x => x.id === Number(d.donation)));
   else if (d.expense) openExpense(expenses.find(x => x.id === Number(d.expense)));
 });
 
 $('dType').addEventListener('change', toggleDonationFields);
-['donationSearch', 'expenseSearch'].forEach(id => $(id).addEventListener('input', render));
-['typeFilter', 'originFilter', 'categoryFilter'].forEach(id => $(id).addEventListener('change', render));
+$('dContributor').addEventListener('change', syncDonorField);
+$('eContributor').addEventListener('change', syncPayeeField);
+$('addContributor').addEventListener('click', () => openContributor());
+['donationSearch', 'expenseSearch', 'contributorSearch'].forEach(id => $(id).addEventListener('input', render));
+['typeFilter', 'originFilter', 'categoryFilter', 'contributorTypeFilter', 'contributorRoleFilter'].forEach(id => $(id).addEventListener('change', render));
 $('monthSelect').addEventListener('change', () => { month = $('monthSelect').value; render(); });
 $('addDonation').addEventListener('click', () => openDonation());
 $('addExpense').addEventListener('click', () => openExpense());
@@ -548,6 +696,7 @@ $('exportCsv').addEventListener('click', exportCsv);
 const options = (list) => list.map(item => `<option>${item}</option>`).join('');
 $('typeFilter').innerHTML += options(PawData.DONATION_TYPES);
 $('originFilter').innerHTML += options(PawData.ORIGINS);
+$('contributorTypeFilter').innerHTML += options(PawData.ORIGINS);
 $('categoryFilter').innerHTML += options(PawData.EXPENSE_CATEGORIES);
 $('dOrigin').innerHTML = options(PawData.ORIGINS);
 $('dType').innerHTML = options(PawData.DONATION_TYPES);
@@ -559,4 +708,15 @@ $('eAnimal').innerHTML = '<option value="">Nenhum (despesa geral)</option>' + [.
   .map(a => `<option value="${a.id}">${escapeHtml(a.name)} — ${escapeHtml(a.species)}</option>`).join('');
 
 renderMonthOptions();
+fillContributorSelects();
 setView('summary');
+
+// Contribuintes vêm do servidor (MySQL). Enquanto carregam, doações e despesas funcionam como avulsas.
+C.load()
+  .then(() => { fillContributorSelects(); render(); })
+  .catch((error) => {
+    contributorsFailed = true;
+    $('contributorStatus').textContent = `Não foi possível carregar os contribuintes: ${error.message}`;
+    $('contributorStatus').classList.add('warning');
+    $('contributorStatus').classList.remove('d-none');
+  });

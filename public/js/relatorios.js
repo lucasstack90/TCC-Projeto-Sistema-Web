@@ -34,10 +34,12 @@ const SECTIONS = [
   { id: 'equipe', label: 'Equipe', models: ['gestao', 'completo'] },
   { id: 'pendencias', label: 'Pendências e pontos de atenção', models: ['gestao', 'completo'] },
   { id: 'analise', label: 'Análise da equipe', models: ['prefeitura', 'gestao', 'completo'] },
-  { id: 'assinatura', label: 'Declaração e assinatura', models: ['prefeitura', 'completo'] }
+  { id: 'assinatura', label: 'Declaração e assinaturas', models: ['prefeitura', 'completo'] }
 ];
 
 let config = PawData.loadReportConfig();
+// Veterinário(a) que assina em conjunto (null = só o responsável legal assina).
+const signingVet = () => PawData.loadVets().find(v => v.id === Number(config.signatures?.vetId)) || null;
 let enabled = new Set();
 let charts = [];
 
@@ -539,12 +541,22 @@ const R = {
       </div>`).join('') + '<p class="note no-print">O texto é salvo automaticamente para este período.</p>';
   },
 
+  // Assinatura do responsável legal e, em conjunto, do(a) veterinário(a) responsável técnico(a)
+  // escolhido(a) em "Configurar relatório" (cadastro de veterinários do módulo Animais).
   assinatura() {
     const o = config.org;
+    const vet = signingVet();
     const today = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
-    return `<p>Declaro que as informações deste relatório correspondem às atividades executadas pela organização no período indicado e que os registros e documentos que as comprovam estão disponíveis para consulta do órgão concedente.</p>
+    const legal = `<div class="signature"><span></span><strong>${escapeHtml(o.legalRep)}</strong><small>${escapeHtml(o.legalRole || 'Responsável legal')} — ${escapeHtml(o.name)}</small></div>`;
+    const declaration = vet
+      ? `<p>Declaramos que as informações deste relatório correspondem às atividades executadas pela organização no período indicado e que os registros e documentos que as comprovam estão disponíveis para consulta do órgão concedente.</p>
+        <p>O(a) médico(a)-veterinário(a) responsável técnico(a) confirma as informações de saúde e bem-estar animal (vacinas, atendimentos e procedimentos) registradas no período.</p>`
+      : '<p>Declaro que as informações deste relatório correspondem às atividades executadas pela organização no período indicado e que os registros e documentos que as comprovam estão disponíveis para consulta do órgão concedente.</p>';
+    return `${declaration}
       <p class="mt-3">${escapeHtml((o.city || '').replace(/\s*-\s*[A-Z]{2}$/, ''))}${o.city ? ', ' : ''}${today}.</p>
-      <div class="signature"><span></span><strong>${escapeHtml(o.legalRep)}</strong><small>${escapeHtml(o.legalRole || 'Responsável legal')} — ${escapeHtml(o.name)}</small></div>`;
+      ${vet ? `<div class="signatures">${legal}
+        <div class="signature"><span></span><strong>${escapeHtml(vet.name)}</strong><small>Médico(a)-veterinário(a) — ${escapeHtml(vet.registry)}</small><small>Responsável técnico(a)</small></div>
+      </div>` : legal}`;
   }
 };
 
@@ -711,6 +723,11 @@ $('openConfig').addEventListener('click', () => {
   Object.entries(CONFIG_FIELDS).forEach(([id, [group, key]]) => { $(id).value = config[group][key] ?? ''; });
   $('cfFunding').checked = Boolean(config.partnership.publicFunding);
   togglePartnership();
+  // Veterinários ativos (e o já escolhido, mesmo que tenha sido inativado depois).
+  const vetId = Number(config.signatures?.vetId) || null;
+  $('cfVet').innerHTML = '<option value="">Sem assinatura de veterinário(a)</option>' + PawData.loadVets()
+    .filter(v => v.active || v.id === vetId)
+    .map(v => `<option value="${v.id}"${v.id === vetId ? ' selected' : ''}>${escapeHtml(PawData.vetLabel(v))}${v.active ? '' : ' (inativo)'}</option>`).join('');
   configModal.show();
 });
 $('cfFunding').addEventListener('change', togglePartnership);
@@ -728,6 +745,7 @@ $('configForm').addEventListener('submit', (e) => {
     config[group][key] = group === 'goals' ? Math.max(0, Number(raw) || 0) : raw;
   });
   config.partnership.publicFunding = $('cfFunding').checked;
+  config.signatures = { ...config.signatures, vetId: Number($('cfVet').value) || null };
   PawData.saveReportConfig(config) ? showToast('Configuração salva.') : showToast('Não foi possível salvar a configuração.');
   configModal.hide();
   render();

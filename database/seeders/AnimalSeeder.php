@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Animal;
+use App\Models\Veterinario;
 use Illuminate\Database\Seeder;
 
 /**
@@ -99,6 +100,9 @@ class AnimalSeeder extends Seeder
             ],
         ];
 
+        // Vacinas e consultas de exemplo ficam ligadas ao cadastro do veterinário (VeterinarioSeeder).
+        $vetIds = Veterinario::pluck('id', 'nome');
+
         foreach ($animais as $dados) {
             ['vacinas' => $vacinas, 'historico' => $historico, 'pesagens' => $pesagens] = $dados;
             unset($dados['vacinas'], $dados['historico'], $dados['pesagens']);
@@ -111,11 +115,13 @@ class AnimalSeeder extends Seeder
             foreach ($vacinas as [$nome, $data, $proxima, $lote, $vet]) {
                 $animal->vacinas()->create([
                     'nome' => $nome, 'data_aplicacao' => $data, 'proxima_dose' => $proxima, 'lote' => $lote, 'veterinario' => $vet,
+                    'veterinario_id' => $vetIds[$vet] ?? null,
                 ]);
             }
             foreach ($historico as [$tipo, $data, $descricao, $responsavel, $notas]) {
                 $animal->historicos()->create([
                     'tipo' => $tipo, 'data' => $data, 'descricao' => $descricao, 'responsavel' => $responsavel, 'notas' => $notas,
+                    'veterinario_id' => $vetIds[$responsavel] ?? null,
                 ]);
             }
             foreach ($pesagens as [$peso, $data, $obs]) {

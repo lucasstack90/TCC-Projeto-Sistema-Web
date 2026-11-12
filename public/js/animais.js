@@ -2,7 +2,10 @@
    A lista inicial vem do servidor (window.PAWSAFE.animais, via PawData.loadAnimals()).
    Cadastrar, editar, excluir e registrar vacina/histórico/peso usam a API em /api/animais
    (app/Http/Controllers/Api/AnimalController.php). A validação final é feita no servidor.
-   Depende de: Bootstrap 5, js/dados.js (PawData), js/utils.js (PawUtils), js/api.js (PawApi) e js/sidebar.js. */
+   Vacinas e eventos do histórico escolhem o veterinário no cadastro (js/veterinarios.js);
+   dá para cadastrar um novo ali mesmo, sem sair do registro.
+   Depende de: Bootstrap 5, js/dados.js (PawData), js/utils.js (PawUtils), js/api.js (PawApi),
+   js/veterinarios.js (PawVets) e js/sidebar.js. */
 
 const $ = (id) => document.getElementById(id);
 
@@ -339,7 +342,7 @@ function renderVaccines(a) {
       <div class="record-item">
         <div>
           <strong>${escapeHtml(v.name)}</strong>
-          <p><i class="bi bi-calendar3 me-1"></i>${formatDate(v.date)} · ${escapeHtml(v.vet || 'Veterinário não informado')}</p>
+          <p><i class="bi bi-calendar3 me-1"></i>${formatDate(v.date)} · ${vetText(v, 'Veterinário não informado')}</p>
           <p>Lote: ${escapeHtml(v.lot || '—')}</p>
         </div>
         <div class="text-end"><small>Próxima dose</small><p><span class="status-badge ${late ? 'status-tratamento' : 'status-disponivel'}">${formatDate(v.next)}</span></p></div>
@@ -363,7 +366,7 @@ function renderHistory(a) {
         <span class="health-tag blue">${escapeHtml(h.type)}</span>
         <small class="float-end">${formatDate(h.date)}</small>
         <p><strong>${escapeHtml(h.description)}</strong></p>
-        <small>${escapeHtml(h.vet || 'Responsável não informado')}${h.notes ? ` · ${escapeHtml(h.notes)}` : ''}</small>
+        <small>${vetText(h, 'Responsável não informado')}${h.notes ? ` · ${escapeHtml(h.notes)}` : ''}</small>
       </div>`).join('');
 
   $('panel-history').innerHTML = `
@@ -392,6 +395,75 @@ function renderWeights(a) {
 }
 
 // ================= Registros (vacina, histórico, peso) =================
+// Nome gravado no registro (o da época) + CRMV quando o veterinário é do cadastro.
+function vetText(record, empty) {
+  const vet = record.vetId ? PawVets.find(record.vetId) : null;
+  const name = record.vet || vet?.name;
+  return name ? `${escapeHtml(name)}${vet ? ` <span class="registry-doc">${escapeHtml(vet.registry)}</span>` : ''}` : escapeHtml(empty);
+}
+
+// Seleção do veterinário: cadastro existente, "outro responsável" digitado (só no histórico)
+// ou cadastro rápido de um veterinário novo, no próprio formulário.
+function vetField(label, allowOther) {
+  return `
+    <div><label class="form-label" for="rVetId">${label}</label>
+      <select id="rVetId" class="form-select">
+        <option value="">Não informado</option>
+        ${PawVets.options()}
+        ${allowOther ? '<option value="other">Outro responsável (não é veterinário)…</option>' : ''}
+        <option value="new">+ Cadastrar novo veterinário…</option>
+      </select>
+      <div id="rVetOther" class="d-none mt-2"><input id="rVet" class="form-control" maxlength="120" placeholder="Nome de quem fez o atendimento (ex.: equipe de banho e tosa)" aria-label="Nome do responsável"></div>
+      <div id="rVetNew" class="quick-create d-none">
+        <div class="quick-title">Novo veterinário</div>
+        <div class="row g-2">
+          <div class="col-12"><label class="form-label" for="qvName">Nome *</label><input id="qvName" class="form-control" maxlength="120" placeholder="Ex.: Dra. Marina Lopes"></div>
+          <div class="col-7"><label class="form-label" for="qvCrmv">CRMV *</label><input id="qvCrmv" class="form-control" inputmode="numeric" maxlength="10" placeholder="Só números"></div>
+          <div class="col-5"><label class="form-label" for="qvUf">UF *</label><select id="qvUf" class="form-select">${PawData.UFS.map(uf => `<option${uf === 'PR' ? ' selected' : ''}>${uf}</option>`).join('')}</select></div>
+          <div class="col-12"><label class="form-label" for="qvPhone">Telefone</label><input id="qvPhone" class="form-control" inputmode="tel" maxlength="15" placeholder="(42) 99999-9999"></div>
+        </div>
+        <div class="field-hint">Os demais dados (clínica, vínculo, e-mail) podem ser completados depois em <strong>Veterinários</strong>.</div>
+      </div>
+    </div>`;
+}
+
+function wireVetField() {
+  const select = $('rVetId');
+  if (!select) return;
+  const sync = () => {
+    const isNew = select.value === 'new';
+    const isOther = select.value === 'other';
+    $('rVetNew').classList.toggle('d-none', !isNew);
+    $('rVetOther').classList.toggle('d-none', !isOther);
+    ['qvName', 'qvCrmv'].forEach(id => { $(id).required = isNew; });
+    $('rVet').required = isOther;
+    if (isNew) $('qvName').focus(); else if (isOther) $('rVet').focus();
+  };
+  select.addEventListener('change', sync);
+  $('qvPhone').addEventListener('input', (e) => { e.target.value = PawUtils.maskPhone(e.target.value); });
+  $('qvCrmv').addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, ''); });
+}
+
+// Resolve o que foi escolhido em { vet_id, vet } para a API. Cadastra o veterinário novo antes, se for o caso.
+async function resolveVet() {
+  const select = $('rVetId');
+  if (!select || !select.value) return { vet_id: null, vet: null };
+  if (select.value === 'other') return { vet_id: null, vet: $('rVet').value.trim() };
+  if (select.value === 'new') {
+    const vet = await PawVets.create({
+      name: $('qvName').value.trim(), crmv: $('qvCrmv').value.trim(), crmvUf: $('qvUf').value,
+      phone: $('qvPhone').value.trim(), bond: 'Clínica parceira'
+    });
+    // Se o registro falhar depois, o veterinário já está salvo: deixa selecionado para tentar de novo.
+    select.insertAdjacentHTML('afterbegin', `<option value="${vet.id}">${escapeHtml(PawData.vetLabel(vet))}</option>`);
+    select.value = String(vet.id);
+    select.dispatchEvent(new Event('change'));
+    notify(`${vet.name} cadastrado(a) em Veterinários.`);
+    return { vet_id: vet.id, vet: null };
+  }
+  return { vet_id: Number(select.value), vet: null };
+}
+
 const dateField = () => `<div class="mb-3"><label class="form-label" for="rDate">Data *</label><input id="rDate" type="date" class="form-control" required max="${today()}" value="${today()}"></div>`;
 
 const RECORDS = {
@@ -403,9 +475,9 @@ const RECORDS = {
       ${dateField()}
       <div class="mb-3"><label class="form-label" for="rNext">Próxima dose</label><input id="rNext" type="date" class="form-control"></div>
       <div class="mb-3"><label class="form-label" for="rLot">Lote</label><input id="rLot" class="form-control" placeholder="Ex.: V10-2026-001"></div>
-      <div><label class="form-label" for="rVet">Veterinário</label><input id="rVet" class="form-control"></div>`,
+      ${vetField('Veterinário responsável', false)}`,
     endpoint: 'vacinas',
-    payload: () => ({ name: $('rName').value.trim(), date: $('rDate').value, next: $('rNext').value || null, lot: $('rLot').value.trim(), vet: $('rVet').value.trim() }),
+    payload: (vet) => ({ name: $('rName').value.trim(), date: $('rDate').value, next: $('rNext').value || null, lot: $('rLot').value.trim(), ...vet }),
     message: 'Vacina registrada.'
   },
   history: {
@@ -417,10 +489,10 @@ const RECORDS = {
       </select></div>
       <div class="mb-3"><label class="form-label" for="rDesc">Descrição *</label><input id="rDesc" class="form-control" required placeholder="Ex.: Avaliação geral, retorno..."></div>
       ${dateField()}
-      <div class="mb-3"><label class="form-label" for="rVet">Veterinário / responsável</label><input id="rVet" class="form-control"></div>
+      <div class="mb-3">${vetField('Veterinário / responsável', true)}</div>
       <div><label class="form-label" for="rNotes">Notas clínicas</label><textarea id="rNotes" class="form-control" rows="3"></textarea></div>`,
     endpoint: 'historico',
-    payload: () => ({ type: $('rType').value, date: $('rDate').value, description: $('rDesc').value.trim(), vet: $('rVet').value.trim(), notes: $('rNotes').value.trim() }),
+    payload: (vet) => ({ type: $('rType').value, date: $('rDate').value, description: $('rDesc').value.trim(), notes: $('rNotes').value.trim(), ...vet }),
     message: 'Evento adicionado ao histórico.'
   },
   weight: {
@@ -440,6 +512,7 @@ function openRecord(type) {
   recordType = type;
   $('recordTitle').textContent = RECORDS[type].title;
   $('recordFields').innerHTML = RECORDS[type].fields();
+  wireVetField();
   afterDetailCloses(() => recordModal.show());
 }
 
@@ -449,7 +522,7 @@ $('recordForm').addEventListener('submit', async (event) => {
   if (!animal) return;
   const record = RECORDS[recordType];
   const saved = await withButton(event.submitter || $('recordForm').querySelector('[type="submit"]'),
-    async () => storeAnimal(await PawApi.post(`api/animais/${animal.id}/${record.endpoint}`, record.payload())));
+    async () => storeAnimal(await PawApi.post(`api/animais/${animal.id}/${record.endpoint}`, record.payload(await resolveVet()))));
   if (!saved) return;
   render();
   notify(record.message);
@@ -487,15 +560,18 @@ $('emptyClear').addEventListener('click', clearFilters);
 $('gridMode').addEventListener('click', () => setViewMode('grid'));
 $('listMode').addEventListener('click', () => setViewMode('list'));
 $('addAnimal').addEventListener('click', () => openForm());
+$('openVets').addEventListener('click', () => PawVets.open());
 
 render();
 
 // Links vindos de outras páginas:
 //   animais?animal=3   → abre a ficha do animal
 //   animais?resgate=4  → abre o cadastro já preenchido com o resgate
+//   animais?veterinarios=1 → abre o cadastro de veterinários (link do Relatório técnico)
 const params = new URLSearchParams(window.location.search);
 const linkedAnimal = findAnimal(Number(params.get('animal')));
 const linkedRescue = rescues.find(r => r.id === Number(params.get('resgate')));
 if (linkedAnimal) openDetail(linkedAnimal.id);
 else if (linkedRescue && linkedRescue.stage !== 'Sem sucesso') openForm(null, linkedRescue);
+else if (params.has('veterinarios')) PawVets.open();
 if (params.toString()) history.replaceState(null, '', window.location.pathname); // recarregar não reabre

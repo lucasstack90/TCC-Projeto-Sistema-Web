@@ -59,6 +59,15 @@ Precisam ser repetidas no servidor, senão qualquer pessoa contorna pelo console
 - [ ] Exportação da prestação de contas gerada no servidor (CSV/PDF), base do módulo de Relatório técnico.
 - [ ] Doação **material** deve gerar uma entrada no Estoque (mesmo item, quantidade e unidade),
       para não ser registrada duas vezes à mão.
+- [x] **Cadastro de veterinários** (`veterinarios`: nome, CRMV + UF, contato, clínica, vínculo, ativo).
+      Vacinas e histórico guardam `veterinario_id` + o nome da época; o Relatório técnico é assinado
+      pelo responsável legal **e** pelo(a) veterinário(a) responsável técnico(a)
+      (`configuracoes_relatorio.veterinario_id`). Quem já tem registros só pode ser inativado.
+- [x] **Cadastro de contribuintes** (`contribuintes`: pessoa física com CPF ou jurídica com CNPJ,
+      contato, endereço, papel doador/fornecedor). Doações e despesas ganharam `contribuinte_id`.
+      API pronta; doações e despesas ainda estão no `localStorage` e guardam o id + o nome.
+- [ ] Ao integrar doações/despesas ao MySQL: gravar `contribuinte_id` e conferir no servidor que o
+      contribuinte é doador (doação) ou fornecedor (despesa) e está ativo.
 - [x] *(estrutura: `softDeletes` + `alterado_por` nas tabelas)* Doações e despesas não devem ser apagadas de verdade: guardar quem alterou e quando
       (prestação de contas), em vez do "Excluir" do protótipo.
 
@@ -69,5 +78,10 @@ Precisam ser repetidas no servidor, senão qualquer pessoa contorna pelo console
 - [ ] Dados pessoais (CPF, documentos, contatos) visíveis só para usuários da equipe.
 
 - [x] Dados pessoais (CPF) criptografados no banco; `cpf_hash` para unicidade.
+- [x] Contribuintes: CPF/CNPJ criptografado + `documento_hash` único; consentimento obrigatório para
+      pessoa física; CPF oculto nas listas; exclusão = anonimização (`Contribuinte::anonimizar()`);
+      rotas só para o perfil funcionário; consulta da lista registrada no `log_auditoria`.
+      Na prestação de contas (CSV) sai o CPF/CNPJ de quem recebeu pagamento e o CNPJ de empresas
+      doadoras; o CPF de doador pessoa física não sai do sistema.
 - [x] Registro de auditoria (`log_auditoria`) para login, cadastro, alteração e exclusão.
 - [ ] Tela/rotina para o titular pedir a exclusão: usar `Voluntario::anonimizar()` (e o equivalente para adotantes).

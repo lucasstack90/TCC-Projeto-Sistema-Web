@@ -49,6 +49,10 @@ Precisa de: **XAMPP** (com PHP 8.2 ou mais novo) e **Composer** (https://getcomp
 >
 > **Com `php artisan serve`:** troque `APP_URL` para `http://127.0.0.1:8000` e acesse esse endereço.
 >
+> **Atualizou o código (git pull)?** Rode `php artisan migrate` para criar só as tabelas novas
+> sem perder os dados (ex.: `veterinarios` e `contribuintes`). Para ter também os veterinários de exemplo,
+> rode `php artisan db:seed --class=VeterinarioSeeder` ou importe de novo o `database/pawsafe.sql`.
+>
 > **Recomeçar do zero:** `php artisan migrate:fresh --seed` apaga e recria todas as tabelas. Os módulos que ainda usam o localStorage voltam ao exemplo com `PawData.resetAll()` no console do navegador.
 
 ## Estrutura

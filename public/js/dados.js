@@ -552,6 +552,9 @@ const PawData = (() => {
     },
     // Metas MENSAIS: o relatório calcula a meta proporcional ao período escolhido.
     goals: { rescues: 2, adoptions: 2, vaccines: 4, healthCare: 3 },
+    // Quem assina: o responsável legal (org.legalRep) e, em conjunto, o(a) veterinário(a)
+    // responsável técnico(a), escolhido(a) no cadastro de veterinários (null = sem 2ª assinatura).
+    signatures: { vetId: 1 },
     narratives: {} // análise da equipe, guardada por período ("2026-01-01_2026-12-31")
   };
 
@@ -628,6 +631,20 @@ const PawData = (() => {
     if (serverAnimals) serverAnimals = structuredClone(list);
   }
 
+  // ================= Veterinários (cadastro no MySQL) =================
+  // Lista entregue pelo servidor em window.PAWSAFE.veterinarios; atualizada pela tela de cadastro.
+  let serverVets = Array.isArray(window.PAWSAFE?.veterinarios) ? structuredClone(window.PAWSAFE.veterinarios) : [];
+  const VET_BONDS = ['Equipe da organização', 'Voluntário(a)', 'Clínica parceira', 'Serviço público'];
+  const UFS = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA',
+    'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
+
+  function setVets(list) {
+    serverVets = structuredClone(list);
+    document.dispatchEvent(new CustomEvent('pawsafe:veterinarios', { detail: loadVets() }));
+  }
+  function loadVets() { return structuredClone(serverVets); }
+  const vetLabel = (vet) => (vet ? `${vet.name} · ${vet.registry}` : '');
+
   // Útil na apresentação: no console do navegador, rode PawData.resetAll() e recarregue.
   function resetAll() {
     Object.values(KEYS).forEach(key => localStorage.removeItem(key));
@@ -639,6 +656,7 @@ const PawData = (() => {
     RESCUE_STAGES, OPEN_RESCUE_STAGES, PRIORITIES, rescueClass, priorityClass,
     VOLUNTEER_STATUS, ROLES, SKILLS, DAYS, SHIFTS, volunteerClass,
     ORIGINS, DONATION_TYPES, PAYMENT_METHODS, UNITS, EXPENSE_CATEGORIES,
+    VET_BONDS, UFS, loadVets, setVets, vetLabel,
     loadAnimals,
     saveAnimals,
     setServerAnimals,
@@ -674,6 +692,7 @@ const PawData = (() => {
         org: { ...base.org, ...saved.org },
         partnership: { ...base.partnership, ...saved.partnership },
         goals: { ...base.goals, ...saved.goals },
+        signatures: { ...base.signatures, ...saved.signatures },
         narratives: { ...saved.narratives }
       };
     },

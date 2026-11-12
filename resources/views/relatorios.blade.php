@@ -5,6 +5,7 @@
 @push('css')
   <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
   <link rel="stylesheet" href="{{ asset('css/relatorios.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/cadastros.css') }}">
 @endpush
 
 @section('content')
@@ -65,6 +66,16 @@
         <div class="col-md-6"><label class="form-label" for="cfEmail">E-mail</label><input id="cfEmail" type="email" class="form-control" maxlength="80"></div>
         <div class="col-md-6"><label class="form-label" for="cfRep">Responsável legal *</label><input id="cfRep" class="form-control" required maxlength="80"></div>
         <div class="col-md-6"><label class="form-label" for="cfRole">Cargo</label><input id="cfRole" class="form-control" maxlength="60"></div>
+      </div>
+
+      <div class="section-title mt-4">ASSINATURAS</div>
+      <p class="form-hint mt-0">O relatório é assinado pelo responsável legal (acima) e, em conjunto, pelo(a) médico(a)-veterinário(a) responsável técnico(a), que confirma as informações de saúde e bem-estar dos animais.</p>
+      <div class="row g-3">
+        <div class="col-md-8">
+          <label class="form-label" for="cfVet">Veterinário(a) que assina em conjunto</label>
+          <select id="cfVet" class="form-select"></select>
+          <div class="field-hint"><i class="bi bi-person-badge me-1"></i>A lista vem do cadastro de veterinários. <a href="animais?veterinarios=1">Cadastrar ou editar veterinários</a></div>
+        </div>
       </div>
 
       <div class="section-title mt-4">PARCERIA COM O PODER PÚBLICO</div>

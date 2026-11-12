@@ -5,6 +5,7 @@
 @push('css')
   <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
   <link rel="stylesheet" href="{{ asset('css/animais.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/cadastros.css') }}">
 @endpush
 
 @section('content')
@@ -19,7 +20,10 @@
       <h1>Animais</h1>
       <p class="page-subtitle"><span id="countText"></span> <span class="subtitle-dot">•</span> <span id="availableText"></span></p>
     </div>
-    <button class="btn btn-green" id="addAnimal" type="button"><i class="bi bi-plus-lg me-2"></i>Cadastrar animal</button>
+    <div class="topbar-actions">
+      <button class="btn btn-outline-green" id="openVets" type="button"><i class="bi bi-person-badge me-2"></i>Veterinários</button>
+      <button class="btn btn-green" id="addAnimal" type="button"><i class="bi bi-plus-lg me-2"></i>Cadastrar animal</button>
+    </div>
   </header>
 
   <section class="filter-panel">
@@ -133,5 +137,6 @@
 <script src="{{ asset('js/utils.js') }}"></script>
 <script src="{{ asset('js/api.js') }}"></script>
 <script src="{{ asset('js/sidebar.js') }}"></script>
+<script src="{{ asset('js/veterinarios.js') }}"></script>
 <script src="{{ asset('js/animais.js') }}"></script>
 @endpush

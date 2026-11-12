@@ -12,7 +12,7 @@ class AnimalHistorico extends Model
 
     public const TIPOS = ['Cadastro', 'Consulta', 'Cirurgia', 'Tratamento', 'Exame', 'Banho e Tosa', 'Resgate', 'Adoção', 'Outro'];
 
-    protected $fillable = ['animal_id', 'tipo', 'data', 'descricao', 'responsavel', 'notas', 'user_id'];
+    protected $fillable = ['animal_id', 'tipo', 'data', 'descricao', 'responsavel', 'veterinario_id', 'notas', 'user_id'];
 
     protected function casts(): array
     {
@@ -22,5 +22,10 @@ class AnimalHistorico extends Model
     public function animal(): BelongsTo
     {
         return $this->belongsTo(Animal::class);
+    }
+
+    public function veterinarioCadastrado(): BelongsTo
+    {
+        return $this->belongsTo(Veterinario::class, 'veterinario_id');
     }
 }

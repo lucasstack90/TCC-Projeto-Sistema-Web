@@ -27,9 +27,9 @@ DROP VIEW IF EXISTS `vw_saldo_financeiro`;
 DROP TABLE IF EXISTS
   `log_auditoria`, `relatorio_narrativas`, `configuracoes_relatorio`,
   `movimentacao_lotes`, `movimentacoes`, `lotes`, `embalagens`, `itens_estoque`, `categorias_estoque`,
-  `configuracoes_financeiras`, `orcamentos`, `despesas`, `doacoes`,
+  `configuracoes_financeiras`, `orcamentos`, `despesas`, `doacoes`, `contribuintes`,
   `adocao_registros`, `adocoes`, `adotante_documentos`, `adotantes`,
-  `animal_pesagens`, `animal_historicos`, `animal_vacinas`, `animais`,
+  `animal_pesagens`, `animal_historicos`, `animal_vacinas`, `animais`, `veterinarios`,
   `resgate_registros`, `resgates`,
   `password_reset_tokens`, `users`, `voluntarios`, `migrations`;
 
@@ -53,7 +53,9 @@ INSERT INTO `migrations` (`migration`, `batch`) VALUES
 ('2026_11_11_000400_create_adocoes_tables', 1),
 ('2026_11_11_000500_create_financeiro_tables', 1),
 ('2026_11_11_000600_create_estoque_tables', 1),
-('2026_11_11_000700_create_relatorio_e_auditoria_tables', 1);
+('2026_11_11_000700_create_relatorio_e_auditoria_tables', 1),
+('2026_11_12_000100_create_veterinarios_table', 1),
+('2026_11_12_000200_create_contribuintes_table', 1);
 
 -- =====================================================================
 -- VOLUNTÁRIOS E EQUIPE
@@ -160,6 +162,32 @@ CREATE TABLE `resgate_registros` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =====================================================================
+-- VETERINÁRIOS: cadastro usado nas vacinas, no histórico e na assinatura do relatório.
+-- Inativar em vez de excluir quem já tem registros.
+-- =====================================================================
+CREATE TABLE `veterinarios` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `nome` varchar(120) NOT NULL,
+  `crmv` varchar(10) NOT NULL,
+  `crmv_uf` char(2) NOT NULL DEFAULT 'PR',
+  `telefone` varchar(20) DEFAULT NULL,
+  `email` varchar(150) DEFAULT NULL,
+  `clinica` varchar(120) DEFAULT NULL,
+  `especialidade` varchar(80) DEFAULT NULL,
+  `vinculo` enum('Equipe da organização','Voluntário(a)','Clínica parceira','Serviço público') NOT NULL DEFAULT 'Clínica parceira',
+  `observacoes` text DEFAULT NULL,
+  `ativo` tinyint(1) NOT NULL DEFAULT 1,
+  `user_id` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `veterinarios_crmv_uf_crmv_unique` (`crmv_uf`,`crmv`),
+  KEY `veterinarios_ativo_nome_index` (`ativo`,`nome`),
+  KEY `veterinarios_user_id_foreign` (`user_id`),
+  CONSTRAINT `veterinarios_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================================
 -- ANIMAIS (ficha, vacinas, histórico de cuidados e pesagens)
 -- Foto guardada como caminho do arquivo (storage), não em base64 no banco.
 -- =====================================================================
@@ -200,14 +228,17 @@ CREATE TABLE `animal_vacinas` (
   `data_aplicacao` date NOT NULL,
   `proxima_dose` date DEFAULT NULL,
   `lote` varchar(40) DEFAULT NULL,
-  `veterinario` varchar(120) DEFAULT NULL,
+  `veterinario` varchar(120) DEFAULT NULL COMMENT 'nome na data da vacina',
+  `veterinario_id` bigint unsigned DEFAULT NULL,
   `user_id` bigint unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `animal_vacinas_animal_id_foreign` (`animal_id`),
+  KEY `animal_vacinas_veterinario_id_foreign` (`veterinario_id`),
   KEY `animal_vacinas_user_id_foreign` (`user_id`),
   CONSTRAINT `animal_vacinas_animal_id_foreign` FOREIGN KEY (`animal_id`) REFERENCES `animais` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `animal_vacinas_veterinario_id_foreign` FOREIGN KEY (`veterinario_id`) REFERENCES `veterinarios` (`id`) ON DELETE SET NULL,
   CONSTRAINT `animal_vacinas_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -218,14 +249,17 @@ CREATE TABLE `animal_historicos` (
   `data` date NOT NULL,
   `descricao` varchar(200) NOT NULL,
   `responsavel` varchar(120) DEFAULT NULL,
+  `veterinario_id` bigint unsigned DEFAULT NULL,
   `notas` text DEFAULT NULL,
   `user_id` bigint unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `animal_historicos_animal_id_foreign` (`animal_id`),
+  KEY `animal_historicos_veterinario_id_foreign` (`veterinario_id`),
   KEY `animal_historicos_user_id_foreign` (`user_id`),
   CONSTRAINT `animal_historicos_animal_id_foreign` FOREIGN KEY (`animal_id`) REFERENCES `animais` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `animal_historicos_veterinario_id_foreign` FOREIGN KEY (`veterinario_id`) REFERENCES `veterinarios` (`id`) ON DELETE SET NULL,
   CONSTRAINT `animal_historicos_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -346,12 +380,53 @@ CREATE TABLE `adocao_registros` (
 -- =====================================================================
 -- FINANCEIRO: dinheiro em DECIMAL(10,2); exclusão lógica para prestação de contas.
 -- O saldo não é coluna: é calculado pela view vw_saldo_financeiro.
+-- Contribuintes (doadores frequentes e fornecedores): CPF/CNPJ criptografado pelo Laravel
+-- (APP_KEY) + hash HMAC único. Por isso não há contribuintes de exemplo neste arquivo:
+-- cadastre pela tela (Doações / Financeiro → Contribuintes).
 -- =====================================================================
+CREATE TABLE `contribuintes` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `tipo` enum('Pessoa física','Pessoa jurídica') NOT NULL,
+  `nome` varchar(150) NOT NULL COMMENT 'nome completo ou razão social',
+  `nome_fantasia` varchar(150) DEFAULT NULL,
+  `documento` text NOT NULL COMMENT 'CPF ou CNPJ criptografado',
+  `documento_hash` char(64) NOT NULL,
+  `responsavel` varchar(120) DEFAULT NULL COMMENT 'pessoa de contato (pessoa jurídica)',
+  `telefone` varchar(20) NOT NULL,
+  `email` varchar(150) DEFAULT NULL,
+  `cep` char(9) DEFAULT NULL,
+  `logradouro` varchar(150) DEFAULT NULL,
+  `numero` varchar(20) DEFAULT NULL,
+  `complemento` varchar(60) DEFAULT NULL,
+  `bairro` varchar(100) DEFAULT NULL,
+  `cidade` varchar(100) DEFAULT NULL,
+  `uf` char(2) DEFAULT NULL,
+  `doador` tinyint(1) NOT NULL DEFAULT 1,
+  `fornecedor` tinyint(1) NOT NULL DEFAULT 0,
+  `observacoes` text DEFAULT NULL,
+  `consentimento_lgpd_em` timestamp NULL DEFAULT NULL,
+  `ativo` tinyint(1) NOT NULL DEFAULT 1,
+  `anonimizado_em` timestamp NULL DEFAULT NULL,
+  `user_id` bigint unsigned DEFAULT NULL,
+  `alterado_por` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `contribuintes_documento_hash_unique` (`documento_hash`),
+  KEY `contribuintes_tipo_nome_index` (`tipo`,`nome`),
+  KEY `contribuintes_user_id_foreign` (`user_id`),
+  KEY `contribuintes_alterado_por_foreign` (`alterado_por`),
+  CONSTRAINT `contribuintes_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `contribuintes_alterado_por_foreign` FOREIGN KEY (`alterado_por`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `doacoes` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `data` date NOT NULL,
   `origem` enum('Pessoa física','Pessoa jurídica') NOT NULL,
   `doador` varchar(150) DEFAULT NULL COMMENT 'vazio = doação anônima',
+  `contribuinte_id` bigint unsigned DEFAULT NULL,
   `tipo` enum('Financeira','Material') NOT NULL,
   `valor` decimal(10,2) DEFAULT NULL,
   `forma_pagamento` enum('PIX','Dinheiro','Transferência','Cartão','Boleto') DEFAULT NULL,
@@ -366,8 +441,10 @@ CREATE TABLE `doacoes` (
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `doacoes_tipo_data_index` (`tipo`,`data`),
+  KEY `doacoes_contribuinte_id_foreign` (`contribuinte_id`),
   KEY `doacoes_user_id_foreign` (`user_id`),
   KEY `doacoes_alterado_por_foreign` (`alterado_por`),
+  CONSTRAINT `doacoes_contribuinte_id_foreign` FOREIGN KEY (`contribuinte_id`) REFERENCES `contribuintes` (`id`) ON DELETE SET NULL,
   CONSTRAINT `doacoes_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `doacoes_alterado_por_foreign` FOREIGN KEY (`alterado_por`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -379,6 +456,7 @@ CREATE TABLE `despesas` (
   `descricao` varchar(200) NOT NULL,
   `valor` decimal(10,2) NOT NULL,
   `pago_a` varchar(150) DEFAULT NULL,
+  `contribuinte_id` bigint unsigned DEFAULT NULL,
   `animal_id` bigint unsigned DEFAULT NULL,
   `observacoes` text DEFAULT NULL,
   `user_id` bigint unsigned DEFAULT NULL,
@@ -388,9 +466,11 @@ CREATE TABLE `despesas` (
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `despesas_categoria_data_index` (`categoria`,`data`),
+  KEY `despesas_contribuinte_id_foreign` (`contribuinte_id`),
   KEY `despesas_animal_id_foreign` (`animal_id`),
   KEY `despesas_user_id_foreign` (`user_id`),
   KEY `despesas_alterado_por_foreign` (`alterado_por`),
+  CONSTRAINT `despesas_contribuinte_id_foreign` FOREIGN KEY (`contribuinte_id`) REFERENCES `contribuintes` (`id`) ON DELETE SET NULL,
   CONSTRAINT `despesas_animal_id_foreign` FOREIGN KEY (`animal_id`) REFERENCES `animais` (`id`) ON DELETE SET NULL,
   CONSTRAINT `despesas_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `despesas_alterado_por_foreign` FOREIGN KEY (`alterado_por`) REFERENCES `users` (`id`) ON DELETE SET NULL
@@ -530,9 +610,12 @@ CREATE TABLE `configuracoes_relatorio` (
   `organizacao` json NOT NULL,
   `parceria` json NOT NULL,
   `metas` json NOT NULL,
+  `veterinario_id` bigint unsigned DEFAULT NULL COMMENT 'veterinário(a) que assina junto com o responsável legal',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `configuracoes_relatorio_veterinario_id_foreign` (`veterinario_id`),
+  CONSTRAINT `configuracoes_relatorio_veterinario_id_foreign` FOREIGN KEY (`veterinario_id`) REFERENCES `veterinarios` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `relatorio_narrativas` (
@@ -593,20 +676,24 @@ INSERT INTO `animais` (`id`, `nome`, `especie`, `raca`, `cor`, `idade_estimada`,
 (7, 'Mel', 'Cão', 'Golden Retriever', 'Dourado', '2 anos', '2026-04-12', 'Fêmea', 'Grande', 'Resgatado', 24.70, 0, 0, 0, 'Resgate recente. Aguardando avaliação veterinária.', 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&w=900&q=80', '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
 (8, 'Simba', 'Gato', 'Maine Coon', 'Laranja', '3 anos', '2026-02-18', 'Macho', 'Grande', 'Disponível', 6.20, 1, 1, 1, 'Sociável com pessoas.', 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=900&q=80', '2026-05-02 12:00:00', '2026-05-02 12:00:00');
 
-INSERT INTO `animal_vacinas` (`animal_id`, `nome`, `data_aplicacao`, `proxima_dose`, `lote`, `veterinario`, `created_at`, `updated_at`) VALUES
-(1, 'V8', '2026-03-15', '2027-03-15', 'V8-2048', 'Dra. Marina Lopes', '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
-(2, 'Tríplice Felina', '2026-02-10', '2027-02-10', 'TF-2026-220', 'Dr. Henrique Farias', '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
-(2, 'Antirrábica', '2026-02-10', '2027-02-10', 'AR-2026-046', 'Dr. Henrique Farias', '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
-(4, 'Antirrábica', '2026-01-20', '2027-01-20', 'AR-9012', 'Dr. Henrique Farias', '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
-(8, 'Tríplice Felina', '2026-02-18', '2027-02-18', 'TF-2210', 'Dr. Henrique Farias', '2026-05-02 12:00:00', '2026-05-02 12:00:00');
+INSERT INTO `veterinarios` (`id`, `nome`, `crmv`, `crmv_uf`, `telefone`, `email`, `clinica`, `especialidade`, `vinculo`, `observacoes`, `ativo`, `created_at`, `updated_at`) VALUES
+(1, 'Dra. Marina Lopes', '12345', 'PR', '(42) 99654-8899', 'marina.lopes@email.com', NULL, 'Clínica geral', 'Voluntário(a)', 'Atende os animais da organização às terças e quintas pela manhã.', 1, NOW(), NOW()),
+(2, 'Dr. Henrique Farias', '23456', 'PR', '(42) 99545-1010', 'henrique.farias@email.com', NULL, 'Felinos', 'Voluntário(a)', 'Atende às segundas e sextas à tarde.', 1, NOW(), NOW());
 
-INSERT INTO `animal_historicos` (`animal_id`, `tipo`, `data`, `descricao`, `responsavel`, `notas`, `created_at`, `updated_at`) VALUES
-(1, 'Consulta', '2026-03-14', 'Avaliação geral de chegada', 'Dra. Marina Lopes', 'Saúde geral boa.', '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
-(2, 'Consulta', '2026-03-10', 'Retorno — avaliação nutricional', 'Dr. Henrique Farias', 'Ganhou 400 g. Ótima evolução.', '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
-(2, 'Consulta', '2026-02-09', 'Avaliação geral de chegada', 'Dr. Henrique Farias', 'Dieta de recuperação prescrita.', '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
-(3, 'Tratamento', '2026-04-02', 'Início de tratamento dermatológico', 'Dra. Marina Lopes', 'Retorno agendado.', '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
-(5, 'Adoção', '2025-12-20', 'Adoção concluída', 'Equipe PAWSAFE', 'Termo arquivado.', '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
-(7, 'Resgate', '2026-04-12', 'Resgate em área urbana', 'Equipe PAWSAFE', 'Encaminhada para avaliação.', '2026-05-02 12:00:00', '2026-05-02 12:00:00');
+INSERT INTO `animal_vacinas` (`animal_id`, `nome`, `data_aplicacao`, `proxima_dose`, `lote`, `veterinario`, `veterinario_id`, `created_at`, `updated_at`) VALUES
+(1, 'V8', '2026-03-15', '2027-03-15', 'V8-2048', 'Dra. Marina Lopes', 1, '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
+(2, 'Tríplice Felina', '2026-02-10', '2027-02-10', 'TF-2026-220', 'Dr. Henrique Farias', 2, '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
+(2, 'Antirrábica', '2026-02-10', '2027-02-10', 'AR-2026-046', 'Dr. Henrique Farias', 2, '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
+(4, 'Antirrábica', '2026-01-20', '2027-01-20', 'AR-9012', 'Dr. Henrique Farias', 2, '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
+(8, 'Tríplice Felina', '2026-02-18', '2027-02-18', 'TF-2210', 'Dr. Henrique Farias', 2, '2026-05-02 12:00:00', '2026-05-02 12:00:00');
+
+INSERT INTO `animal_historicos` (`animal_id`, `tipo`, `data`, `descricao`, `responsavel`, `veterinario_id`, `notas`, `created_at`, `updated_at`) VALUES
+(1, 'Consulta', '2026-03-14', 'Avaliação geral de chegada', 'Dra. Marina Lopes', 1, 'Saúde geral boa.', '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
+(2, 'Consulta', '2026-03-10', 'Retorno — avaliação nutricional', 'Dr. Henrique Farias', 2, 'Ganhou 400 g. Ótima evolução.', '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
+(2, 'Consulta', '2026-02-09', 'Avaliação geral de chegada', 'Dr. Henrique Farias', 2, 'Dieta de recuperação prescrita.', '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
+(3, 'Tratamento', '2026-04-02', 'Início de tratamento dermatológico', 'Dra. Marina Lopes', 1, 'Retorno agendado.', '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
+(5, 'Adoção', '2025-12-20', 'Adoção concluída', 'Equipe PAWSAFE', NULL, 'Termo arquivado.', '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
+(7, 'Resgate', '2026-04-12', 'Resgate em área urbana', 'Equipe PAWSAFE', NULL, 'Encaminhada para avaliação.', '2026-05-02 12:00:00', '2026-05-02 12:00:00');
 
 INSERT INTO `animal_pesagens` (`animal_id`, `peso`, `data`, `observacao`, `created_at`, `updated_at`) VALUES
 (1, 26.40, '2026-03-14', 'Avaliação inicial', '2026-05-02 12:00:00', '2026-05-02 12:00:00'),
@@ -638,10 +725,11 @@ INSERT INTO `categorias_estoque` (`nome`, `created_at`, `updated_at`) VALUES
 ('Higiene e limpeza', NOW(), NOW()),
 ('Utensílio', NOW(), NOW());
 
-INSERT INTO `configuracoes_relatorio` (`organizacao`, `parceria`, `metas`, `created_at`, `updated_at`) VALUES
+INSERT INTO `configuracoes_relatorio` (`organizacao`, `parceria`, `metas`, `veterinario_id`, `created_at`, `updated_at`) VALUES
 (
   '{"name":"Associação de Proteção Animal (exemplo)","cnpj":"00.000.000/0001-00","address":"Rua XV de Novembro, 1000 — Centro","city":"Guarapuava - PR","phone":"(42) 3000-0000","email":"contato@ong-exemplo.org.br","legalRep":"Renata Oliveira","legalRole":"Presidente"}',
   '{"publicFunding":true,"instrument":"Termo de Colaboração nº 000/2026 (exemplo)","grantor":"Prefeitura Municipal de Guarapuava — Secretaria Municipal de Meio Ambiente","object":"Resgate, tratamento veterinário e encaminhamento para adoção responsável de cães e gatos em situação de vulnerabilidade.","start":"2026-01-01","end":"2026-12-31"}',
   '{"rescues":2,"adoptions":2,"vaccines":4,"healthCare":3}',
+  1,
   NOW(), NOW()
 );

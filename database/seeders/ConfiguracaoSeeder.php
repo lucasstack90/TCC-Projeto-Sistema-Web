@@ -42,6 +42,7 @@ class ConfiguracaoSeeder extends Seeder
                 'start' => '2026-01-01', 'end' => '2026-12-31',
             ], JSON_UNESCAPED_UNICODE),
             'metas' => json_encode(['rescues' => 2, 'adoptions' => 2, 'vaccines' => 4, 'healthCare' => 3]),
+            'veterinario_id' => 1, // Dra. Marina Lopes (VeterinarioSeeder) assina junto com o responsável legal
             'created_at' => $agora, 'updated_at' => $agora,
         ]);
     }

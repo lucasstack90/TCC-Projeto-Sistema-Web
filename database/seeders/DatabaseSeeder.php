@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             VoluntarioSeeder::class,
             UsuarioSeeder::class,
+            VeterinarioSeeder::class, // antes dos animais: as vacinas de exemplo apontam para eles
             AnimalSeeder::class,
             ConfiguracaoSeeder::class,
         ]);

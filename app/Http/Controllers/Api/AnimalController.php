@@ -7,6 +7,7 @@ use App\Http\Requests\AnimalRequest;
 use App\Models\Animal;
 use App\Models\AnimalHistorico;
 use App\Models\LogAuditoria;
+use App\Models\Veterinario;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -133,16 +134,19 @@ class AnimalController extends Controller
             'date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
             'next' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:date'],
             'lot' => ['nullable', 'string', 'max:40'],
+            'vet_id' => ['nullable', 'integer', Rule::exists('veterinarios', 'id')->where('ativo', true)],
             'vet' => ['nullable', 'string', 'max:120'],
-        ], [], ['name' => 'vacina', 'date' => 'data', 'next' => 'próxima dose', 'lot' => 'lote', 'vet' => 'veterinário']);
+        ], [], ['name' => 'vacina', 'date' => 'data', 'next' => 'próxima dose', 'lot' => 'lote', 'vet_id' => 'veterinário', 'vet' => 'veterinário']);
 
         DB::transaction(function () use ($animal, $v, $request) {
+            [$vetId, $vetNome] = $this->veterinario($v);
             $animal->vacinas()->create([
                 'nome' => trim($v['name']),
                 'data_aplicacao' => $v['date'],
                 'proxima_dose' => $v['next'] ?? null,
                 'lote' => $v['lot'] ?? null,
-                'veterinario' => $v['vet'] ?? null,
+                'veterinario' => $vetNome,
+                'veterinario_id' => $vetId,
                 'user_id' => $request->user()->id,
             ]);
             $animal->update(['vacinado' => true]);
@@ -157,15 +161,18 @@ class AnimalController extends Controller
             'type' => ['required', Rule::in(AnimalHistorico::TIPOS)],
             'date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
             'description' => ['required', 'string', 'max:200'],
+            'vet_id' => ['nullable', 'integer', Rule::exists('veterinarios', 'id')->where('ativo', true)],
             'vet' => ['nullable', 'string', 'max:120'],
             'notes' => ['nullable', 'string', 'max:2000'],
-        ], [], ['type' => 'tipo de evento', 'date' => 'data', 'description' => 'descrição', 'vet' => 'responsável', 'notes' => 'notas']);
+        ], [], ['type' => 'tipo de evento', 'date' => 'data', 'description' => 'descrição', 'vet_id' => 'veterinário', 'vet' => 'responsável', 'notes' => 'notas']);
 
+        [$vetId, $responsavel] = $this->veterinario($v);
         $animal->historicos()->create([
             'tipo' => $v['type'],
             'data' => $v['date'],
             'descricao' => trim($v['description']),
-            'responsavel' => $v['vet'] ?? null,
+            'responsavel' => $responsavel,
+            'veterinario_id' => $vetId,
             'notas' => $v['notes'] ?? null,
             'user_id' => $request->user()->id,
         ]);
@@ -229,6 +236,26 @@ class AnimalController extends Controller
         });
 
         return response()->json($this->recarregar($animal));
+    }
+
+    /**
+     * Veterinário escolhido no cadastro (vet_id) ou nome digitado (vet), para quem não é veterinário
+     * (ex.: banho e tosa). Guarda o nome da época na coluna de texto: se o cadastro mudar depois,
+     * o histórico continua mostrando quem atendeu naquele dia.
+     *
+     * @return array{0: ?int, 1: ?string}
+     */
+    private function veterinario(array $v): array
+    {
+        if (! empty($v['vet_id'])) {
+            $vet = Veterinario::findOrFail($v['vet_id']);
+
+            return [$vet->id, $vet->nome];
+        }
+
+        $nome = isset($v['vet']) ? trim($v['vet']) : '';
+
+        return [null, $nome !== '' ? $nome : null];
     }
 
     /** Busca de novo o animal com as listas da ficha, já no formato do front-end. */

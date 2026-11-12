@@ -109,6 +109,7 @@ class Animal extends Model
                 'next' => $v->proxima_dose?->format('Y-m-d') ?? '',
                 'lot' => $v->lote ?? '',
                 'vet' => $v->veterinario ?? '',
+                'vetId' => $v->veterinario_id,
             ])->values()->all(),
             'history' => $this->historicos->map(fn (AnimalHistorico $h) => [
                 'id' => $h->id,
@@ -116,6 +117,7 @@ class Animal extends Model
                 'date' => $h->data?->format('Y-m-d') ?? '',
                 'description' => $h->descricao,
                 'vet' => $h->responsavel ?? '',
+                'vetId' => $h->veterinario_id,
                 'notes' => $h->notas ?? '',
             ])->values()->all(),
             'weights' => $this->pesagens->map(fn (AnimalPesagem $p) => [

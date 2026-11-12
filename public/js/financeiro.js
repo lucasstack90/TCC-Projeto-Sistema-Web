@@ -114,7 +114,8 @@ const PawFinance = (() => {
     const total = sum(financial);
     const map = new Map();
     financial.filter(d => d.donor).forEach(d => {
-      const key = d.donor.trim().toLocaleLowerCase('pt-BR');
+      // Contribuinte cadastrado: agrupa pelo id (o nome pode ter sido digitado diferente em doações antigas).
+      const key = d.contributorId ? `#${d.contributorId}` : d.donor.trim().toLocaleLowerCase('pt-BR');
       const entry = map.get(key) || { donor: d.donor.trim(), origin: d.origin, amount: 0, count: 0, months: new Set() };
       entry.amount = (cents(entry.amount) + cents(d.amount)) / 100;
       entry.count += 1;
@@ -157,7 +158,8 @@ const PawFinance = (() => {
 
   // ---------- Prestação de contas (CSV) ----------
   // Separador ";" e vírgula decimal: o Excel em português abre direto, com acentos (BOM UTF-8).
-  function toCSV(donations, expenses, animals, opening = null, month = '') {
+  // documentOf(lançamento, 'donation' | 'expense') devolve o CPF/CNPJ do contribuinte (ou '').
+  function toCSV(donations, expenses, animals, opening = null, month = '', documentOf = () => '') {
     const inPeriod = (item) => !month || monthKey(item.date) === month;
     const cell = (value) => {
       const text = String(value ?? '');
@@ -168,26 +170,27 @@ const PawFinance = (() => {
 
     const rows = [
       ...donations.filter(inPeriod).map(d => [
-        d.date, 'Entrada', `Doação ${d.type.toLowerCase()}`, d.origin, d.donor || 'Não identificado',
+        d.date, 'Entrada', `Doação ${d.type.toLowerCase()}`, d.origin, d.donor || 'Não identificado', documentOf(d, 'donation'),
         isFinancial(d) ? d.method : `${d.item} — ${String(d.quantity).replace('.', ',')} ${d.unit}`,
         '', isFinancial(d) ? number(d.amount) : '', d.notes
       ]),
       ...expenses.filter(inPeriod).map(e => [
-        e.date, 'Saída', e.category, '', e.paidTo, e.description, animalName(e.animalId), number(-e.amount), e.notes
+        e.date, 'Saída', e.category, '', e.paidTo, documentOf(e, 'expense'), e.description, animalName(e.animalId), number(-e.amount), e.notes
       ])
     ].sort((a, b) => a[0].localeCompare(b[0]));
 
     const { received, spent } = totals(donations.filter(inPeriod), expenses.filter(inPeriod));
     const { balance } = month ? { balance: null } : totals(donations, expenses, opening);
-    const header = ['Data', 'Tipo', 'Categoria', 'Origem', 'Doador / Pago a', 'Descrição', 'Animal', 'Valor (R$)', 'Observação'];
+    const header = ['Data', 'Tipo', 'Categoria', 'Origem', 'Doador / Pago a', 'CPF / CNPJ', 'Descrição', 'Animal', 'Valor (R$)', 'Observação'];
+    const pad = ['', '', '', '', '', ''];
     const summary = [
       [],
-      ...(month ? [] : [['', '', '', '', '', 'Saldo inicial', '', number(openingAmount(opening))]]),
-      ['', '', '', '', '', 'Total de entradas financeiras', '', number(received)],
-      ['', '', '', '', '', 'Total de saídas', '', number(-spent)],
+      ...(month ? [] : [[...pad, 'Saldo inicial', '', number(openingAmount(opening))]]),
+      [...pad, 'Total de entradas financeiras', '', number(received)],
+      [...pad, 'Total de saídas', '', number(-spent)],
       month
-        ? ['', '', '', '', '', 'Resultado do período', '', number((cents(received) - cents(spent)) / 100)]
-        : ['', '', '', '', '', 'Saldo atual', '', number(balance)]
+        ? [...pad, 'Resultado do período', '', number((cents(received) - cents(spent)) / 100)]
+        : [...pad, 'Saldo atual', '', number(balance)]
     ];
     return '﻿' + [header, ...rows.map(r => [PawUtils.formatDate(r[0]), ...r.slice(1)]), ...summary]
       .map(r => r.map(cell).join(';')).join('\r\n');

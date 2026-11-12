@@ -194,6 +194,10 @@
 .signature span { width: 100%; margin-bottom: 7px; border-top: 1px solid var(--text); }
 .signature strong { font-size: 12px; }
 .signature small { color: var(--muted); font-size: 10.5px; }
+/* Duas assinaturas lado a lado: responsável legal + veterinário(a) responsável técnico(a) */
+.signatures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 40px; }
+.signatures .signature { width: 100%; }
+.signature small + small { margin-top: 1px; }
 
 /* ---------- Responsividade ---------- */
 @media (max-width: 1100px) {

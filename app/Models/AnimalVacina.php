@@ -9,7 +9,7 @@ class AnimalVacina extends Model
 {
     protected $table = 'animal_vacinas';
 
-    protected $fillable = ['animal_id', 'nome', 'data_aplicacao', 'proxima_dose', 'lote', 'veterinario', 'user_id'];
+    protected $fillable = ['animal_id', 'nome', 'data_aplicacao', 'proxima_dose', 'lote', 'veterinario', 'veterinario_id', 'user_id'];
 
     protected function casts(): array
     {
@@ -19,5 +19,10 @@ class AnimalVacina extends Model
     public function animal(): BelongsTo
     {
         return $this->belongsTo(Animal::class);
+    }
+
+    public function veterinarioCadastrado(): BelongsTo
+    {
+        return $this->belongsTo(Veterinario::class, 'veterinario_id');
     }
 }

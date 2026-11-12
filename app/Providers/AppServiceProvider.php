@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Animal;
+use App\Models\Veterinario;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
@@ -22,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
         Model::preventLazyLoading(! $this->app->isProduction());
 
         // Dados que toda página interna entrega ao JavaScript em window.PAWSAFE.
-        // Os módulos ainda não integrados continuam no localStorage; os animais já vêm do MySQL.
+        // Os módulos ainda não integrados continuam no localStorage; animais e veterinários já vêm do MySQL.
         View::composer('layouts.app', function ($view) {
             $user = Auth::user();
             if (! $user) {
@@ -39,6 +40,8 @@ class AppServiceProvider extends ServiceProvider
                     'perfilLabel' => $user->perfilLabel(),
                 ],
                 'animais' => Animal::listaParaTela(),
+                // Usado nas vacinas/histórico (Animais) e na assinatura do Relatório técnico.
+                'veterinarios' => Veterinario::listaParaTela(),
             ]);
         });
     }
