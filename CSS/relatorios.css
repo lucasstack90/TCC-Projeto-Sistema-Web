@@ -17,7 +17,7 @@
 .report-controls .form-select { background-color: var(--card); }
 
 .section-toggles { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; }
-.toggles-label { margin-right: 4px; color: var(--muted); font-size: 11px; font-weight: 700; }
+.toggles-label { margin-right: 4px; color: var(--muted); font-size: 12px; font-weight: 700; }
 .toggle-chip input { position: absolute; opacity: 0; }
 .toggle-chip span {
   display: inline-flex;
@@ -26,13 +26,13 @@
   background: var(--fundo-f5f7f1);
   border: 1px solid var(--border);
   border-radius: 20px;
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
 }
 .toggle-chip input:checked + span { color: var(--tinta-28674f); background: var(--green-100); border-color: var(--linha-9dc2ad); font-weight: 700; }
 .toggle-chip input:focus-visible + span { outline: 3px solid var(--ring); outline-offset: 2px; }
 
-.form-hint { margin: -6px 0 12px; color: var(--muted); font-size: 11px; }
+.form-hint { margin: -6px 0 12px; color: var(--muted); font-size: 12px; }
 #partnershipFields.is-disabled { opacity: .45; pointer-events: none; }
 
 /* ---------- Folha do relatório ---------- */
@@ -65,7 +65,7 @@
   font-size: 18px;
 }
 .report-brand strong { display: block; font: 800 14px/1.25 var(--font-title); }
-.report-brand small { color: var(--muted); font-size: 11px; }
+.report-brand small { color: var(--muted); font-size: 12px; }
 .report-title { text-align: right; }
 .report-title h2 { margin: 0; font-size: 21px; font-weight: 800; letter-spacing: -.5px; }
 .report-title p { margin: 3px 0 0; color: var(--muted); font-size: 12px; font-weight: 600; }
@@ -76,7 +76,7 @@
 .sec-num { color: var(--green-700); }
 .sec-lead { margin: 0 0 14px; color: var(--muted); font-size: 12px; }
 .report-section h3 { margin: 16px 0 8px; font-size: 12px; font-weight: 700; color: var(--tinta-3b5148); }
-.note { margin: 8px 0 10px; color: var(--tinta-7b8a82); font-size: 10.5px; }
+.note { margin: 8px 0 10px; color: var(--tinta-7b8a82); font-size: 12px; }
 .muted { color: var(--muted); }
 
 .report-foot {
@@ -87,7 +87,7 @@
   margin-top: 16px;
   color: var(--tinta-87938b);
   border-top: 1px solid var(--border);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 /* Identificação */
@@ -102,38 +102,33 @@
   padding: 13px 14px;
   background: var(--surface-soft);
   border: 1px solid var(--linha-edf1ed);
-  border-left: 3px solid var(--green-600);
   border-radius: 10px;
 }
 .kpi strong { display: block; font: 800 22px/1.15 var(--font-title); color: var(--text); }
-.kpi span { display: block; margin-top: 2px; font-size: 11px; font-weight: 700; color: var(--tinta-3b5148); }
-.kpi small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
-.kpi.tone-green { border-left-color: var(--green-800); }
+.kpi span { display: block; margin-top: 2px; font-size: 12px; font-weight: 700; color: var(--tinta-3b5148); }
+.kpi small { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; }
 .kpi.tone-green strong { color: var(--green-800); }
-.kpi.tone-terra { border-left-color: var(--terra); }
 .kpi.tone-terra strong { color: var(--tinta-a65c31); }
 
 /* ---------- Tabelas ---------- */
-.report-table { width: 100%; margin: 4px 0 6px; border-collapse: collapse; font-size: 11.5px; }
+.report-table { width: 100%; margin: 4px 0 6px; border-collapse: collapse; font-size: 12px; }
 .report-table th {
   padding: 8px 10px;
-  color: var(--muted);
+  color: var(--secondary-foreground);
   background: var(--surface-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: .4px;
   text-align: left;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 .report-table td { padding: 8px 10px; vertical-align: middle; border-bottom: 1px solid var(--linha-f0f3ef); }
 .report-table td:first-child { white-space: nowrap; }
 .report-table .num { text-align: right; white-space: nowrap; }
-.report-table small { font-size: 10px; }
+.report-table small { font-size: 12px; }
 .empty-row { color: var(--muted); text-align: center; font-style: italic; }
 
 /* ---------- Listas de distribuição ---------- */
-.breakdown { margin: 0; padding: 0; list-style: none; font-size: 11.5px; }
+.breakdown { margin: 0; padding: 0; list-style: none; font-size: 12px; }
 .breakdown li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dashed var(--linha-e6ece6); }
 .breakdown li:last-child { border-bottom: 0; }
 .breakdown strong { font-family: var(--font-title); }
@@ -148,12 +143,12 @@
 .goal-bar.ok span   { background: var(--green-600); }
 .goal-bar.warn span { background: #d4a24c; }
 .goal-bar.bad span  { background: var(--terra); }
-.coverage { margin-bottom: 12px; font-size: 11.5px; }
+.coverage { margin-bottom: 12px; font-size: 12px; }
 
 /* ---------- Balanço de animais ---------- */
 .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 10px 0 8px; }
 .flow > div { min-width: 104px; padding: 10px 14px; background: var(--surface-soft); border: 1px solid var(--linha-edf1ed); border-radius: 10px; }
-.flow small { display: block; color: var(--muted); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; }
+.flow small { display: block; color: var(--muted); font-size: 12px; font-weight: 700; }
 .flow strong { font: 800 22px/1.2 var(--font-title); }
 .flow > i { color: var(--tinta-9fb2a8); }
 .flow .flow-total { color: #fff; background: var(--green-800); border-color: var(--green-800); }
@@ -174,12 +169,11 @@
   padding: 9px 12px;
   background: var(--surface-soft);
   border: 1px solid var(--linha-edf1ed);
-  border-left: 4px solid currentColor;
   border-radius: 10px;
-  font-size: 11.5px;
+  font-size: 13px;
 }
 .pending-list li > i { font-size: 15px; }
-.pending-list .lvl { font-size: 9.5px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; }
+.pending-list .lvl { font-size: 12px; font-weight: 800; }
 .pending-list .txt { color: var(--text); }
 .pending-list a { color: var(--green-700); font-size: 14px; }
 .lvl-alta  { color: var(--danger); }
@@ -193,7 +187,7 @@
 .signature { display: flex; flex-direction: column; align-items: center; width: 320px; max-width: 100%; margin: 54px auto 10px; text-align: center; }
 .signature span { width: 100%; margin-bottom: 7px; border-top: 1px solid var(--text); }
 .signature strong { font-size: 12px; }
-.signature small { color: var(--muted); font-size: 10.5px; }
+.signature small { color: var(--muted); font-size: 12px; }
 
 /* ---------- Responsividade ---------- */
 @media (max-width: 1100px) {
@@ -219,7 +213,7 @@
 /* ---------- Impressão / PDF ---------- */
 @media print {
   @page { size: A4; margin: 14mm 12mm; }
-  body { background: var(--card); font-size: 11px; }
+  body { background: var(--card); font-size: 12px; }
   #sidebarMount, .sidebar, .sidebar-backdrop, .no-print, .toast-container { display: none !important; }
   .main-content { margin: 0; padding: 0; max-width: none; }
   .report-paper { padding: 0; border: 0; box-shadow: none; border-radius: 0; }

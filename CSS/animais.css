@@ -11,7 +11,7 @@
   justify-content: space-between;
   margin: 0 2px 13px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .view {
@@ -33,9 +33,9 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 13px;
-  transition: transform .18s ease, box-shadow .18s ease;
+  transition: box-shadow .15s ease-out, border-color .15s ease-out;
 }
-.animal-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.animal-card:hover { border-color: var(--linha-d9e5dc, var(--border)); box-shadow: var(--shadow-lg); }
 
 .animal-image-wrap {
   position: relative;
@@ -53,7 +53,7 @@
   place-items: center;
   height: 100%;
   color: var(--tinta-86a195);
-  background: linear-gradient(135deg, var(--fundo-e6eee6), var(--fundo-d2e2d7));
+  background: var(--fundo-e6eee6);
   font-size: 42px;
 }
 
@@ -62,10 +62,10 @@
 
 .card-content { padding: 13px 14px 14px; }
 .animal-card h3 { margin: 0 0 4px; font-size: 16px; font-weight: 800; letter-spacing: -.3px; }
-.animal-meta { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.animal-meta { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
 
 .health-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 11px; }
-.health-tag { padding: 4px 7px; border-radius: 20px; color: var(--tinta-39705e); background: var(--fundo-e2eee5); font-size: 9px; }
+.health-tag { padding: 4px 7px; border-radius: 20px; color: var(--tinta-39705e); background: var(--fundo-e2eee5); font-size: 12px; }
 .health-tag.blue { color: var(--tinta-46758b); background: var(--fundo-e0edf3); }
 .health-tag.purple { color: var(--tinta-71639a); background: var(--fundo-eae5f4); }
 
@@ -77,8 +77,8 @@
   padding-top: 10px;
   border-top: 1px solid var(--linha-edf0e9);
 }
-.card-id { color: var(--tinta-899a91); font-size: 10px; }
-.card-details { color: var(--green-700); background: transparent; border: 0; font-size: 11px; font-weight: 700; }
+.card-id { color: var(--tinta-899a91); font-size: 12px; }
+.card-details { min-height: 28px; padding: 4px 0; color: var(--green-700); background: transparent; border: 0; font-size: 13px; font-weight: 700; }
 
 /* ---------- Lista ---------- */
 .animal-list { display: grid; gap: 8px; }
@@ -101,7 +101,7 @@
 .animal-list-row strong,
 .animal-list-row small { display: block; }
 .animal-list-row strong { font-size: 12px; }
-.animal-list-row small { color: var(--muted); font-size: 10px; }
+.animal-list-row small { color: var(--muted); font-size: 12px; }
 
 /* Foto no cadastro */
 .photo-preview-wrap { padding: 12px; background: var(--fundo-f7f9f5); border: 1px dashed var(--border); border-radius: 12px; }
@@ -126,7 +126,7 @@
 }
 .detail-hero > div { margin-top: auto; }
 .detail-hero h2 { margin: 8px 0 3px; color: #fff; font-size: 28px; font-weight: 800; letter-spacing: -.8px; }
-.detail-hero p { margin: 0; color: #f1f7f1; font-size: 11px; }
+.detail-hero p { margin: 0; color: #f1f7f1; font-size: 12px; }
 
 .detail-close {
   align-self: flex-end;
@@ -154,16 +154,16 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
 }
-.record-item strong { display: block; font-size: 11px; }
-.record-item p { margin: 4px 0 0; color: var(--muted); font-size: 10px; }
-.record-item small { color: var(--muted); font-size: 9px; white-space: nowrap; }
+.record-item strong { display: block; font-size: 12px; }
+.record-item p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+.record-item small { color: var(--muted); font-size: 12px; white-space: nowrap; }
 
 /* Peso */
 .weight-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 13px; }
 .weight-card { padding: 13px 8px; text-align: center; background: var(--surface-muted); border-radius: var(--radius-sm); }
-.weight-card small { display: block; color: var(--muted); font-size: 9px; text-transform: uppercase; }
+.weight-card small { display: block; color: var(--muted); font-size: 12px; }
 .weight-card strong { display: block; margin: 5px 0 2px; font-size: 18px; }
-.weight-card span { color: var(--muted); font-size: 9px; }
+.weight-card span { color: var(--muted); font-size: 12px; }
 
 /* ---------- Responsividade ---------- */
 @media (max-width: 1200px) {

@@ -73,14 +73,6 @@ h1 {
 
 .topbar-title { flex: 1; min-width: 0; }
 
-.eyebrow {
-  margin-bottom: 5px;
-  color: var(--green-700);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1.6px;
-  text-transform: uppercase;
-}
 
 .page-subtitle {
   margin: 6px 0 0;
@@ -96,7 +88,7 @@ h1 {
   gap: 12px;
   padding: 22px 2px 4px;
   color: var(--tinta-87938b);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 /* Botão do menu no celular (aparece abaixo de 900px) */
@@ -160,7 +152,7 @@ h1 {
 .form-label {
   margin-bottom: 6px;
   color: var(--tinta-3b5148);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -189,7 +181,7 @@ h1 {
   align-items: center;
   padding: 5px 9px;
   border-radius: 20px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -313,7 +305,7 @@ h1 {
 
 .modal-header { align-items: flex-start; padding: 20px 23px 15px; border-bottom: 1px solid var(--border); }
 .modal-header h2 { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -.4px; }
-.modal-header p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+.modal-header p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
 .modal-body { padding: 22px 23px; }
 .modal-footer { gap: 8px; padding: 14px 23px 18px; border-top: 1px solid var(--border); }
 
@@ -331,11 +323,10 @@ h1 {
 .modal-content > form > .modal-footer { flex-shrink: 0; }
 
 .section-title {
-  margin-bottom: 13px;
-  color: var(--green-700);
-  font-size: 10px;
+  margin-bottom: 12px;
+  color: var(--green-800);
+  font-size: 14px;
   font-weight: 700;
-  letter-spacing: 1.2px;
 }
 
 /* Opções de marcar (Vacinado, Possui quintal...) */
@@ -352,7 +343,7 @@ h1 {
   background: var(--fundo-f5f7f1);
   border: 1px solid var(--border);
   border-radius: 9px;
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
 }
 .choice-options input:checked + span { color: var(--tinta-28674f); background: var(--green-100); border-color: var(--linha-9dc2ad); font-weight: 700; }
@@ -384,17 +375,43 @@ h1 {
   padding: 12px 14px;
   color: var(--tinta-859188);
   background: var(--surface-soft);
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: .6px;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 .data-table td { padding: 11px 14px; color: var(--muted); }
 .data-table td strong { display: block; color: var(--text); }
-.data-table td small { display: block; color: var(--tinta-8a968e); font-size: 10px; }
+.data-table td small { display: block; color: var(--tinta-8a968e); font-size: 12px; }
 .data-table tbody tr:last-child td { border-bottom: 0; }
-.data-table .btn-sm { padding: 6px 10px; font-size: 11px; }
+.data-table .btn-sm { padding: 6px 10px; font-size: 12px; }
+
+/* ---------- Faixa de indicadores (Doações, Estoque, Resgates) ----------
+   Uma superfície única dividida por linhas finas: o gap de 1px deixa
+   aparecer a cor da borda entre as células. */
+.metric-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.metric-strip > * {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 16px 18px;
+  background: var(--surface);
+}
+.metric-strip small { color: var(--muted); font-size: 13px; font-weight: 600; line-height: 1.35; }
+.metric-strip strong { color: var(--text); font: 800 24px/1.15 var(--font-title); font-variant-numeric: tabular-nums; letter-spacing: -.4px; }
+.metric-strip strong.is-danger,
+.metric-strip strong.negative { color: var(--danger); }
+.metric-strip strong.is-warning { color: var(--tinta-a65c31); }
+.metric-strip span { color: var(--muted); font-size: 12px; line-height: 1.4; }
+@media (max-width: 1100px) { .metric-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 /* ---------- Abas ---------- */
 .tabs { display: flex; gap: 4px; padding: 0 17px; overflow-x: auto; border-bottom: 1px solid var(--border); }
@@ -405,7 +422,7 @@ h1 {
   background: transparent;
   border: 0;
   border-bottom: 2px solid transparent;
-  font-size: 11px;
+  font-size: 12px;
   white-space: nowrap;
 }
 .tab i { margin-right: 6px; }
@@ -422,17 +439,15 @@ h1 {
   display: block;
   margin-bottom: 6px;
   color: var(--muted);
-  font-size: 9px;
-  letter-spacing: .5px;
-  text-transform: uppercase;
+  font-size: 12px;
 }
 .info-tile strong { font-size: 12px; }
-.info-tile p { color: var(--muted); font-size: 11px; }
+.info-tile p { color: var(--muted); font-size: 12px; }
 
 .panel-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 0 12px; }
 .panel-toolbar h3 { margin: 0; font-size: 14px; font-weight: 700; }
 .panel-toolbar .btn,
-.detail-body .btn { padding: 8px 11px; font-size: 11px; }
+.detail-body .btn { padding: 8px 11px; font-size: 12px; }
 
 /* ---------- Avisos ---------- */
 .alert-soft {
@@ -441,7 +456,7 @@ h1 {
   color: var(--tinta-467665);
   background: var(--fundo-e0eee8);
   border-radius: var(--radius-sm);
-  font-size: 11px;
+  font-size: 12px;
 }
 .alert-soft.warning { color: var(--tinta-a65d43); background: var(--fundo-f8e8dc); }
 
@@ -459,7 +474,7 @@ h1 {
   border: 2px solid var(--linha-f5f8f1);
   border-radius: 50%;
 }
-.timeline-item p { margin: 4px 0; font-size: 11px; }
+.timeline-item p { margin: 4px 0; font-size: 12px; }
 
 /* ---------- Aviso (toast) ---------- */
 .toast {
@@ -507,7 +522,7 @@ h1 {
   .topbar-actions { width: 100%; }
   .topbar-actions .btn { flex: 1; }
   h1 { font-size: 25px; }
-  .page-subtitle { font-size: 11px; }
+  .page-subtitle { font-size: 12px; }
   .page-footer { flex-direction: column; gap: 5px; }
 }
 

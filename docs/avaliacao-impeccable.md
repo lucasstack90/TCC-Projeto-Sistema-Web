@@ -131,3 +131,15 @@ Reprovado por pouco. O sistema é coerente (uma base CSS, tokens, mesmos badges 
 4. [P2] /impeccable adapt: alvos ≥24px e tabelas do dashboard em cards no celular.
 5. [P3] /impeccable quieter: remover faixas laterais, bordas coloridas e espaçamento largo.
 6. /impeccable polish: renomear tokens `--tinta-<hex>` por função e fechar o restante.
+
+# Parte 3 — Refinamento: retirada dos padrões de template (12/11/2026)
+
+Escopo: todas as telas, incluindo login e formulário público. Refinamento, não redesenho: verde da marca, logo, fontes, estrutura e textos factuais mantidos.
+
+- Removidos: rótulo maiúsculo acima do título em 10 telas, "MENU PRINCIPAL", faixas coloridas laterais (cards do Dashboard, KPIs e pendências do Relatório, cartões de Resgates), ícones decorativos em quadrados tingidos (indicadores do Dashboard, Doações, Estoque, Resgates e cabeçalhos de tabela), hover que levantava cartões não clicáveis, gradientes de fundo e do menu lateral, slogans nos rodapés.
+- Login: painel direito sem orbes, ondas, ícone flutuante, selo e "pílula"; agora traz o título, o texto e a lista real dos módulos. Botão sólido, sem brilho. Fundo liso.
+- Indicadores: Dashboard, Doações, Estoque e Resgates usam uma faixa única dividida por linhas; no Dashboard cada indicador leva ao módulo.
+- Legibilidade: piso de 12px em todo texto (antes havia 9–11px), rótulos em letra normal, tabelas do Dashboard em 13px, menu lateral em 13px.
+- Contraste: tokens de texto secundário e cores dos status escurecidos no tema claro; zero falhas de contraste nas 10 telas nos temas claro e escuro (medido no navegador).
+- Alvos de toque: links "Ver todas", "Precisa de ajuda?", "Ver ficha" e nomes de itens do estoque com pelo menos 24px de altura.
+- Detector: 171 achados → 5, todos falsos positivos já verificados (prévia de foto escondida; tabelas encostadas na borda do cartão de propósito).

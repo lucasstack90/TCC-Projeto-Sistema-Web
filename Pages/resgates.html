@@ -29,7 +29,6 @@
   <header class="topbar">
     <button class="mobile-menu" id="menuToggle" type="button" aria-label="Abrir menu" aria-expanded="false"><i class="bi bi-list"></i></button>
     <div class="topbar-title">
-      <div class="eyebrow">Ocorrências da equipe</div>
       <h1>Resgates</h1>
       <p class="page-subtitle"><span id="openText"></span> <span class="subtitle-dot">•</span> <span id="totalText"></span></p>
     </div>
@@ -40,7 +39,7 @@
 
   <!-- Resumo de todos os resgates e de quantos cada responsável atendeu -->
   <section class="summary-panel" aria-label="Resumo dos resgates">
-    <div class="summary-stats" id="summaryStats"></div>
+    <div class="summary-stats metric-strip" id="summaryStats"></div>
     <div class="summary-team" id="summaryTeam"></div>
   </section>
 
@@ -61,7 +60,7 @@
     <p>Altere a busca ou os filtros, ou registre uma nova ocorrência.</p>
   </div>
 
-  <footer class="page-footer"><span><i class="bi bi-shield-check me-1"></i> PAWSAFE · Cada ocorrência registrada é uma vida acompanhada.</span><span>Protótipo com dados demonstrativos</span></footer>
+  <footer class="page-footer"><span>PAWSAFE</span><span>Protótipo com dados demonstrativos</span></footer>
 </main>
 
 <!-- Registro / edição -->
@@ -71,7 +70,7 @@
     <div class="modal-body">
       <input type="hidden" id="rescueId">
 
-      <div class="section-title">OCORRÊNCIA</div>
+      <div class="section-title">Ocorrência</div>
       <div class="row g-3">
         <div class="col-md-4"><label class="form-label" for="rsDate">Data do ocorrido *</label><input id="rsDate" type="date" class="form-control" required></div>
         <div class="col-md-4"><label class="form-label" for="rsPriority">Prioridade *</label><select id="rsPriority" class="form-select" required></select></div>
@@ -82,7 +81,7 @@
         <div class="col-md-5"><label class="form-label" for="rsReporter">Quem informou</label><input id="rsReporter" class="form-control" maxlength="80" placeholder="Ex.: vizinho, denúncia anônima"></div>
       </div>
 
-      <div class="section-title mt-4">ENDEREÇO</div>
+      <div class="section-title mt-4">Endereço</div>
       <div class="row g-3">
         <div class="col-md-8"><label class="form-label" for="rsStreet">Rua / avenida *</label><input id="rsStreet" class="form-control" required maxlength="80"></div>
         <div class="col-md-4"><label class="form-label" for="rsNumber">Número</label><input id="rsNumber" class="form-control" maxlength="10" placeholder="s/n"></div>

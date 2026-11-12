@@ -53,18 +53,17 @@ function renderStats() {
     ? `<em class="balance-change">${money(balanceChange.before)} → ${money(balanceChange.after)}</em>` : '';
 
   const cards = [
-    { label: 'Total doado', value: money(received), icon: 'bi-arrow-down-circle', color: 'icon-green', foot: 'Doações financeiras' },
-    { label: 'Despesas', value: money(spent), icon: 'bi-arrow-up-circle', color: 'icon-terra', foot: 'Recursos usados' },
+    { label: 'Total doado', value: money(received), foot: 'Doações financeiras' },
+    { label: 'Despesas', value: money(spent), foot: 'Recursos usados' },
     {
-      label: 'Saldo', value: money(balance), icon: 'bi-wallet2', color: balance < 0 ? 'icon-danger' : 'icon-blue',
+      label: 'Saldo', value: money(balance),
       foot: change || `Saldo inicial ${money(initial)} + doações − despesas`, id: 'balanceCard', negative: balance < 0
     },
-    { label: 'Doações materiais', value: materials, icon: 'bi-box-seam', color: 'icon-lilac', foot: 'Itens recebidos' }
+    { label: 'Doações materiais', value: materials, foot: 'Itens recebidos' }
   ];
   $('financeStats').innerHTML = cards.map(c => `
     <div class="finance-stat${c.id && change ? ' updated' : ''}"${c.id ? ` id="${c.id}"` : ''}>
-      <span class="finance-icon ${c.color}"><i class="bi ${c.icon}"></i></span>
-      <div><small>${c.label}</small><strong class="${c.negative ? 'negative' : ''}">${c.value}</strong><span>${c.foot}</span></div>
+      <small>${c.label}</small><strong class="${c.negative ? 'negative' : ''}">${c.value}</strong><span>${c.foot}</span>
     </div>`).join('');
 
   $('donationText').textContent = plural(donations.length, 'doação registrada', 'doações registradas');

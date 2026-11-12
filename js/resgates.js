@@ -39,15 +39,14 @@ function save() {
 function renderSummary() {
   const sheltered = rescues.reduce((sum, r) => sum + r.animalIds.length, 0);
   const stats = [
-    ['Ocorrências', rescues.length, 'bi-flag', 'icon-terra'],
-    ['Concluídos', rescues.filter(r => r.stage === 'Concluído').length, 'bi-check2-circle', 'icon-green'],
-    ['Em aberto', rescues.filter(isOpen).length, 'bi-hourglass-split', 'icon-blue'],
-    ['Animais acolhidos', sheltered, 'bi-paw', 'icon-lilac']
+    ['Ocorrências', rescues.length],
+    ['Concluídos', rescues.filter(r => r.stage === 'Concluído').length],
+    ['Em aberto', rescues.filter(isOpen).length],
+    ['Animais acolhidos', sheltered]
   ];
-  $('summaryStats').innerHTML = stats.map(([label, value, icon, color]) => `
+  $('summaryStats').innerHTML = stats.map(([label, value]) => `
     <div class="summary-stat">
-      <span class="summary-icon ${color}"><i class="bi ${icon}"></i></span>
-      <div><strong>${value}</strong><small>${label}</small></div>
+      <small>${label}</small><strong>${value}</strong>
     </div>`).join('');
 
   // Quantos resgates cada responsável atendeu

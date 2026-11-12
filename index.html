@@ -32,7 +32,6 @@
       <header class="topbar">
         <button class="mobile-menu" id="menuToggle" type="button" aria-label="Abrir menu" aria-expanded="false"><i class="bi bi-list"></i></button>
         <div class="topbar-title">
-          <div class="eyebrow">Painel administrativo</div>
           <h1>Visão geral</h1>
           <p class="page-subtitle mb-0">Acompanhe as atividades da organização <span class="subtitle-dot">•</span> <span id="currentDate"></span></p>
         </div>
@@ -41,36 +40,36 @@
       <!-- Valores com data-stat são calculados a partir do cadastro de animais (js/dashboard.js).
            Os demais são ilustrativos até os módulos correspondentes existirem. -->
       <section class="stats-grid" aria-label="Indicadores principais">
-        <article class="stat-card">
-          <div class="stat-icon icon-green"><i class="bi bi-paw"></i></div>
-          <div class="stat-content"><span class="stat-label">Animais cadastrados</span><strong class="stat-value" data-stat="total">–</strong><span class="stat-foot">Total registrado</span></div>
-          <span class="stat-accent accent-green"></span>
-        </article>
-        <article class="stat-card">
-          <div class="stat-icon icon-sage"><i class="bi bi-heart"></i></div>
-          <div class="stat-content"><span class="stat-label">Disponíveis para adoção</span><strong class="stat-value" data-stat="available">–</strong><span class="stat-foot">Aguardando um lar</span></div>
-          <span class="stat-accent accent-sage"></span>
-        </article>
-        <article class="stat-card">
-          <div class="stat-icon icon-orange"><i class="bi bi-house-heart"></i></div>
-          <div class="stat-content"><span class="stat-label">Resgates em aberto</span><strong class="stat-value" data-stat="openRescues">–</strong><span class="stat-foot">Pendentes ou em atendimento</span></div>
-          <span class="stat-accent accent-orange"></span>
-        </article>
-        <article class="stat-card">
-          <div class="stat-icon icon-lilac"><i class="bi bi-people"></i></div>
-          <div class="stat-content"><span class="stat-label">Voluntários ativos</span><strong class="stat-value" data-stat="activeVolunteers">–</strong><span class="stat-foot" data-stat="pendingVolunteers">–</span></div>
-          <span class="stat-accent accent-lilac"></span>
-        </article>
-        <article class="stat-card">
-          <div class="stat-icon icon-blue"><i class="bi bi-cash-coin"></i></div>
-          <div class="stat-content"><span class="stat-label">Doações neste mês</span><strong class="stat-value" data-stat="monthDonations">–</strong><span class="stat-foot" data-stat="monthDonationsFoot">–</span></div>
-          <span class="stat-accent accent-blue"></span>
-        </article>
-        <article class="stat-card">
-          <div class="stat-icon icon-green"><i class="bi bi-graph-up-arrow"></i></div>
-          <div class="stat-content"><span class="stat-label">Animais adotados</span><strong class="stat-value" data-stat="adopted">–</strong><span class="stat-foot">Status “Adotado”</span></div>
-          <span class="stat-accent accent-green"></span>
-        </article>
+        <a class="stat-card" href="Pages/animais.html">
+          <span class="stat-label">Animais cadastrados</span>
+          <strong class="stat-value" data-stat="total">–</strong>
+          <span class="stat-foot">No cadastro da organização</span>
+        </a>
+        <a class="stat-card" href="Pages/animais.html">
+          <span class="stat-label">Disponíveis para adoção</span>
+          <strong class="stat-value" data-stat="available">–</strong>
+          <span class="stat-foot">Aguardando um lar</span>
+        </a>
+        <a class="stat-card" href="Pages/resgates.html">
+          <span class="stat-label">Resgates em aberto</span>
+          <strong class="stat-value" data-stat="openRescues">–</strong>
+          <span class="stat-foot">Pendentes ou em atendimento</span>
+        </a>
+        <a class="stat-card" href="Pages/voluntarios.html">
+          <span class="stat-label">Voluntários ativos</span>
+          <strong class="stat-value" data-stat="activeVolunteers">–</strong>
+          <span class="stat-foot" data-stat="pendingVolunteers">–</span>
+        </a>
+        <a class="stat-card" href="Pages/doacoes.html">
+          <span class="stat-label">Doações neste mês</span>
+          <strong class="stat-value" data-stat="monthDonations">–</strong>
+          <span class="stat-foot" data-stat="monthDonationsFoot">–</span>
+        </a>
+        <a class="stat-card" href="Pages/adocoes.html">
+          <span class="stat-label">Animais adotados</span>
+          <strong class="stat-value" data-stat="adopted">–</strong>
+          <span class="stat-foot">Com adoção concluída</span>
+        </a>
       </section>
 
       <section class="charts-grid" aria-label="Gráficos do dashboard">
@@ -98,7 +97,6 @@
       <section class="panel status-panel">
         <div class="panel-heading">
           <div><h2>Distribuição por status</h2><p>Situação atual dos animais cadastrados</p></div>
-          <span class="section-icon"><i class="bi bi-sliders"></i></span>
         </div>
         <div class="status-list" id="statusList"></div>
       </section>
@@ -106,7 +104,7 @@
       <section class="recent-grid">
         <article class="panel recent-panel">
           <div class="panel-heading recent-heading">
-            <div class="heading-with-icon"><span class="table-heading-icon"><i class="bi bi-heart"></i></span><div><h2>Últimas adoções</h2><p>Processos abertos mais recentes</p></div></div>
+            <div><h2>Últimas adoções</h2><p>Processos de adoção mais recentes</p></div>
             <a href="Pages/adocoes.html" class="view-all">Ver todas <i class="bi bi-arrow-right"></i></a>
           </div>
           <div class="table-responsive">
@@ -119,7 +117,7 @@
 
         <article class="panel recent-panel">
           <div class="panel-heading recent-heading">
-            <div class="heading-with-icon"><span class="table-heading-icon terra-icon"><i class="bi bi-house-heart"></i></span><div><h2>Resgates</h2><p>Em aberto primeiro, por prioridade</p></div></div>
+            <div><h2>Resgates</h2><p>Em aberto primeiro, por prioridade</p></div>
             <a href="Pages/resgates.html" class="view-all">Ver todos <i class="bi bi-arrow-right"></i></a>
           </div>
           <div class="table-responsive">
@@ -131,7 +129,7 @@
         </article>
       </section>
 
-      <footer class="page-footer"><span>© <span id="currentYear"></span> PAWSAFE</span><span>Gestão responsável, cuidado e proteção animal.</span></footer>
+      <footer class="page-footer"><span>© <span id="currentYear"></span> PAWSAFE</span><span>Protótipo com dados demonstrativos</span></footer>
     </main>
   </div>
 

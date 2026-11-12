@@ -29,7 +29,6 @@
   <header class="topbar no-print">
     <button class="mobile-menu" id="menuToggle" type="button" aria-label="Abrir menu" aria-expanded="false"><i class="bi bi-list"></i></button>
     <div class="topbar-title">
-      <div class="eyebrow">Prestação de contas e gestão</div>
       <h1>Relatório técnico</h1>
       <p class="page-subtitle">Gerado automaticamente com os dados de Animais, Resgates, Adoções e Estoque</p>
     </div>
@@ -61,7 +60,7 @@
   <!-- O relatório em si (é o que vai para a impressão) -->
   <article class="report-paper" id="report" aria-live="polite"></article>
 
-  <footer class="page-footer no-print"><span><i class="bi bi-shield-check me-1"></i> PAWSAFE · Transparência que gera confiança.</span><span>Protótipo com dados demonstrativos</span></footer>
+  <footer class="page-footer no-print"><span>PAWSAFE</span><span>Protótipo com dados demonstrativos</span></footer>
 </main>
 
 <!-- Configuração: organização, parceria e metas -->
@@ -69,7 +68,7 @@
   <div class="modal-header"><div><h2 id="configTitle">Configurar relatório</h2><p>Dados fixos que aparecem no cabeçalho e nas metas. Ficam salvos para os próximos relatórios.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
   <form id="configForm">
     <div class="modal-body">
-      <div class="section-title">ORGANIZAÇÃO</div>
+      <div class="section-title">Organização</div>
       <div class="row g-3">
         <div class="col-md-8"><label class="form-label" for="cfName">Nome da organização *</label><input id="cfName" class="form-control" required maxlength="120"></div>
         <div class="col-md-4"><label class="form-label" for="cfCnpj">CNPJ</label><input id="cfCnpj" class="form-control" maxlength="18" placeholder="00.000.000/0000-00"></div>
@@ -81,7 +80,7 @@
         <div class="col-md-6"><label class="form-label" for="cfRole">Cargo</label><input id="cfRole" class="form-control" maxlength="60"></div>
       </div>
 
-      <div class="section-title mt-4">PARCERIA COM O PODER PÚBLICO</div>
+      <div class="section-title mt-4">Parceria com o poder público</div>
       <div class="choice-options mb-3" style="grid-template-columns:1fr">
         <label><input type="checkbox" id="cfFunding"><span><i class="bi bi-bank"></i>A organização recebe recurso público municipal</span></label>
       </div>
@@ -93,7 +92,7 @@
         <div class="col-md-6"><label class="form-label" for="cfEnd">Fim da vigência</label><input id="cfEnd" type="date" class="form-control"></div>
       </div>
 
-      <div class="section-title mt-4">METAS MENSAIS</div>
+      <div class="section-title mt-4">Metas mensais</div>
       <p class="form-hint">O relatório calcula a meta do período de forma proporcional (ex.: 2 por mês em um trimestre = 6). Use as metas pactuadas no plano de trabalho.</p>
       <div class="row g-3">
         <div class="col-6 col-md-3"><label class="form-label" for="gRescues">Resgates concluídos</label><input id="gRescues" type="number" min="0" max="999" class="form-control"></div>
