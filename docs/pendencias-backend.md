@@ -1,7 +1,16 @@
-# Pendências para o back-end (Laravel + MySQL)
+# Pendências para o back-end (PHP MVC + MySQL)
 
 Decisões e cuidados levantados durante o desenvolvimento do front-end que **precisam** ser
 resolvidos quando o back-end for implementado. Marque cada item ao concluir.
+
+> **Status (base já implementada):** o back-end em PHP puro com MVC já existe
+> (ver `docs/padrao-do-projeto.md`). Já estão prontos: a base (autoloader,
+> roteador, PDO, sessão), o **login com perfis** (senha em bcrypt), a
+> **proteção CSRF** nas gravações, a classe de **validação no servidor**
+> (`Core\Validator`) e o módulo de **Animais** como referência. Os itens abaixo
+> que dependem de módulos ainda não integrados seguem pendentes. Onde o texto
+> cita "Laravel" como ferramenta (ex.: `throttle`, Form Request), use o
+> equivalente em PHP puro descrito no padrão do projeto.
 
 ## 1. Formulário público de voluntários (`voluntario-cadastro.html`)
 

@@ -1,56 +1,59 @@
-# PAWSAFE — Front-end (protótipo)
+# PAWSAFE
 
 Sistema web para gestão de ONGs e grupos de proteção animal — TCC do Técnico em Desenvolvimento de Sistemas (C. E. Ana Vanda Bassara).
-Front-end em HTML, CSS, JavaScript, Bootstrap 5 e Chart.js. O back-end previsto é PHP/Laravel com MySQL.
+Front-end em HTML, CSS, JavaScript, Bootstrap 5 e Chart.js. Back-end em **PHP puro com arquitetura MVC própria** (sem Laravel e sem Composer) e banco **MySQL** (XAMPP).
+
+> **Roda sem `composer install`.** O carregamento das classes é feito por um autoloader próprio (`app/Core/Autoloader.php`), então basta copiar a pasta para o `htdocs` do XAMPP. O padrão de organização do back-end está em [`docs/padrao-do-projeto.md`](docs/padrao-do-projeto.md).
 
 ## Estrutura
 
 ```text
 PAWSAFE/
-├── CSS/
-│   ├── base.css        # cores, fontes, botões, formulários, status, componentes comuns e ícone de pata
-│   ├── sidebar.css     # menu lateral (único lugar com estilos do menu)
-│   ├── dashboard.css   # index.html
-│   ├── animais.css     # Pages/animais.html
-│   ├── adocoes.css     # Pages/adocoes.html
-│   ├── resgates.css    # Pages/resgates.html
-│   ├── voluntarios.css # Pages/voluntarios.html e voluntario-cadastro.html
-│   ├── doacoes.css     # Pages/doacoes.html
-│   ├── estoque.css     # Pages/estoque.html
-│   ├── relatorios.css  # Pages/relatorios.html (inclui layout de impressão)
-│   └── login.css       # Pages/Pg_Login.html
-├── Img/
-├── js/
-│   ├── dados.js        # fonte única de dados (localStorage) — carregar antes dos outros
-│   ├── utils.js        # datas, escape de HTML, códigos, compressão de imagem
-│   ├── sidebar.js      # menu lateral, contador de animais e botão Sair
-│   ├── dashboard.js
-│   ├── animais.js
-│   ├── adocoes.js
-│   ├── resgates.js
-│   ├── voluntarios.js
-│   ├── voluntario-cadastro.js
-│   ├── doacoes.js
-│   ├── financeiro.js   # cálculos financeiros (saldo, fluxo, orçamento) — usado por Doações e Dashboard
-│   ├── estoque.js
-│   ├── relatorios.js
-│   └── login.js
-├── Pages/
-│   ├── Pg_Login.html
-│   ├── animais.html
-│   ├── adocoes.html
-│   ├── resgates.html
-│   ├── voluntarios.html
-│   ├── doacoes.html
-│   └── voluntario-cadastro.html   # formulário público (sem login)
-│   ├── estoque.html
-│   └── relatorios.html
-└── index.html          # dashboard
+├── public/                 # ÚNICA pasta exposta no servidor
+│   ├── index.php           # front controller (porta de entrada; trata /api/*)
+│   ├── .htaccess           # manda os pedidos /api/* para o index.php
+│   ├── index.html          # dashboard
+│   ├── Pages/              # demais telas (Pg_Login, animais, adocoes, ...)
+│   ├── CSS/                # base, sidebar, dashboard, animais, ... , login, tema
+│   ├── js/                 # dados.js, utils.js, sidebar.js, api.js, animais.js, ...
+│   └── Img/
+│
+├── app/                    # back-end (fora do alcance do navegador)
+│   ├── Core/               # mini-framework: Autoloader, App, Router, Request,
+│   │                       #   Response, Controller, Model, Database, Config,
+│   │                       #   Session, Csrf, Validator, Middleware/
+│   ├── Controllers/        # AuthController, AnimalController, MetaController
+│   ├── Models/             # Usuario, Animal
+│   └── Views/              # telas renderizadas pelo servidor (reservado)
+│
+├── config/config.php       # credenciais do banco e ajustes do ambiente
+├── routes/web.php          # todas as rotas da API
+├── database/schema.sql     # cria o banco, as tabelas e o usuário admin
+├── storage/                # uploads (fotos) e logs
+├── docs/                   # padrão do projeto e pendências do back-end
+└── .htaccess               # redireciona a raiz para public/ (XAMPP sem vhost)
 ```
+
+No front-end, cada CSS/JS continua com a mesma função de antes; a novidade é o
+`js/api.js`, o ajudante que conversa com o back-end (ver padrão do projeto).
 
 ## Executar
 
-Abra a pasta no VS Code e rode `Pages/Pg_Login.html` (ou `index.html`) com o Live Server. É preciso internet para Bootstrap, Chart.js, fontes e fotos de exemplo.
+### Protótipo só do front-end (sem banco)
+Abra a pasta no VS Code e rode `public/Pages/Pg_Login.html` (ou `public/index.html`) com o Live Server. As telas ainda funcionam sobre o `localStorage`, menos o login, que agora exige o back-end.
+
+### Sistema completo (com back-end, no XAMPP)
+1. Instale o **XAMPP** e ligue **Apache** e **MySQL** no painel.
+2. Copie a pasta do projeto para `xampp/htdocs/` (ex.: `htdocs/pawsafe`).
+3. Crie o banco: abra `http://localhost/phpmyadmin`, importe `database/schema.sql` (cria o banco `pawsafe`, as tabelas e o usuário admin).
+4. Confira as credenciais em `config/config.php` (no XAMPP padrão: usuário `root`, sem senha).
+5. Abra `http://localhost/pawsafe/public/Pages/Pg_Login.html`.
+   - Se o projeto estiver numa subpasta (como acima), defina `base_url` em `config/config.php` como `/pawsafe/public` (ou configure um VirtualHost com `DocumentRoot` em `public/` e deixe `base_url` vazio).
+6. Entre com o usuário inicial e **troque a senha depois**:
+   - E-mail: `admin@pawsafe.local`  ·  Senha: `pawsafe123`
+
+Teste rápido do back-end: abra `.../public/api/ping` — deve responder `{"ok":true,...}`.
+É preciso internet para Bootstrap, Chart.js, fontes e fotos de exemplo.
 
 ## Como os dados funcionam no protótipo
 

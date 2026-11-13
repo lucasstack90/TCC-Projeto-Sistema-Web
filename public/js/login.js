@@ -1,11 +1,13 @@
-/* PAWSAFE — tela de login (protótipo).
-   Não há autenticação real: o login de verdade será feito pelo Laravel (back-end). */
+/* PAWSAFE — tela de login.
+   Autentica de verdade no back-end PHP (POST /api/auth/login). Em caso de
+   sucesso, a sessão fica no cookie e o painel é aberto. */
 (() => {
   const form = document.getElementById('loginForm');
   const email = document.getElementById('email');
   const password = document.getElementById('password');
   const message = document.getElementById('loginMessage');
   const toggle = document.getElementById('togglePassword');
+  const submitBtn = form.querySelector('button[type="submit"]');
 
   document.getElementById('year').textContent = new Date().getFullYear();
 
@@ -14,7 +16,6 @@
     message.textContent = text;
   };
 
-  // A mensagem de erro fica fora da .input-wrap, então o Bootstrap não a exibe sozinho.
   const setInvalid = (field, invalid) => {
     field.classList.toggle('is-invalid', invalid);
     document.getElementById(`${field.id}Error`).classList.toggle('d-block', invalid);
@@ -39,8 +40,9 @@
     message.classList.add('d-none');
   }));
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
+
     const emailInvalid = !email.value.trim() || !email.validity.valid;
     const passwordInvalid = password.value.trim().length < password.minLength;
     setInvalid(email, emailInvalid);
@@ -51,8 +53,33 @@
       return;
     }
 
-    // Simulação: qualquer e-mail/senha válidos entram no painel.
-    showMessage('success', 'Acesso liberado (simulação). Abrindo o painel...');
-    setTimeout(() => { window.location.href = '../index.html'; }, 800);
+    submitBtn.disabled = true;
+    showMessage('info', 'Entrando...');
+
+    try {
+      const dados = await Api.post('/auth/login', {
+        email: email.value.trim(),
+        senha: password.value,
+      });
+      // O servidor já devolve o token CSRF da sessão; guardamos para as próximas chamadas.
+      if (dados && dados.csrf) Api.definirCsrf(dados.csrf);
+
+      showMessage('success', 'Acesso liberado. Abrindo o painel...');
+      setTimeout(() => { window.location.href = '../index.html'; }, 500);
+    } catch (err) {
+      submitBtn.disabled = false;
+      if (err.campos) {
+        if (err.campos.email) setInvalid(email, true);
+        if (err.campos.senha) setInvalid(password, true);
+      }
+      // Erro de rede (back-end desligado) tem mensagem genérica do fetch.
+      const semServidor = err.status === undefined;
+      showMessage(
+        'danger',
+        semServidor
+          ? 'Não foi possível falar com o servidor. Verifique se o Apache e o MySQL do XAMPP estão ligados.'
+          : (err.message || 'Não foi possível entrar.')
+      );
+    }
   });
 })();
