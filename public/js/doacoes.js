@@ -31,6 +31,25 @@ const normalize = (text) => String(text ?? '').toLocaleLowerCase('pt-BR');
 const byDateDesc = (a, b) => b.date.localeCompare(a.date) || b.id - a.id;
 const donorName = (d) => d.donor || 'Doador não identificado';
 const percent = (ratio) => `${Math.round(ratio * 100)}%`;
+
+// Liga o <select> de contribuinte cadastrado ao campo de nome livre.
+// role: 'donor' (doação) ou 'supplier' (despesa). Ao escolher, preenche o nome.
+function populateContributor(selectId, role, nameId, selectedId) {
+  if (typeof PawContributors === 'undefined') return;
+  const sel = $(selectId);
+  if (!sel) return;
+  const blank = sel.querySelector('option[value=""]')?.outerHTML || '<option value="">— selecionar —</option>';
+  const fill = () => {
+    sel.innerHTML = blank + PawContributors.options(role, selectedId || sel.value);
+    sel.value = selectedId ? String(selectedId) : '';
+    sel.onchange = () => {
+      const c = PawContributors.find(sel.value);
+      if (c) $(nameId).value = c.name;
+    };
+  };
+  fill();
+  if (!PawContributors.isLoaded()) PawContributors.load().then(fill).catch(() => {});
+}
 const animalName = (id) => animals.find(a => a.id === id)?.name;
 
 // Cores do gráfico (validadas para daltonismo: entradas × saídas × saldo)
@@ -326,6 +345,7 @@ function openDonation(d = null) {
   $('dQuantity').value = d?.quantity ?? '';
   $('dUnit').value = d?.unit || 'kg';
   $('dNotes').value = d?.notes ?? '';
+  populateContributor('dContributor', 'donor', 'dDonor', d?.contributorId);
   toggleDonationFields();
 
   $('donationTitle').textContent = d ? 'Editar doação' : 'Registrar doação';
@@ -343,6 +363,7 @@ $('donationForm').addEventListener('submit', (event) => {
     date: $('dDate').value,
     origin: $('dOrigin').value,
     donor: $('dDonor').value.trim(),
+    contributorId: Number($('dContributor').value) || null,
     type: $('dType').value,
     // Os campos da outra categoria são limpos para não guardar dado sem sentido
     amount: financial ? Number($('dAmount').value) : null,
@@ -387,6 +408,7 @@ function openExpense(e = null) {
   $('eDescription').value = e?.description ?? '';
   $('eAmount').value = e?.amount ?? '';
   $('ePaidTo').value = e?.paidTo ?? '';
+  populateContributor('eContributor', 'supplier', 'ePaidTo', e?.contributorId);
   $('eAnimal').value = e?.animalId ?? '';
   $('eNotes').value = e?.notes ?? '';
 
@@ -438,6 +460,7 @@ $('expenseForm').addEventListener('submit', (event) => {
     description: $('eDescription').value.trim(),
     amount: Number($('eAmount').value),
     paidTo: $('ePaidTo').value.trim(),
+    contributorId: Number($('eContributor').value) || null,
     animalId: Number($('eAnimal').value) || null,
     notes: $('eNotes').value.trim()
   };

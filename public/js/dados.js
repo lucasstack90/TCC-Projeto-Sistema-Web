@@ -593,6 +593,27 @@ const PawData = (() => {
     Object.values(KEYS).forEach(key => localStorage.removeItem(key));
   }
 
+  // --- Veterinários: cache em memória, alimentado pela API /api/veterinarios ---
+  // (dados do servidor, por isso NÃO vão para o localStorage). A tela de cadastro
+  // atualiza este cache e avisa as páginas com o evento "pawsafe:veterinarios".
+  const VET_BONDS = ['Equipe da organização', 'Voluntário(a)', 'Clínica parceira', 'Serviço público'];
+  const UFS = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA',
+    'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
+  let vets = [];
+  const loadVets = () => structuredClone(vets);
+  function setVets(list) {
+    vets = structuredClone(list);
+    document.dispatchEvent(new CustomEvent('pawsafe:veterinarios', { detail: loadVets() }));
+  }
+  const vetLabel = (vet) => (vet ? `${vet.name} · ${vet.registry}` : '');
+  // Busca a lista no servidor uma vez (ou força com recarregar=true).
+  async function fetchVets(recarregar = false) {
+    if (vets.length && !recarregar) return loadVets();
+    if (typeof Api === 'undefined') return [];
+    try { setVets(await Api.get('/veterinarios')); } catch (e) { /* segue com o que tem */ }
+    return loadVets();
+  }
+
   return {
     STATUS, SPECIES, statusClass,
     ADOPTION_STAGES, ACTIVE_STAGES, CHECKLIST, stageClass,
@@ -636,6 +657,7 @@ const PawData = (() => {
       };
     },
     saveReportConfig: (config) => save(KEYS.report, config),
+    VET_BONDS, UFS, loadVets, setVets, vetLabel, fetchVets,
     resetAll,
     resetAnimals: resetAll // nome antigo, mantido por compatibilidade
   };

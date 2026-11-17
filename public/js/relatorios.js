@@ -542,9 +542,14 @@ const R = {
   assinatura() {
     const o = config.org;
     const today = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const vetName = (o.vetName || '').trim();
+    const vetReg = (o.vetRegistry || '').trim();
     return `<p>Declaro que as informações deste relatório correspondem às atividades executadas pela organização no período indicado e que os registros e documentos que as comprovam estão disponíveis para consulta do órgão concedente.</p>
       <p class="mt-3">${escapeHtml((o.city || '').replace(/\s*-\s*[A-Z]{2}$/, ''))}${o.city ? ', ' : ''}${today}.</p>
-      <div class="signature"><span></span><strong>${escapeHtml(o.legalRep)}</strong><small>${escapeHtml(o.legalRole || 'Responsável legal')} — ${escapeHtml(o.name)}</small></div>`;
+      <div class="signatures">
+        <div class="signature"><span></span><strong>${escapeHtml(o.legalRep)}</strong><small>${escapeHtml(o.legalRole || 'Responsável legal')} — ${escapeHtml(o.name)}</small></div>
+        <div class="signature"><span></span><strong>${escapeHtml(vetName)}</strong><small>Médico(a) veterinário(a) — responsável técnico${vetReg ? ` · ${escapeHtml(vetReg)}` : ''}</small></div>
+      </div>`;
   }
 };
 
@@ -701,6 +706,7 @@ const configModal = new bootstrap.Modal($('configModal'));
 const CONFIG_FIELDS = {
   cfName: ['org', 'name'], cfCnpj: ['org', 'cnpj'], cfAddress: ['org', 'address'], cfCity: ['org', 'city'],
   cfPhone: ['org', 'phone'], cfEmail: ['org', 'email'], cfRep: ['org', 'legalRep'], cfRole: ['org', 'legalRole'],
+  cfVet: ['org', 'vetName'], cfVetReg: ['org', 'vetRegistry'],
   cfInstrument: ['partnership', 'instrument'], cfGrantor: ['partnership', 'grantor'], cfObject: ['partnership', 'object'],
   cfStart: ['partnership', 'start'], cfEnd: ['partnership', 'end'],
   gRescues: ['goals', 'rescues'], gAdoptions: ['goals', 'adoptions'], gVaccines: ['goals', 'vaccines'], gHealth: ['goals', 'healthCare']
@@ -711,8 +717,22 @@ $('openConfig').addEventListener('click', () => {
   Object.entries(CONFIG_FIELDS).forEach(([id, [group, key]]) => { $(id).value = config[group][key] ?? ''; });
   $('cfFunding').checked = Boolean(config.partnership.publicFunding);
   togglePartnership();
+  popularVetSelect();
   configModal.show();
 });
+
+// Preenche o <select> de veterinário na configuração; ao escolher, preenche nome e CRMV.
+function popularVetSelect() {
+  const sel = $('cfVetSelect');
+  if (!sel || typeof PawVets === 'undefined') return;
+  const fill = () => { sel.innerHTML = '<option value="">— selecionar veterinário cadastrado (opcional) —</option>' + PawVets.options(); };
+  fill();
+  PawVets.carregar().then(fill);
+  sel.onchange = () => {
+    const v = PawVets.find(sel.value);
+    if (v) { $('cfVet').value = v.name; $('cfVetReg').value = v.registry; }
+  };
+}
 $('cfFunding').addEventListener('change', togglePartnership);
 
 $('configForm').addEventListener('submit', (e) => {

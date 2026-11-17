@@ -13,17 +13,18 @@ PAWSAFE/
 │   ├── index.php           # front controller (porta de entrada; trata /api/*)
 │   ├── .htaccess           # manda os pedidos /api/* para o index.php
 │   ├── index.html          # dashboard
-│   ├── Pages/              # demais telas (Pg_Login, animais, adocoes, ...)
-│   ├── CSS/                # base, sidebar, dashboard, animais, ... , login, tema
-│   ├── js/                 # dados.js, utils.js, sidebar.js, api.js, animais.js, ...
+│   ├── Pages/              # demais telas (Pg_Login, animais, ..., cadastros)
+│   ├── CSS/                # base, sidebar, dashboard, ..., cadastros, login, tema
+│   ├── js/                 # dados.js, utils.js, api.js, sidebar.js, animais.js,
+│   │                       #   veterinarios.js, contribuintes.js, ...
 │   └── Img/
 │
 ├── app/                    # back-end (fora do alcance do navegador)
 │   ├── Core/               # mini-framework: Autoloader, App, Router, Request,
 │   │                       #   Response, Controller, Model, Database, Config,
-│   │                       #   Session, Csrf, Validator, Middleware/
-│   ├── Controllers/        # AuthController, AnimalController, MetaController
-│   ├── Models/             # Usuario, Animal
+│   │                       #   Session, Csrf, Validator, Documento, Middleware/
+│   ├── Controllers/        # Auth, Animal, Veterinario, Contribuinte, Meta
+│   ├── Models/             # Usuario, Animal, Veterinario, Contribuinte
 │   └── Views/              # telas renderizadas pelo servidor (reservado)
 │
 ├── config/config.php       # credenciais do banco e ajustes do ambiente

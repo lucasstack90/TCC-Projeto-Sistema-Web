@@ -149,6 +149,29 @@ Pontos de atenção na migração:
   fala a mesma língua da interface de propósito, para a migração ser quase um
   encontrar-e-substituir.
 
+## Cadastros de apoio (veterinários e contribuintes)
+
+Dois cadastros já seguem este padrão no back-end e servem de exemplo prático,
+além do módulo de Animais:
+
+- **Veterinários** (`/api/veterinarios`): usados nas fichas de vacina e histórico
+  do módulo de Animais e na assinatura do Relatório técnico. Model `Veterinario`,
+  controller `VeterinarioController`.
+- **Contribuintes** (`/api/contribuintes`): doadores frequentes e fornecedores
+  (pessoa física com CPF ou jurídica com CNPJ), selecionáveis ao registrar
+  doações e despesas. Model `Contribuinte`, controller `ContribuinteController`.
+  O CPF/CNPJ é validado no servidor por `Core\Documento` (dígitos verificadores),
+  além da validação no navegador.
+
+Os dois têm tela de gestão na página **Cadastros** (`public/Pages/cadastros.html`,
+no menu lateral). Os registros de animal e de doação continuam no `localStorage`
+por enquanto, mas guardam o `id` do cadastro escolhido (`vetId`, `contributorId`),
+prontos para quando esses módulos migrarem para a API.
+
+As três melhorias pedidas foram feitas aqui: cadastro de veterinários, cadastro
+de contribuintes e a assinatura dupla (responsável legal + veterinário) no
+relatório técnico.
+
 ## Rodando e testando
 
 Veja o `README.md` (seção "Executar"). Para um teste rápido de que o back-end

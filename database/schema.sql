@@ -111,6 +111,64 @@ CREATE TABLE IF NOT EXISTS pesagens (
         REFERENCES animais (id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- ---------------------------------------------------------------------
+-- Veterinários (módulo de Animais)
+-- ---------------------------------------------------------------------
+-- Cadastro dos profissionais que aplicam vacinas, fazem procedimentos e
+-- assinam o relatório técnico. Evita digitar o nome a cada vacina.
+CREATE TABLE IF NOT EXISTS veterinarios (
+    id            INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    nome          VARCHAR(120) NOT NULL,
+    crmv          VARCHAR(20)  NOT NULL,                 -- só números
+    crmv_uf       CHAR(2)      NOT NULL DEFAULT 'PR',
+    vinculo       VARCHAR(40)  NULL,                     -- Clínica parceira, Voluntário(a)...
+    especialidade VARCHAR(80)  NULL,
+    clinica       VARCHAR(120) NULL,
+    telefone      VARCHAR(20)  NULL,
+    email         VARCHAR(150) NULL,
+    observacoes   TEXT         NULL,
+    ativo         TINYINT(1)   NOT NULL DEFAULT 1,
+    criado_em     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_vet_crmv (crmv, crmv_uf)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- Contribuintes (módulo Financeiro): doadores frequentes e fornecedores
+-- ---------------------------------------------------------------------
+-- LGPD: guarda dado pessoal (CPF, endereço, contato) de pessoa física, por isso
+-- registra o consentimento e a data. Pessoa jurídica usa CNPJ (dado da empresa).
+-- O documento é guardado só com dígitos; a interface formata ao exibir.
+CREATE TABLE IF NOT EXISTS contribuintes (
+    id             INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    tipo           ENUM('Pessoa física', 'Pessoa jurídica') NOT NULL,
+    nome           VARCHAR(120) NOT NULL,                -- nome ou razão social
+    documento      VARCHAR(14)  NOT NULL,                -- CPF (11) ou CNPJ (14), só dígitos
+    nome_fantasia  VARCHAR(120) NULL,
+    contato        VARCHAR(120) NULL,                    -- pessoa de contato (PJ)
+    telefone       VARCHAR(20)  NULL,
+    email          VARCHAR(150) NULL,
+    cep            VARCHAR(9)   NULL,
+    logradouro     VARCHAR(150) NULL,
+    numero         VARCHAR(20)  NULL,
+    complemento    VARCHAR(80)  NULL,
+    bairro         VARCHAR(80)  NULL,
+    cidade         VARCHAR(80)  NULL,
+    uf             CHAR(2)      NULL,
+    doador         TINYINT(1)   NOT NULL DEFAULT 1,
+    fornecedor     TINYINT(1)   NOT NULL DEFAULT 0,
+    observacoes    TEXT         NULL,
+    consentimento  TINYINT(1)   NULL,                    -- LGPD (pessoa física)
+    consentimento_em TIMESTAMP  NULL,
+    ativo          TINYINT(1)   NOT NULL DEFAULT 1,
+    criado_em      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_contrib_documento (documento),
+    KEY idx_contrib_papel (doador, fornecedor)
+) ENGINE=InnoDB;
+
 -- =====================================================================
 -- Dados iniciais
 -- =====================================================================
@@ -128,3 +186,12 @@ ON DUPLICATE KEY UPDATE nome = nome;
 INSERT INTO animais (nome, especie, raca, cor, idade, data_chegada, sexo, porte, status, peso, vacinado, castrado, microchip, observacoes) VALUES
 ('Thor', 'Cão', 'Labrador', 'Dourado', '3 anos', '2026-03-14', 'Macho', 'Grande', 'Disponível', 26.40, 1, 1, 0, 'Sociável e ativo. Gosta de passeios.'),
 ('Mia',  'Gato', 'Siamês', 'Creme e marrom', '2 anos', '2026-02-09', 'Fêmea', 'Pequeno', 'Disponível', 4.20, 1, 1, 0, 'Tranquila e aparentemente saudável.');
+
+-- Dois veterinários de exemplo.
+INSERT INTO veterinarios (nome, crmv, crmv_uf, vinculo, especialidade, clinica, telefone, email, ativo) VALUES
+('Dra. Marina Lopes',   '12345', 'PR', 'Clínica parceira', 'Clínica geral', 'Clínica VidaPet', '(42) 99999-1234', 'marina@exemplo.com', 1),
+('Dr. Henrique Farias', '23456', 'PR', 'Voluntário(a)',    'Felinos',       'Atende no abrigo', '(42) 99999-5678', 'henrique@exemplo.com', 1);
+
+-- Um contribuinte de exemplo (pessoa jurídica).
+INSERT INTO contribuintes (tipo, nome, documento, nome_fantasia, contato, telefone, email, cidade, uf, doador, fornecedor, ativo) VALUES
+('Pessoa jurídica', 'Associação de Proteção Animal (exemplo)', '00000000000100', 'APA Guarapuava', 'Setor de parcerias', '(42) 3333-4444', 'contato@exemplo.org', 'Guarapuava', 'PR', 1, 0, 1);

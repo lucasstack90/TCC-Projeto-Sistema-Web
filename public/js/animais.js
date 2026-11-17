@@ -386,6 +386,31 @@ function renderWeights(a) {
 // ================= Registros (vacina, histórico, peso) =================
 const dateField = () => `<div class="mb-3"><label class="form-label" for="rDate">Data *</label><input id="rDate" type="date" class="form-control" required max="${today()}" value="${today()}"></div>`;
 
+// Campo de veterinário: um <select> dos cadastrados (API) que preenche o nome,
+// com o campo de texto como alternativa (quem não está cadastrado).
+const vetField = (label = 'Veterinário') => `
+  <div class="mb-3">
+    <label class="form-label" for="rVetSelect">${label}</label>
+    <select id="rVetSelect" class="form-select mb-2"><option value="">— selecionar veterinário cadastrado —</option></select>
+    <input id="rVet" class="form-control" placeholder="ou digite o nome do responsável">
+  </div>`;
+
+// Preenche o <select> de veterinário após o formulário aparecer e liga a seleção ao campo de nome.
+function populateVetField() {
+  const sel = typeof $ !== 'undefined' ? $('rVetSelect') : document.getElementById('rVetSelect');
+  if (!sel || typeof PawVets === 'undefined') return;
+  const fill = () => {
+    const atual = sel.value;
+    sel.innerHTML = '<option value="">— selecionar veterinário cadastrado —</option>' + PawVets.options(atual);
+    sel.onchange = () => {
+      const v = PawVets.find(sel.value);
+      if (v) document.getElementById('rVet').value = v.name;
+    };
+  };
+  fill();
+  PawVets.carregar().then(fill); // busca no servidor e repopula
+}
+
 const RECORDS = {
   vaccine: {
     title: 'Registrar vacina',
@@ -395,9 +420,9 @@ const RECORDS = {
       ${dateField()}
       <div class="mb-3"><label class="form-label" for="rNext">Próxima dose</label><input id="rNext" type="date" class="form-control"></div>
       <div class="mb-3"><label class="form-label" for="rLot">Lote</label><input id="rLot" class="form-control" placeholder="Ex.: V10-2026-001"></div>
-      <div><label class="form-label" for="rVet">Veterinário</label><input id="rVet" class="form-control"></div>`,
+      ${vetField('Veterinário')}`,
     apply: (a) => {
-      a.vaccines.unshift({ name: $('rName').value.trim(), date: $('rDate').value, next: $('rNext').value, lot: $('rLot').value.trim(), vet: $('rVet').value.trim() });
+      a.vaccines.unshift({ name: $('rName').value.trim(), date: $('rDate').value, next: $('rNext').value, lot: $('rLot').value.trim(), vet: $('rVet').value.trim(), vetId: Number($('rVetSelect')?.value) || null });
       a.vaccinated = true;
       return 'Vacina registrada.';
     }
@@ -411,10 +436,10 @@ const RECORDS = {
       </select></div>
       <div class="mb-3"><label class="form-label" for="rDesc">Descrição *</label><input id="rDesc" class="form-control" required placeholder="Ex.: Avaliação geral, retorno..."></div>
       ${dateField()}
-      <div class="mb-3"><label class="form-label" for="rVet">Veterinário / responsável</label><input id="rVet" class="form-control"></div>
+      ${vetField('Veterinário / responsável')}
       <div><label class="form-label" for="rNotes">Notas clínicas</label><textarea id="rNotes" class="form-control" rows="3"></textarea></div>`,
     apply: (a) => {
-      a.history.unshift({ type: $('rType').value, date: $('rDate').value, description: $('rDesc').value.trim(), vet: $('rVet').value.trim(), notes: $('rNotes').value.trim() });
+      a.history.unshift({ type: $('rType').value, date: $('rDate').value, description: $('rDesc').value.trim(), vet: $('rVet').value.trim(), vetId: Number($('rVetSelect')?.value) || null, notes: $('rNotes').value.trim() });
       return 'Evento adicionado ao histórico.';
     }
   },
@@ -438,6 +463,7 @@ function openRecord(type) {
   recordType = type;
   $('recordTitle').textContent = RECORDS[type].title;
   $('recordFields').innerHTML = RECORDS[type].fields();
+  if (type === 'vaccine' || type === 'history') populateVetField();
   afterDetailCloses(() => recordModal.show());
 }
 

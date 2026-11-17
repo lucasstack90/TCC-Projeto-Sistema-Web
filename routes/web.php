@@ -12,7 +12,9 @@
 
 use Controllers\AnimalController;
 use Controllers\AuthController;
+use Controllers\ContribuinteController;
 use Controllers\MetaController;
+use Controllers\VeterinarioController;
 use Core\Middleware\Autenticar;
 use Core\Middleware\VerificarCsrf;
 use Core\Router;
@@ -35,5 +37,17 @@ return function (Router $r): void {
         $r->post('/api/animais', [AnimalController::class, 'store'], [VerificarCsrf::class]);
         $r->put('/api/animais/{id}', [AnimalController::class, 'update'], [VerificarCsrf::class]);
         $r->delete('/api/animais/{id}', [AnimalController::class, 'destroy'], [VerificarCsrf::class]);
+
+        // Cadastro de Veterinários (usado em Animais e no Relatório técnico).
+        $r->get('/api/veterinarios', [VeterinarioController::class, 'index']);
+        $r->post('/api/veterinarios', [VeterinarioController::class, 'store'], [VerificarCsrf::class]);
+        $r->put('/api/veterinarios/{id}', [VeterinarioController::class, 'update'], [VerificarCsrf::class]);
+        $r->delete('/api/veterinarios/{id}', [VeterinarioController::class, 'destroy'], [VerificarCsrf::class]);
+
+        // Cadastro de Contribuintes (doadores frequentes e fornecedores do Financeiro).
+        $r->get('/api/contribuintes', [ContribuinteController::class, 'index']);
+        $r->post('/api/contribuintes', [ContribuinteController::class, 'store'], [VerificarCsrf::class]);
+        $r->put('/api/contribuintes/{id}', [ContribuinteController::class, 'update'], [VerificarCsrf::class]);
+        $r->delete('/api/contribuintes/{id}', [ContribuinteController::class, 'destroy'], [VerificarCsrf::class]);
     });
 };

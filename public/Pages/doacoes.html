@@ -147,6 +147,7 @@
       <div class="row g-3">
         <div class="col-md-6"><label class="form-label" for="dDate">Data *</label><input id="dDate" type="date" class="form-control" required></div>
         <div class="col-md-6"><label class="form-label" for="dOrigin">Origem *</label><select id="dOrigin" class="form-select" required></select></div>
+        <div class="col-12"><label class="form-label" for="dContributor">Contribuinte cadastrado</label><select id="dContributor" class="form-select"><option value="">— selecionar doador cadastrado (opcional) —</option></select></div>
         <div class="col-12"><label class="form-label" for="dDonor">Doador</label><input id="dDonor" class="form-control" maxlength="100" placeholder="Nome da pessoa ou empresa — em branco se anônimo"></div>
         <div class="col-12"><label class="form-label" for="dType">Categoria do recurso *</label><select id="dType" class="form-select" required></select></div>
 
@@ -181,6 +182,7 @@
         <div class="col-md-6"><label class="form-label" for="eCategory">Categoria *</label><select id="eCategory" class="form-select" required></select></div>
         <div class="col-12"><label class="form-label" for="eDescription">Descrição *</label><input id="eDescription" class="form-control" required maxlength="120" placeholder="Ex.: castração — Simba"></div>
         <div class="col-md-6"><label class="form-label" for="eAmount">Valor (R$) *</label><input id="eAmount" type="number" min="0.01" step="0.01" class="form-control" required placeholder="0,00"></div>
+        <div class="col-md-6"><label class="form-label" for="eContributor">Contribuinte cadastrado</label><select id="eContributor" class="form-select"><option value="">— selecionar fornecedor cadastrado (opcional) —</option></select></div>
         <div class="col-md-6"><label class="form-label" for="ePaidTo">Pago a</label><input id="ePaidTo" class="form-control" maxlength="100" placeholder="Fornecedor ou prestador"></div>
         <div class="col-12"><label class="form-label" for="eAnimal">Animal relacionado</label><select id="eAnimal" class="form-select"></select><div class="form-text">Opcional. Permite saber quanto custa cada animal atendido.</div></div>
         <div class="col-12"><div id="expensePreview" class="expense-preview" aria-live="polite"></div></div>
@@ -224,8 +226,10 @@
 <script src="../js/tema.js"></script>
 <script src="../js/dados.js"></script>
 <script src="../js/utils.js"></script>
+<script src="../js/api.js"></script>
 <script src="../js/financeiro.js"></script>
 <script src="../js/sidebar.js"></script>
+<script src="../js/contribuintes.js"></script>
 <script src="../js/doacoes.js"></script>
 </body>
 </html>

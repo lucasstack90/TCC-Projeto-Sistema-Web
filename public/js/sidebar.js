@@ -27,7 +27,8 @@
     { id: 'voluntarios', label: 'Voluntários & Equipe', icon: 'bi-people', href: `${base}voluntarios.html`, count: pendingVolunteers, alert: true },
     { id: 'doacoes', label: 'Doações / Financeiro', icon: 'bi-cash-coin', href: `${base}doacoes.html` },
     { id: 'estoque', label: 'Estoque', icon: 'bi-box-seam', href: `${base}estoque.html`, count: stockToRestock, alert: true },
-    { id: 'relatorios', label: 'Relatório técnico', icon: 'bi-file-earmark-bar-graph', href: `${base}relatorios.html` }
+    { id: 'relatorios', label: 'Relatório técnico', icon: 'bi-file-earmark-bar-graph', href: `${base}relatorios.html` },
+    { id: 'cadastros', label: 'Cadastros', icon: 'bi-card-list', href: `${base}cadastros.html` }
   ];
 
   const navLinks = items.map(item => {
