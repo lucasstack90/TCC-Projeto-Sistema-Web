@@ -364,7 +364,7 @@
   .stat-label { font-size: 12px; }
   .stat-link { flex-basis: 30px; width: 30px; height: 30px; }
   .stat-value { font-size: 34px; }
-  .stat-foot { font-size: 10px; }
+  .stat-foot { font-size: 11px; }
   .chart-panel, .list-panel, .focus-panel, .status-panel { padding: 16px; }
   .chart-wrap { height: 210px; }
   .species-content { flex-direction: column; padding: 14px 0 4px; }

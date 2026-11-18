@@ -27,7 +27,7 @@
   border-radius: 12px;
 }
 .summary-stat strong { display: block; font: 800 22px/1.1 var(--font-title); }
-.summary-stat small { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; }
+.summary-stat small { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; }
 
 .summary-icon {
   display: grid;
@@ -72,7 +72,7 @@
 .rescue-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 11px; }
 .rescue-meta strong { font-size: 12px; }
 .rescue-meta > span:not(.status-badge) { color: var(--muted); }
-.rescue-meta .status-badge { font-size: 9px; }
+.rescue-meta .status-badge { font-size: 11px; }
 
 .rescue-description {
   display: -webkit-box;
@@ -91,7 +91,7 @@
 
 /* ---------- Ficha ---------- */
 .detail-title { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.detail-title .status-badge { font-size: 10px; }
+.detail-title .status-badge { font-size: 11px; }
 
 .rescue-info { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .info-wide { grid-column: 1 / -1; }
@@ -117,7 +117,7 @@ a.rescued-animal:hover { background: var(--green-100); }
 .rescued-animal strong,
 .rescued-animal small { display: block; }
 .rescued-animal strong { font-size: 12px; }
-.rescued-animal small { color: var(--muted); font-size: 10px; }
+.rescued-animal small { color: var(--muted); font-size: 11px; }
 .rescued-animal.removed { opacity: .7; }
 
 .rescued-photo { flex: 0 0 42px; width: 42px; height: 42px; border-radius: 9px; object-fit: cover; }
@@ -125,7 +125,7 @@ a.rescued-animal:hover { background: var(--green-100); }
 
 .stage-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 
-#detailLog .status-badge { font-size: 9px; }
+#detailLog .status-badge { font-size: 11px; }
 
 /* ---------- Responsividade ---------- */
 @media (max-width: 900px) {

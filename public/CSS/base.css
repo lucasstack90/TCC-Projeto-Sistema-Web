@@ -78,7 +78,7 @@ h1 {
   display: none; /* o título da página já diz onde se está (visual mais limpo) */
   margin-bottom: 5px;
   color: var(--green-700);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.6px;
   text-transform: uppercase;
@@ -98,7 +98,7 @@ h1 {
   gap: 12px;
   padding: 22px 2px 4px;
   color: var(--tinta-87938b);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 /* Botão do menu no celular (aparece abaixo de 900px) */
@@ -203,7 +203,7 @@ h1 {
   padding: 4px 9px;
   border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
   border-radius: 7px;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -293,7 +293,8 @@ h1 {
 .search .form-control { padding-left: 37px; border-radius: var(--pill-radius); }
 
 .filter-controls { display: flex; gap: 8px; }
-.filter-controls .form-select { width: 165px; border-radius: var(--pill-radius); }
+/* Cresce conforme o texto escolhido (ex.: "Todas as categorias"), sem cortar sob a seta. */
+.filter-controls .form-select { width: auto; min-width: 165px; max-width: 240px; border-radius: var(--pill-radius); }
 
 /* ---------- Nenhum resultado ---------- */
 .empty {
@@ -348,7 +349,7 @@ h1 {
 .section-title {
   margin-bottom: 13px;
   color: var(--green-700);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.2px;
 }
@@ -399,7 +400,7 @@ h1 {
   padding: 13px 16px;
   color: var(--muted-foreground);
   background: transparent;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: .6px;
   text-transform: uppercase;
@@ -409,7 +410,7 @@ h1 {
 .data-table tbody tr { transition: background .15s ease; }
 .data-table tbody tr:hover { background: var(--surface-soft); }
 .data-table td strong { display: block; color: var(--text); }
-.data-table td small { display: block; color: var(--tinta-8a968e); font-size: 10px; }
+.data-table td small { display: block; color: var(--tinta-8a968e); font-size: 11px; }
 .data-table tbody tr:last-child td { border-bottom: 0; }
 .data-table .btn-sm { padding: 6px 12px; font-size: 11px; }
 
@@ -460,7 +461,7 @@ h1 {
   display: block;
   margin-bottom: 6px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: .5px;
   text-transform: uppercase;
 }
@@ -512,12 +513,12 @@ h1 {
 
 @media (max-width: 900px) {
   .filter-panel { flex-direction: column; align-items: stretch; }
-  .filter-controls .form-select { flex: 1; width: auto; }
+  .filter-controls .form-select { flex: 1; width: auto; max-width: none; }
 }
 
 @media (max-width: 600px) {
-  .filter-controls { display: grid; grid-template-columns: 1fr 1fr; }
-  .filter-controls .btn { grid-column: span 2; }
+  /* Celular: um filtro por linha, para "Todas as prioridades" etc. não cortarem. */
+  .filter-controls { display: grid; grid-template-columns: 1fr; }
   .modal-header { padding: 17px 16px 13px; }
   .modal-body { padding: 18px 16px; }
   .modal-footer { padding: 13px 16px 16px; }
@@ -543,7 +544,8 @@ h1 {
   .topbar { flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
   .topbar > .btn,
   .topbar-actions { width: 100%; }
-  .topbar-actions .btn { flex: 1; }
+  /* Texto do botão sempre em uma linha; se dois não couberem lado a lado, o de baixo desce. */
+  .topbar-actions .btn { flex: 1 1 auto; white-space: nowrap; }
   h1 { font-size: 25px; }
   .page-subtitle { font-size: 11px; }
   .page-footer { flex-direction: column; gap: 5px; }
@@ -624,3 +626,7 @@ html.perfil-voluntario .so-perfil-voluntario { display: inline; }
 .summary-stats > .summary-stat:first-child small { color: hsl(140 40% 84%); }
 .finance-stats > .finance-stat:first-child .finance-icon,
 .summary-stats > .summary-stat:first-child .summary-icon { color: #fff; background: hsl(0 0% 100% / .14); }
+
+/* Texto secundário do Bootstrap (.text-secondary) segue a cor de texto secundário do sistema,
+   que tem contraste suficiente nos temas claro e escuro. */
+.text-secondary { color: var(--muted-foreground) !important; }
