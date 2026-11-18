@@ -160,7 +160,7 @@ um voluntário de confiança que conduz adoções pode receber o perfil **Equipe
 
 | O que | Administrador | Equipe | Veterinário | Voluntário |
 |---|:---:|:---:|:---:|:---:|
-| Dashboard | ✓ | ✓ sem valores financeiros | ✓ sem valores financeiros | ✓ sem finanças e adoções |
+| Dashboard (todos os indicadores) | ✓ | ✓ | ✓ sem o nome dos adotantes | ✓ sem o nome dos adotantes |
 | Animais — consultar fichas | ✓ | ✓ | ✓ | ✓ |
 | Animais — cadastrar, editar, excluir | ✓ | ✓ | — | — |
 | Animais — vacinas, histórico, pesagens | ✓ | ✓ | ✓ | — |

@@ -46,15 +46,18 @@ document.getElementById('statusList').innerHTML = PawData.STATUS.map(status =>
 
 // ---------- Últimas adoções ----------
 const recent = [...adoptions].sort((a, b) => b.openedAt.localeCompare(a.openedAt)).slice(0, 4);
+// O nome do adotante é dado pessoal (LGPD): só aparece para quem trabalha com adoções.
+// Os demais perfis veem o animal e a etapa, sem a coluna "Adotante" e sem o link.
+const veAdocoes = typeof PawAuth === 'undefined' || PawAuth.podePagina('adocoes');
 document.getElementById('recentAdoptions').innerHTML = recent.length
   ? recent.map(o => {
     const animal = animals.find(a => a.id === o.animalId);
     const adopter = adopters.find(p => p.id === o.adopterId);
     const avatar = animal?.species === 'Gato' ? 'animal-cat' : 'animal-dog';
-    return `<tr class="clickable-row" data-href="Pages/adocoes.html?processo=${o.id}">
+    return `<tr${veAdocoes ? ` class="clickable-row" data-href="Pages/adocoes.html?processo=${o.id}"` : ''}>
       <td><div class="animal-cell"><span class="animal-avatar ${avatar}"><i class="bi bi-paw-fill"></i></span>
         <span><strong>${escapeHtml(animal?.name ?? 'Animal removido')}</strong><small>${escapeHtml(animal ? `${animal.sex} · ${animal.age || 'idade não informada'}` : '')}</small></span></div></td>
-      <td>${escapeHtml(adopter?.name ?? '—')}</td>
+      <td class="col-adotante">${veAdocoes ? escapeHtml(adopter?.name ?? '—') : ''}</td>
       <td>${formatDate(o.openedAt)}</td>
       <td><span class="status-badge ${PawData.stageClass(o.stage)}">${o.stage}</span></td>
     </tr>`;

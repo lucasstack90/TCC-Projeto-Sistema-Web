@@ -61,7 +61,7 @@
           <div class="stat-content"><span class="stat-label">Voluntários ativos</span><strong class="stat-value" data-stat="activeVolunteers">–</strong><span class="stat-foot" data-stat="pendingVolunteers">–</span></div>
           <span class="stat-accent accent-lilac"></span>
         </article>
-        <article class="stat-card" data-requer="financeiro.ver">
+        <article class="stat-card">
           <div class="stat-icon icon-blue"><i class="bi bi-cash-coin"></i></div>
           <div class="stat-content"><span class="stat-label">Doações neste mês</span><strong class="stat-value" data-stat="monthDonations">–</strong><span class="stat-foot" data-stat="monthDonationsFoot">–</span></div>
           <span class="stat-accent accent-blue"></span>
@@ -104,14 +104,14 @@
       </section>
 
       <section class="recent-grid">
-        <article class="panel recent-panel" data-requer="pagina.adocoes">
+        <article class="panel recent-panel">
           <div class="panel-heading recent-heading">
             <div class="heading-with-icon"><span class="table-heading-icon"><i class="bi bi-heart"></i></span><div><h2>Últimas adoções</h2><p>Processos abertos mais recentes</p></div></div>
-            <a href="Pages/adocoes.html" class="view-all">Ver todas <i class="bi bi-arrow-right"></i></a>
+            <a href="Pages/adocoes.html" class="view-all" data-requer="pagina.adocoes">Ver todas <i class="bi bi-arrow-right"></i></a>
           </div>
           <div class="table-responsive">
             <table class="table dashboard-table align-middle mb-0">
-              <thead><tr><th>Animal</th><th>Adotante</th><th>Aberto em</th><th>Etapa</th></tr></thead>
+              <thead><tr><th>Animal</th><th class="col-adotante">Adotante</th><th>Aberto em</th><th>Etapa</th></tr></thead>
               <tbody id="recentAdoptions"></tbody>
             </table>
           </div>

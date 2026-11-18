@@ -553,6 +553,9 @@ html.pagina-estoque.sem-estoque-movimentar #detailIn,
 html.pagina-estoque.sem-estoque-movimentar [data-move-in],
 html.pagina-estoque.sem-estoque-movimentar [data-reverse],
 
+/* Dashboard: todos veem; a coluna com o nome do adotante (LGPD) só para quem trabalha com adoções. */
+html.pagina-dashboard.sem-pagina-adocoes .col-adotante,
+
 /* Relatório: só o administrador configura (dados da ONG, metas, responsáveis). */
 html.pagina-relatorios.sem-relatorio-configurar #openConfig { display: none !important; }
 
