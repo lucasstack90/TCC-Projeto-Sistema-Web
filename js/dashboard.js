@@ -123,6 +123,12 @@ const adoptionsPerMonth = months.map(m =>
   adoptions.filter(o => o.stage === 'Concluída' && o.closedAt.startsWith(m.key)).length);
 const periodTotal = adoptionsPerMonth.reduce((a, b) => a + b, 0);
 document.getElementById('adoptionsTotal').textContent = PawUtils.plural(periodTotal, 'adoção no período', 'adoções no período');
+// Nenhuma adoção no período: em vez de seis trilhos "cheios", uma mensagem clara.
+if (periodTotal === 0) {
+  const wrap = document.getElementById('adoptionsChart').parentElement;
+  wrap.classList.add('is-empty');
+  wrap.insertAdjacentHTML('beforeend', '<p class="chart-empty"><span>Nenhuma adoção concluída nos últimos 6 meses.</span></p>');
+}
 
 // ---------- Taxa de adoção ----------
 const adoptionRate = animals.length ? Math.round((stats.adopted / animals.length) * 100) : 0;

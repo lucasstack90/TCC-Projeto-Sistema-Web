@@ -36,7 +36,7 @@
     const hidden = item.alert && !item.count ? ' d-none' : '';
     const count = item.count !== undefined
       ? `<span class="sidebar-count${item.alert ? ' is-alert' : ''}${hidden}" data-count="${item.id}">${item.count}</span>` : '';
-    return `<a class="nav-link${active ? ' active' : ''}" href="${item.href}"${active ? ' aria-current="page"' : ''}>
+    return `<a class="nav-link${active ? ' active' : ''}" href="${item.href}" title="${item.label}"${active ? ' aria-current="page"' : ''}>
       <i class="bi ${item.icon}"></i><span>${item.label}</span>${count}</a>`;
   }).join('');
 
