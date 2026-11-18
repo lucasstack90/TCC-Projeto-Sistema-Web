@@ -149,6 +149,50 @@ Pontos de atenção na migração:
   fala a mesma língua da interface de propósito, para a migração ser quase um
   encontrar-e-substituir.
 
+## Perfis de usuário e permissões
+
+O sistema tem três perfis. O que cada um pode fazer está em **um único arquivo**,
+`app/Core/Permissoes.php`. Para mudar uma regra, altere só ele: o servidor passa
+a recusar a ação e a interface se ajusta sozinha no próximo login.
+
+| O que | Funcionário | Veterinário | Voluntário |
+|---|:---:|:---:|:---:|
+| Dashboard | ✓ | ✓ (sem valores financeiros) | ✓ (sem valores financeiros) |
+| Animais — consultar fichas | ✓ | ✓ | ✓ |
+| Animais — cadastrar, editar, excluir | ✓ | — | — |
+| Animais — vacinas, histórico, pesagens | ✓ | ✓ | — |
+| Resgates | ✓ | ✓ | ✓ |
+| Estoque | ✓ | ✓ | — |
+| Relatório técnico | ✓ | ✓ | — |
+| Adoções (dados de adotantes) | ✓ | — | — |
+| Voluntários & Equipe | ✓ | — | — |
+| Doações / Financeiro | ✓ | — | — |
+| Cadastros (veterinários, contribuintes) | ✓ | — | — |
+| Usuários do sistema | ✓ | — | — |
+
+O critério: o voluntário não vê dados pessoais de terceiros (CPF de adotantes e
+contribuintes) nem finanças — o mínimo necessário, como pede a LGPD.
+
+**Como funciona por dentro**
+
+1. No login, o servidor devolve o perfil e a lista de permissões do usuário.
+2. `js/auth.js` guarda essa lista na aba (sessionStorage), bloqueia páginas que o
+   perfil não pode abrir, e o `sidebar.js` só mostra os itens permitidos.
+3. Botões de escrita somem pelo CSS (`html.sem-animais-cadastrar #addAnimal ...`)
+   e blocos com `data-requer="permissao"` somem quando ela falta.
+4. A proteção de verdade é no servidor: cada rota da API usa
+   `[ExigirPermissao::class, 'permissao']` e responde **403** fora do perfil.
+   Esconder na tela é só conforto.
+5. A cada página aberta a interface consulta `/api/auth/eu`: se um funcionário
+   trocar o perfil de alguém ou desativar a conta, vale na hora.
+
+Travas da gestão de usuários: ninguém muda o próprio perfil, desativa ou exclui a
+própria conta, e o sistema nunca fica sem um funcionário ativo.
+
+> Enquanto Adoções, Resgates, Estoque etc. ainda gravam no `localStorage`, o
+> bloqueio desses módulos é feito na interface. Quando cada um migrar para a API,
+> basta proteger as rotas dele com a permissão correspondente.
+
 ## Cadastros de apoio (veterinários e contribuintes)
 
 Dois cadastros já seguem este padrão no back-end e servem de exemplo prático,

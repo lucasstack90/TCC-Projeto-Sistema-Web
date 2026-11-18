@@ -31,11 +31,18 @@
     <div class="topbar-title">
       <div class="eyebrow">Dados de apoio</div>
       <h1>Cadastros</h1>
-      <p class="page-subtitle">Veterinários e contribuintes usados pelos módulos de Animais, Financeiro e Relatório.</p>
+      <p class="page-subtitle">Usuários do sistema, veterinários e contribuintes usados pelos módulos de Animais, Financeiro e Relatório.</p>
     </div>
   </header>
 
   <section class="registry-cards">
+    <article class="registry-card" data-requer="usuarios.gerenciar">
+      <i class="bi bi-person-lock registry-card-icon"></i>
+      <h2>Usuários</h2>
+      <p>Quem acessa o sistema e com qual perfil: funcionário, veterinário ou voluntário.</p>
+      <button type="button" class="btn btn-green align-self-start" id="openUsers"><i class="bi bi-gear me-2"></i>Gerenciar usuários</button>
+    </article>
+
     <article class="registry-card">
       <i class="bi bi-person-badge registry-card-icon"></i>
       <h2>Veterinários</h2>
@@ -57,10 +64,13 @@
 <script src="../js/dados.js"></script>
 <script src="../js/utils.js"></script>
 <script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
 <script src="../js/sidebar.js"></script>
 <script src="../js/veterinarios.js"></script>
 <script src="../js/contribuintes.js"></script>
+<script src="../js/usuarios.js"></script>
 <script>
+  document.getElementById('openUsers').addEventListener('click', () => PawUsers.open());
   document.getElementById('openVets').addEventListener('click', () => PawVets.open());
   document.getElementById('openContributors').addEventListener('click', () => PawContributors.open());
 </script>

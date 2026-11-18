@@ -36,6 +36,13 @@
     <button class="btn btn-green" id="addAnimal" type="button"><i class="bi bi-plus-lg me-2"></i>Cadastrar animal</button>
   </header>
 
+  <!-- Aviso de perfil (aparece só para quem não cadastra animais; ver base.css) -->
+  <div class="alert-soft aviso-perfil mb-3" role="note">
+    <i class="bi bi-info-circle me-2"></i>
+    <span class="so-perfil-veterinario">Perfil veterinário: você registra vacinas, histórico e pesagens nas fichas. O cadastro dos animais é feito pela equipe.</span>
+    <span class="so-perfil-voluntario">Perfil voluntário: modo consulta. Você pode ver as fichas, mas alterações são feitas pela equipe.</span>
+  </div>
+
   <section class="filter-panel">
     <div class="search"><i class="bi bi-search"></i><input id="search" type="search" class="form-control" placeholder="Buscar por nome, raça ou código (PAW-0001)..." aria-label="Buscar animais"></div>
     <div class="filter-controls">
@@ -143,6 +150,7 @@
 <script src="../js/dados.js"></script>
 <script src="../js/utils.js"></script>
 <script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
 <script src="../js/sidebar.js"></script>
 <script src="../js/veterinarios.js"></script>
 <script src="../js/animais.js"></script>

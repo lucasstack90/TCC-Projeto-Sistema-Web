@@ -518,3 +518,21 @@ h1 {
     animation: none !important;
   }
 }
+
+/* ===== Perfis de usuário (classes postas no <html> pelo js/auth.js) =====
+   Esconder aqui é só conforto: o servidor recusa (403) ações fora do perfil. */
+[hidden] { display: none !important; }
+
+/* Animais: só funcionário cadastra, edita e exclui; registros clínicos exigem permissão própria. */
+html.pagina-animais.sem-animais-cadastrar #addAnimal,
+html.pagina-animais.sem-animais-cadastrar [data-edit],
+html.pagina-animais.sem-animais-cadastrar [data-delete],
+html.pagina-animais.sem-animais-registros [data-add-record] { display: none !important; }
+
+/* Aviso do modo de cada perfil (mostra só a frase do perfil logado). */
+.aviso-perfil,
+.so-perfil-veterinario,
+.so-perfil-voluntario { display: none; }
+html.pagina-animais.sem-animais-cadastrar .aviso-perfil { display: flex; align-items: center; }
+html.perfil-veterinario .so-perfil-veterinario,
+html.perfil-voluntario .so-perfil-voluntario { display: inline; }

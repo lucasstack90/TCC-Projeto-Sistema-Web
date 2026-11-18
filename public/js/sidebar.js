@@ -31,7 +31,13 @@
     { id: 'cadastros', label: 'Cadastros', icon: 'bi-card-list', href: `${base}cadastros.html` }
   ];
 
-  const navLinks = items.map(item => {
+  // Só as páginas que o perfil logado pode abrir (js/auth.js). Sem PawAuth, mostra tudo.
+  const temAuth = typeof PawAuth !== 'undefined';
+  const visiveis = temAuth ? items.filter(item => PawAuth.podePagina(item.id)) : items;
+  const usuario = temAuth ? PawAuth.usuario() : null;
+  const iniciais = (nome) => (nome || '?').split(/\s+/).filter(p => !/^(dr|dra)\.?$/i.test(p)).slice(0, 2).map(p => p[0]).join('').toUpperCase();
+
+  const navLinks = visiveis.map(item => {
     const active = item.id === activeModule;
     // "alert": contador de pendências, em destaque e escondido quando é zero
     const hidden = item.alert && !item.count ? ' d-none' : '';
@@ -50,12 +56,12 @@
       <div class="sidebar-label">MENU PRINCIPAL</div>
       <nav class="nav flex-column sidebar-nav">${navLinks}</nav>
       <div class="sidebar-bottom">
-        <a class="nav-link volunteer-link" href="${base}voluntario-cadastro.html" target="_blank" rel="noopener" title="Formulário público de inscrição"><i class="bi bi-box-arrow-up-right"></i><span>Link de voluntariado</span></a>
+        ${!temAuth || PawAuth.podePagina('voluntarios') ? `<a class="nav-link volunteer-link" href="${base}voluntario-cadastro.html" target="_blank" rel="noopener" title="Formulário público de inscrição"><i class="bi bi-box-arrow-up-right"></i><span>Link de voluntariado</span></a>` : ''}
         <button class="theme-toggle" type="button" data-theme-toggle aria-label="Alternar tema claro/escuro" aria-pressed="false"><i class="bi bi-moon-stars icon-lua" aria-hidden="true"></i><i class="bi bi-sun icon-sol" aria-hidden="true"></i><span class="theme-label">Tema escuro</span></button>
         <button class="nav-link logout-link" type="button" id="logoutButton"><i class="bi bi-box-arrow-left"></i><span>Sair</span></button>
         <div class="profile-mini">
-          <div class="avatar"><i class="bi bi-person-fill"></i></div>
-          <div class="profile-text"><strong>Renata Oliveira</strong><small>Administradora</small></div>
+          <div class="avatar" id="profileAvatar" aria-hidden="true">${usuario ? escapeHtmlSidebar(iniciais(usuario.nome)) : '<i class="bi bi-person-fill"></i>'}</div>
+          <div class="profile-text"><strong id="profileName">${usuario ? escapeHtmlSidebar(usuario.nome) : 'Visitante'}</strong><small id="profileRole">${usuario ? escapeHtmlSidebar(usuario.perfilRotulo || usuario.perfil) : ''}</small></div>
         </div>
       </div>
     </aside>
@@ -78,8 +84,23 @@
   }));
   window.addEventListener('resize', () => { if (window.innerWidth > 900) setMenu(false); });
 
-  // Sair funciona em todas as páginas (antes só existia no dashboard).
+  // Sair encerra a sessão no servidor (quando js/auth.js está na página).
   document.getElementById('logoutButton').addEventListener('click', () => {
-    if (window.confirm('Deseja sair do PAWSAFE?')) window.location.href = `${base}Pg_Login.html`;
+    if (!window.confirm('Deseja sair do PAWSAFE?')) return;
+    if (temAuth) PawAuth.sair();
+    else window.location.href = `${base}Pg_Login.html`;
   });
+
+  // Quando o servidor confirma a sessão (nome ou perfil podem ter mudado), atualiza o rodapé.
+  document.addEventListener('pawsafe:sessao', (e) => {
+    const u = e.detail;
+    if (!u) return;
+    document.getElementById('profileName').textContent = u.nome;
+    document.getElementById('profileRole').textContent = u.perfilRotulo || u.perfil;
+    document.getElementById('profileAvatar').textContent = iniciais(u.nome);
+  });
+
+  function escapeHtmlSidebar(texto) {
+    return String(texto ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  }
 })();

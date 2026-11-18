@@ -122,6 +122,8 @@
   border-radius: 50%;
   color: var(--green-800);
   background: #d9e8de;
+  font-size: 11px;   /* iniciais do usuário logado */
+  font-weight: 700;
 }
 
 .profile-text { display: flex; flex-direction: column; min-width: 0; }

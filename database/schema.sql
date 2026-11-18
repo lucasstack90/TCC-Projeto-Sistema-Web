@@ -5,7 +5,9 @@
 --   1. Abra o phpMyAdmin (http://localhost/phpmyadmin) com o MySQL ligado.
 --   2. Importe este arquivo, OU cole o conteúdo na aba SQL e execute.
 --   Ele cria o banco "pawsafe", as tabelas da base (usuários) e do módulo de
---   Animais, e cadastra um usuário administrador para o primeiro acesso.
+--   Animais, e cadastra um usuário de cada perfil (funcionário, veterinário,
+--   voluntário) para o primeiro acesso. Pode ser importado de novo sem
+--   duplicar dados — e atualiza bancos criados em versões anteriores.
 --
 -- Decisões alinhadas a docs/pendencias-backend.md:
 --   - Valores monetários (nos módulos financeiros) usarão DECIMAL, nunca FLOAT.
@@ -13,6 +15,10 @@
 --     a coluna "foto" guarda só o caminho/nome do arquivo (ou uma URL externa).
 --   - Datas de criação/alteração em todas as tabelas, para auditoria e LGPD.
 -- =====================================================================
+
+-- Garante que os acentos (ex.: 'Cão', 'Fêmea') sejam lidos como UTF-8, seja
+-- importando pelo phpMyAdmin ou pelo terminal do MySQL.
+SET NAMES utf8mb4;
 
 CREATE DATABASE IF NOT EXISTS pawsafe
     CHARACTER SET utf8mb4
@@ -30,13 +36,22 @@ CREATE TABLE IF NOT EXISTS usuarios (
     nome         VARCHAR(120)  NOT NULL,
     email        VARCHAR(150)  NOT NULL,
     senha_hash   VARCHAR(255)  NOT NULL,
-    perfil       ENUM('admin', 'equipe') NOT NULL DEFAULT 'equipe',
+    -- Perfis e o que cada um pode fazer: app/Core/Permissoes.php
+    perfil       ENUM('funcionario', 'veterinario', 'voluntario') NOT NULL DEFAULT 'voluntario',
     ativo        TINYINT(1)    NOT NULL DEFAULT 1,
     criado_em    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     atualizado_em TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY uq_usuarios_email (email)
 ) ENGINE=InnoDB;
+
+-- Atualização de bancos criados antes dos perfis (admin/equipe -> funcionario).
+-- Em banco novo estes comandos não mudam nada; pode rodar sempre.
+ALTER TABLE usuarios MODIFY perfil
+    ENUM('admin', 'equipe', 'funcionario', 'veterinario', 'voluntario') NOT NULL DEFAULT 'voluntario';
+UPDATE usuarios SET perfil = 'funcionario' WHERE perfil IN ('admin', 'equipe');
+ALTER TABLE usuarios MODIFY perfil
+    ENUM('funcionario', 'veterinario', 'voluntario') NOT NULL DEFAULT 'voluntario';
 
 -- ---------------------------------------------------------------------
 -- Animais abrigados
@@ -172,26 +187,34 @@ CREATE TABLE IF NOT EXISTS contribuintes (
 -- =====================================================================
 -- Dados iniciais
 -- =====================================================================
--- Usuário administrador para o primeiro acesso.
---   E-mail: admin@pawsafe.local
---   Senha:  pawsafe123   (TROQUE depois do primeiro login)
+-- Este bloco pode ser importado mais de uma vez sem duplicar nada.
+--
+-- Um usuário de cada perfil para o primeiro acesso e para a apresentação.
+-- Senha de todos: pawsafe123   (TROQUE depois do primeiro login)
+--   admin@pawsafe.local        Funcionário(a)  — acesso total, gerencia usuários
+--   veterinario@pawsafe.local  Veterinário(a)  — fichas clínicas, resgates, estoque
+--   voluntario@pawsafe.local   Voluntário(a)   — consulta animais e registra resgates
 -- O hash abaixo foi gerado com password_hash('pawsafe123', PASSWORD_BCRYPT).
 INSERT INTO usuarios (nome, email, senha_hash, perfil, ativo) VALUES
-('Administrador', 'admin@pawsafe.local',
- '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.',
- 'admin', 1)
-ON DUPLICATE KEY UPDATE nome = nome;
+('Administrador',     'admin@pawsafe.local',       '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.', 'funcionario', 1),
+('Dra. Marina Lopes', 'veterinario@pawsafe.local', '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.', 'veterinario', 1),
+('Voluntário Teste',  'voluntario@pawsafe.local',  '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.', 'voluntario',  1)
+ON DUPLICATE KEY UPDATE id = id;
 
--- Dois animais de exemplo (equivalentes ao seed do protótipo).
-INSERT INTO animais (nome, especie, raca, cor, idade, data_chegada, sexo, porte, status, peso, vacinado, castrado, microchip, observacoes) VALUES
-('Thor', 'Cão', 'Labrador', 'Dourado', '3 anos', '2026-03-14', 'Macho', 'Grande', 'Disponível', 26.40, 1, 1, 0, 'Sociável e ativo. Gosta de passeios.'),
-('Mia',  'Gato', 'Siamês', 'Creme e marrom', '2 anos', '2026-02-09', 'Fêmea', 'Pequeno', 'Disponível', 4.20, 1, 1, 0, 'Tranquila e aparentemente saudável.');
+-- Dois animais de exemplo (equivalentes ao seed do protótipo) — só se a tabela estiver vazia.
+INSERT INTO animais (nome, especie, raca, cor, idade, data_chegada, sexo, porte, status, peso, vacinado, castrado, microchip, observacoes)
+SELECT * FROM (
+    SELECT 'Thor' AS nome, 'Cão' AS especie, 'Labrador' AS raca, 'Dourado' AS cor, '3 anos' AS idade, DATE('2026-03-14') AS data_chegada, 'Macho' AS sexo, 'Grande' AS porte, 'Disponível' AS status, 26.40 AS peso, 1 AS vacinado, 1 AS castrado, 0 AS microchip, 'Sociável e ativo. Gosta de passeios.' AS observacoes
+    UNION ALL
+    SELECT 'Mia', 'Gato', 'Siamês', 'Creme e marrom', '2 anos', DATE('2026-02-09'), 'Fêmea', 'Pequeno', 'Disponível', 4.20, 1, 1, 0, 'Tranquila e aparentemente saudável.'
+) AS exemplos
+WHERE NOT EXISTS (SELECT 1 FROM animais);
 
--- Dois veterinários de exemplo.
-INSERT INTO veterinarios (nome, crmv, crmv_uf, vinculo, especialidade, clinica, telefone, email, ativo) VALUES
+-- Dois veterinários de exemplo (o CRMV é único: reimportar não duplica).
+INSERT IGNORE INTO veterinarios (nome, crmv, crmv_uf, vinculo, especialidade, clinica, telefone, email, ativo) VALUES
 ('Dra. Marina Lopes',   '12345', 'PR', 'Clínica parceira', 'Clínica geral', 'Clínica VidaPet', '(42) 99999-1234', 'marina@exemplo.com', 1),
 ('Dr. Henrique Farias', '23456', 'PR', 'Voluntário(a)',    'Felinos',       'Atende no abrigo', '(42) 99999-5678', 'henrique@exemplo.com', 1);
 
--- Um contribuinte de exemplo (pessoa jurídica).
-INSERT INTO contribuintes (tipo, nome, documento, nome_fantasia, contato, telefone, email, cidade, uf, doador, fornecedor, ativo) VALUES
-('Pessoa jurídica', 'Associação de Proteção Animal (exemplo)', '00000000000100', 'APA Guarapuava', 'Setor de parcerias', '(42) 3333-4444', 'contato@exemplo.org', 'Guarapuava', 'PR', 1, 0, 1);
+-- Um contribuinte de exemplo (pessoa jurídica, CNPJ de exemplo válido).
+INSERT IGNORE INTO contribuintes (tipo, nome, documento, nome_fantasia, contato, telefone, email, cidade, uf, doador, fornecedor, ativo) VALUES
+('Pessoa jurídica', 'Associação de Proteção Animal (exemplo)', '11222333000181', 'APA Guarapuava', 'Setor de parcerias', '(42) 3333-4444', 'contato@exemplo.org', 'Guarapuava', 'PR', 1, 0, 1);

@@ -61,11 +61,11 @@
         email: email.value.trim(),
         senha: password.value,
       });
-      // O servidor já devolve o token CSRF da sessão; guardamos para as próximas chamadas.
-      if (dados && dados.csrf) Api.definirCsrf(dados.csrf);
+      // Guarda usuário, perfil e permissões da sessão (js/auth.js) e o token CSRF.
+      PawAuth.salvar(dados);
 
-      showMessage('success', 'Acesso liberado. Abrindo o painel...');
-      setTimeout(() => { window.location.href = '../index.html'; }, 500);
+      showMessage('success', `Olá, ${dados.usuario.nome}! Abrindo o painel...`);
+      setTimeout(() => { window.location.href = PawAuth.paginaInicial(); }, 500);
     } catch (err) {
       submitBtn.disabled = false;
       if (err.campos) {

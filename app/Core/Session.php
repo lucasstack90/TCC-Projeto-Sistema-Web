@@ -52,8 +52,14 @@ final class Session
     public static function logar(array $usuario): void
     {
         session_regenerate_id(true); // evita fixação de sessão
+        self::atualizarUsuario($usuario);
+    }
+
+    /** Atualiza os dados do usuário na sessão sem trocar o id (usado a cada página). */
+    public static function atualizarUsuario(array $usuario): void
+    {
         $_SESSION['usuario'] = [
-            'id'     => $usuario['id'],
+            'id'     => (int) $usuario['id'],
             'nome'   => $usuario['nome'],
             'email'  => $usuario['email'],
             'perfil' => $usuario['perfil'],

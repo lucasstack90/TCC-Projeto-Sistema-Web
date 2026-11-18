@@ -41,17 +41,24 @@ No front-end, cada CSS/JS continua com a mesma função de antes; a novidade é 
 ## Executar
 
 ### Protótipo só do front-end (sem banco)
-Abra a pasta no VS Code e rode `public/Pages/Pg_Login.html` (ou `public/index.html`) com o Live Server. As telas ainda funcionam sobre o `localStorage`, menos o login, que agora exige o back-end.
+As telas ainda guardam os dados no `localStorage`, mas agora **todas exigem login**, e o login depende do back-end. Por isso, para usar o sistema, rode-o no XAMPP (abaixo); o Live Server sozinho só mostra a tela de login.
 
 ### Sistema completo (com back-end, no XAMPP)
 1. Instale o **XAMPP** e ligue **Apache** e **MySQL** no painel.
 2. Copie a pasta do projeto para `xampp/htdocs/` (ex.: `htdocs/pawsafe`).
-3. Crie o banco: abra `http://localhost/phpmyadmin`, importe `database/schema.sql` (cria o banco `pawsafe`, as tabelas e o usuário admin).
+3. Crie o banco: abra `http://localhost/phpmyadmin`, importe `database/schema.sql` (cria o banco `pawsafe`, as tabelas e um usuário de cada perfil). Se você já tinha importado uma versão anterior, importe de novo: o arquivo atualiza o banco sem duplicar dados.
 4. Confira as credenciais em `config/config.php` (no XAMPP padrão: usuário `root`, sem senha).
 5. Abra `http://localhost/pawsafe/public/Pages/Pg_Login.html`.
    - Se o projeto estiver numa subpasta (como acima), defina `base_url` em `config/config.php` como `/pawsafe/public` (ou configure um VirtualHost com `DocumentRoot` em `public/` e deixe `base_url` vazio).
-6. Entre com o usuário inicial e **troque a senha depois**:
-   - E-mail: `admin@pawsafe.local`  ·  Senha: `pawsafe123`
+6. Entre com um dos usuários iniciais (senha de todos: `pawsafe123` — **troque depois**, em Cadastros → Usuários):
+
+   | Perfil | E-mail | O que vê |
+   |---|---|---|
+   | Funcionário(a) | `admin@pawsafe.local` | tudo, inclusive financeiro e gestão de usuários |
+   | Veterinário(a) | `veterinario@pawsafe.local` | fichas clínicas, resgates, estoque e relatório |
+   | Voluntário(a) | `voluntario@pawsafe.local` | consulta animais e registra resgates |
+
+   A regra completa de cada perfil está em [`docs/padrao-do-projeto.md`](docs/padrao-do-projeto.md#perfis-de-usuário-e-permissões).
 
 Teste rápido do back-end: abra `.../public/api/ping` — deve responder `{"ok":true,...}`.
 É preciso internet para Bootstrap, Chart.js, fontes e fotos de exemplo.

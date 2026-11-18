@@ -69,8 +69,10 @@ final class Router
             }
 
             // Middlewares (ex.: exigir login) rodam antes do controller.
+            // Um middleware pode vir com parâmetros: [ExigirPermissao::class, 'animais.cadastrar'].
             foreach ($rota['middlewares'] as $mw) {
-                (new $mw())->tratar($req);
+                $instancia = is_array($mw) ? new $mw[0](...array_slice($mw, 1)) : new $mw();
+                $instancia->tratar($req);
             }
 
             array_shift($m); // remove o match completo, sobram os parâmetros

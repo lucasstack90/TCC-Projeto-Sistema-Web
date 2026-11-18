@@ -61,7 +61,7 @@
           <div class="stat-content"><span class="stat-label">Voluntários ativos</span><strong class="stat-value" data-stat="activeVolunteers">–</strong><span class="stat-foot" data-stat="pendingVolunteers">–</span></div>
           <span class="stat-accent accent-lilac"></span>
         </article>
-        <article class="stat-card">
+        <article class="stat-card" data-requer="financeiro.ver">
           <div class="stat-icon icon-blue"><i class="bi bi-cash-coin"></i></div>
           <div class="stat-content"><span class="stat-label">Doações neste mês</span><strong class="stat-value" data-stat="monthDonations">–</strong><span class="stat-foot" data-stat="monthDonationsFoot">–</span></div>
           <span class="stat-accent accent-blue"></span>
@@ -104,7 +104,7 @@
       </section>
 
       <section class="recent-grid">
-        <article class="panel recent-panel">
+        <article class="panel recent-panel" data-requer="pagina.adocoes">
           <div class="panel-heading recent-heading">
             <div class="heading-with-icon"><span class="table-heading-icon"><i class="bi bi-heart"></i></span><div><h2>Últimas adoções</h2><p>Processos abertos mais recentes</p></div></div>
             <a href="Pages/adocoes.html" class="view-all">Ver todas <i class="bi bi-arrow-right"></i></a>
@@ -140,7 +140,9 @@
   <script src="js/dados.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/financeiro.js"></script>
-  <script src="js/sidebar.js"></script>
+  <script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/sidebar.js"></script>
   <script src="js/dashboard.js"></script>
 </body>
 </html>

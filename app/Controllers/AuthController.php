@@ -4,6 +4,7 @@ namespace Controllers;
 
 use Core\Controller;
 use Core\Csrf;
+use Core\Permissoes;
 use Core\Session;
 use Core\Validator;
 use Models\Usuario;
@@ -11,9 +12,10 @@ use Models\Usuario;
 /**
  * Login, logout e dados da sessão atual.
  *
- * O login de verdade acontece aqui (o protótipo só simulava). A senha é
- * conferida contra o hash bcrypt do banco; em caso de erro, a mensagem é
- * genérica de propósito, para não revelar se o e-mail existe.
+ * O login confere a senha contra o hash bcrypt do banco; em caso de erro, a
+ * mensagem é genérica de propósito, para não revelar se o e-mail existe.
+ * As respostas trazem o perfil e a lista de permissões (Core\Permissoes), que a
+ * interface usa para montar o menu e esconder ações.
  */
 final class AuthController extends Controller
 {
@@ -31,6 +33,7 @@ final class AuthController extends Controller
 
         $ok = $usuario
             && (int) ($usuario['ativo'] ?? 0) === 1
+            && in_array($usuario['perfil'] ?? '', Permissoes::PERFIS, true)
             && $model->senhaConfere($usuario, (string) $this->req->input('senha'));
 
         if (!$ok) {
@@ -39,10 +42,7 @@ final class AuthController extends Controller
         }
 
         Session::logar($usuario);
-        $this->ok([
-            'usuario' => Session::usuario(),
-            'csrf'    => Csrf::token(),
-        ]);
+        $this->ok($this->dadosDaSessao());
     }
 
     public function logout(): void
@@ -51,12 +51,31 @@ final class AuthController extends Controller
         $this->ok(['mensagem' => 'Sessão encerrada.']);
     }
 
-    /** A interface usa para saber se ainda está logada e quem é o usuário. */
+    /**
+     * Quem está logado. Relê o usuário no banco: se o perfil mudou ou a conta foi
+     * desativada, vale já no próximo carregamento de página.
+     */
     public function eu(): void
     {
-        if (!Session::logado()) {
-            $this->erro('Não autenticado.', 401);
+        $sessao = Session::usuario();
+        $atual = $sessao ? (new Usuario())->encontrar((int) $sessao['id']) : null;
+
+        if (!$atual || (int) $atual['ativo'] !== 1) {
+            Session::destruir();
+            $this->erro('Sessão encerrada. Faça login novamente.', 401);
         }
-        $this->ok(['usuario' => Session::usuario(), 'csrf' => Csrf::token()]);
+
+        Session::atualizarUsuario($atual);
+        $this->ok($this->dadosDaSessao());
+    }
+
+    private function dadosDaSessao(): array
+    {
+        $u = Session::usuario();
+        return [
+            'usuario'    => $u + ['perfilRotulo' => Permissoes::ROTULOS[$u['perfil']] ?? $u['perfil']],
+            'permissoes' => Permissoes::doPerfil($u['perfil']),
+            'csrf'       => Csrf::token(),
+        ];
     }
 }
