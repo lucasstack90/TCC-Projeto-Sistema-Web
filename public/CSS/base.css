@@ -520,19 +520,45 @@ h1 {
 }
 
 /* ===== Perfis de usuário (classes postas no <html> pelo js/auth.js) =====
+   "sem-x" = o perfil logado NÃO tem a permissão x (lista em app/Core/Permissoes.php).
    Esconder aqui é só conforto: o servidor recusa (403) ações fora do perfil. */
 [hidden] { display: none !important; }
 
-/* Animais: só funcionário cadastra, edita e exclui; registros clínicos exigem permissão própria. */
+/* Animais: cadastrar/editar/excluir e registros clínicos têm permissões próprias. */
 html.pagina-animais.sem-animais-cadastrar #addAnimal,
 html.pagina-animais.sem-animais-cadastrar [data-edit],
 html.pagina-animais.sem-animais-cadastrar [data-delete],
-html.pagina-animais.sem-animais-registros [data-add-record] { display: none !important; }
+html.pagina-animais.sem-animais-registros [data-add-record],
 
-/* Aviso do modo de cada perfil (mostra só a frase do perfil logado). */
-.aviso-perfil,
-.so-perfil-veterinario,
-.so-perfil-voluntario { display: none; }
-html.pagina-animais.sem-animais-cadastrar .aviso-perfil { display: flex; align-items: center; }
+/* Doações: quem não vê o caixa só registra doações (sem resumo, saldo e despesas). */
+html.pagina-doacoes.sem-financeiro-ver #addExpense,
+html.pagina-doacoes.sem-financeiro-ver #financeStats,
+html.pagina-doacoes.sem-financeiro-ver [data-view="summary"],
+html.pagina-doacoes.sem-financeiro-ver [data-view="expenses"],
+html.pagina-doacoes.sem-doacoes-registrar #addDonation,
+
+/* Voluntários: a equipe consulta e aprova inscrições; o resto é do administrador. */
+html.pagina-voluntarios.sem-voluntarios-gerenciar #addVolunteer,
+html.pagina-voluntarios.sem-voluntarios-gerenciar #deleteVolunteer,
+html.pagina-voluntarios.sem-voluntarios-gerenciar #saveVolunteerButton,
+html.pagina-voluntarios.sem-voluntarios-aprovar [data-approve],
+
+/* Estoque: o voluntário só dá baixa por consumo (sem entradas, itens, inventário e estornos). */
+html.pagina-estoque.sem-estoque-movimentar #addItem,
+html.pagina-estoque.sem-estoque-movimentar #editItem,
+html.pagina-estoque.sem-estoque-movimentar #deleteItem,
+html.pagina-estoque.sem-estoque-movimentar #toggleActive,
+html.pagina-estoque.sem-estoque-movimentar #countItem,
+html.pagina-estoque.sem-estoque-movimentar #detailIn,
+html.pagina-estoque.sem-estoque-movimentar [data-move-in],
+html.pagina-estoque.sem-estoque-movimentar [data-reverse],
+
+/* Relatório: só o administrador configura (dados da ONG, metas, responsáveis). */
+html.pagina-relatorios.sem-relatorio-configurar #openConfig { display: none !important; }
+
+/* Aviso do modo do perfil: aparece quando falta a permissão em data-sem (js/auth.js). */
+.aviso-perfil:not([hidden]) { display: flex; align-items: center; gap: 4px; }
+.so-perfil-equipe, .so-perfil-veterinario, .so-perfil-voluntario { display: none; }
+html.perfil-equipe .so-perfil-equipe,
 html.perfil-veterinario .so-perfil-veterinario,
 html.perfil-voluntario .so-perfil-voluntario { display: inline; }

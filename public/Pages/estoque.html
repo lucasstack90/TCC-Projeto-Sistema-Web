@@ -39,6 +39,12 @@
     </div>
   </header>
 
+  <!-- Aviso do modo do perfil: aparece só quando falta a permissão "estoque.movimentar" (js/auth.js) -->
+  <div class="alert-soft aviso-perfil mb-3" role="note" data-sem="estoque.movimentar" hidden>
+    <i class="bi bi-info-circle me-2"></i>
+    <span class="so-perfil-voluntario">Perfil voluntário: você registra a saída por consumo (ex.: ração servida). Entradas e ajustes ficam com a equipe.</span>
+  </div>
+
   <section class="summary-stats" id="summaryStats" aria-label="Resumo do estoque"></section>
 
   <!-- Itens que pedem ação: reposição, lotes vencendo e vencidos -->
@@ -146,7 +152,7 @@
   <div class="modal-header"><div><h2 id="countTitle">Inventário</h2><p>Informe o que foi contado na prateleira. A diferença vira um ajuste.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
   <form id="countForm" novalidate>
     <div class="modal-body">
-      <div class="alert-soft"><i class="bi bi-lock me-1"></i>Ajustes alteram o saldo sem uma entrada ou saída real. No sistema final, só funcionários poderão fazer.</div>
+      <div class="alert-soft"><i class="bi bi-lock me-1"></i>Ajustes alteram o saldo sem uma entrada ou saída real. Por isso só administrador, equipe e veterinário podem fazer.</div>
       <div id="countRows" class="count-rows"></div>
       <label class="form-label mt-3" for="countNote">Justificativa *</label>
       <textarea id="countNote" class="form-control" rows="2" maxlength="300" required placeholder="Ex.: contagem mensal; saco rasgado não registrado"></textarea>

@@ -50,13 +50,15 @@ As telas ainda guardam os dados no `localStorage`, mas agora **todas exigem logi
 4. Confira as credenciais em `config/config.php` (no XAMPP padrão: usuário `root`, sem senha).
 5. Abra `http://localhost/pawsafe/public/Pages/Pg_Login.html`.
    - Se o projeto estiver numa subpasta (como acima), defina `base_url` em `config/config.php` como `/pawsafe/public` (ou configure um VirtualHost com `DocumentRoot` em `public/` e deixe `base_url` vazio).
-6. Entre com um dos usuários iniciais (senha de todos: `pawsafe123` — **troque depois**, em Cadastros → Usuários):
+6. Entre com um dos usuários iniciais (senha de todos: `pawsafe123` — **troque depois**, em Cadastros → Usuários, entrando como administrador):
 
-   | Perfil | E-mail | O que vê |
+   | Perfil | E-mail | O que faz |
    |---|---|---|
-   | Funcionário(a) | `admin@pawsafe.local` | tudo, inclusive financeiro e gestão de usuários |
-   | Veterinário(a) | `veterinario@pawsafe.local` | fichas clínicas, resgates, estoque e relatório |
-   | Voluntário(a) | `voluntario@pawsafe.local` | consulta animais e registra resgates |
+   | Administrador(a) | `admin@pawsafe.local` | tudo: usuários, caixa, configuração do relatório |
+   | Administrador(a) | `tesouraria@pawsafe.local` | segundo administrador (ex.: tesoureiro) |
+   | Equipe | `equipe@pawsafe.local` | operação: animais, adoções, resgates, estoque, registra doações, aprova voluntários |
+   | Veterinário(a) | `veterinario@pawsafe.local` | fichas clínicas, resgates, estoque, consulta o relatório |
+   | Voluntário(a) | `voluntario@pawsafe.local` | consulta animais, registra resgates e consumo no estoque |
 
    A regra completa de cada perfil está em [`docs/padrao-do-projeto.md`](docs/padrao-do-projeto.md#perfis-de-usuário-e-permissões).
 

@@ -43,26 +43,26 @@ return function (Router $r): void {
         $r->get('/api/auth/eu', [AuthController::class, 'eu']);
         $r->post('/api/auth/logout', [AuthController::class, 'logout'], [VerificarCsrf::class]);
 
-        // Animais: todos os perfis consultam; só funcionário cadastra/edita/exclui.
+        // Animais: todos os perfis consultam; administrador e equipe cadastram/editam/excluem.
         $r->get('/api/animais', [AnimalController::class, 'index'], $pode('pagina.animais'));
         $r->get('/api/animais/{id}', [AnimalController::class, 'show'], $pode('pagina.animais'));
         $r->post('/api/animais', [AnimalController::class, 'store'], $grava('animais.cadastrar'));
         $r->put('/api/animais/{id}', [AnimalController::class, 'update'], $grava('animais.cadastrar'));
         $r->delete('/api/animais/{id}', [AnimalController::class, 'destroy'], $grava('animais.cadastrar'));
 
-        // Veterinários: lista para quem registra vacinas; gestão só funcionário.
+        // Veterinários: lista para quem registra vacinas; gestão só do administrador.
         $r->get('/api/veterinarios', [VeterinarioController::class, 'index'], $pode('veterinarios.ver'));
         $r->post('/api/veterinarios', [VeterinarioController::class, 'store'], $grava('cadastros.gerenciar'));
         $r->put('/api/veterinarios/{id}', [VeterinarioController::class, 'update'], $grava('cadastros.gerenciar'));
         $r->delete('/api/veterinarios/{id}', [VeterinarioController::class, 'destroy'], $grava('cadastros.gerenciar'));
 
-        // Contribuintes: têm CPF/CNPJ (LGPD) — só funcionário vê e gerencia.
+        // Contribuintes: têm CPF/CNPJ (LGPD) — equipe vê para registrar doações; gestão só do administrador.
         $r->get('/api/contribuintes', [ContribuinteController::class, 'index'], $pode('contribuintes.ver'));
         $r->post('/api/contribuintes', [ContribuinteController::class, 'store'], $grava('cadastros.gerenciar'));
         $r->put('/api/contribuintes/{id}', [ContribuinteController::class, 'update'], $grava('cadastros.gerenciar'));
         $r->delete('/api/contribuintes/{id}', [ContribuinteController::class, 'destroy'], $grava('cadastros.gerenciar'));
 
-        // Usuários do sistema: só funcionário.
+        // Usuários do sistema: só administrador.
         $r->get('/api/usuarios', [UsuarioController::class, 'index'], $pode('usuarios.gerenciar'));
         $r->post('/api/usuarios', [UsuarioController::class, 'store'], $grava('usuarios.gerenciar'));
         $r->put('/api/usuarios/{id}', [UsuarioController::class, 'update'], $grava('usuarios.gerenciar'));

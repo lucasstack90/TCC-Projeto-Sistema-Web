@@ -104,18 +104,23 @@ function setView(next) {
 
 // ================= Situação =================
 // Interessado → Ativo (aprovado) ou Inativo (arquivado); Ativo ↔ Inativo.
+// "perm": permissão exigida (app/Core/Permissoes.php). A equipe aprova ou arquiva
+// inscrições; inativar e reativar quem já é da equipe é do administrador.
+const podePerfil = (permissao) => typeof PawAuth === 'undefined' || PawAuth.pode(permissao);
 const STATUS_ACTIONS = {
   'Interessado': [
-    { to: 'Ativo', label: 'Aprovar e incluir na equipe', icon: 'bi-check2-circle', style: 'btn-green' },
-    { to: 'Inativo', label: 'Arquivar inscrição', icon: 'bi-archive', style: 'btn-outline-green' }
+    { to: 'Ativo', label: 'Aprovar e incluir na equipe', icon: 'bi-check2-circle', style: 'btn-green', perm: 'voluntarios.aprovar' },
+    { to: 'Inativo', label: 'Arquivar inscrição', icon: 'bi-archive', style: 'btn-outline-green', perm: 'voluntarios.aprovar' }
   ],
-  'Ativo': [{ to: 'Inativo', label: 'Inativar', icon: 'bi-pause-circle', style: 'btn-outline-green' }],
-  'Inativo': [{ to: 'Ativo', label: 'Reativar', icon: 'bi-play-circle', style: 'btn-green' }]
+  'Ativo': [{ to: 'Inativo', label: 'Inativar', icon: 'bi-pause-circle', style: 'btn-outline-green', perm: 'voluntarios.gerenciar' }],
+  'Inativo': [{ to: 'Ativo', label: 'Reativar', icon: 'bi-play-circle', style: 'btn-green', perm: 'voluntarios.gerenciar' }]
 };
 
 function changeStatus(id, to) {
   const v = findVolunteer(id);
   if (!v) return;
+  const acao = STATUS_ACTIONS[v.status].find(a => a.to === to);
+  if (!acao || !podePerfil(acao.perm)) return; // fora do perfil: não faz nada
   v.status = to;
   if (!save()) return;
   render();
@@ -126,7 +131,7 @@ function changeStatus(id, to) {
 function renderStatus(v) {
   $('volunteerStatus').textContent = v.status;
   $('volunteerStatus').className = `status-badge ${PawData.volunteerClass(v.status)}`;
-  $('statusBar').innerHTML = STATUS_ACTIONS[v.status].map(a => `
+  $('statusBar').innerHTML = STATUS_ACTIONS[v.status].filter(a => podePerfil(a.perm)).map(a => `
     <button type="button" class="btn ${a.style}" data-status="${a.to}"><i class="bi ${a.icon} me-1"></i>${a.label}</button>`).join('');
 }
 
@@ -158,6 +163,9 @@ function openForm(v = null) {
   if (v) renderStatus(v);
   $('deleteVolunteer').classList.toggle('d-none', !v);
   $('saveVolunteerButton').innerHTML = `<i class="bi bi-check2 me-2"></i>${v ? 'Salvar alterações' : 'Cadastrar voluntário'}`;
+  // Sem permissão de gerenciar (perfil equipe), a ficha fica só para leitura.
+  const editavel = podePerfil('voluntarios.gerenciar');
+  form.querySelectorAll('input, select, textarea').forEach(el => { el.disabled = !editavel; });
   modal.show();
 }
 
@@ -168,6 +176,7 @@ function showError(message) {
 
 form.addEventListener('submit', (event) => {
   event.preventDefault();
+  if (!podePerfil('voluntarios.gerenciar')) return;
   const existing = findVolunteer(Number($('volunteerId').value));
   const data = {
     name: $('vName').value.trim(),
@@ -213,6 +222,7 @@ form.addEventListener('submit', (event) => {
 });
 
 $('deleteVolunteer').addEventListener('click', () => {
+  if (!podePerfil('voluntarios.gerenciar')) return;
   const v = findVolunteer(Number($('volunteerId').value));
   if (!v) return;
   const rescuesHandled = PawData.loadRescues().filter(r => r.responsible === v.name).length;

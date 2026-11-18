@@ -12,9 +12,11 @@ const itemCode = (id) => PawUtils.code('EST', id);
 const moveCode = (id) => PawUtils.code('MOV', id);
 const animalCode = (id) => PawUtils.code('PAW', id);
 
-// Usuário logado. No back-end virá da sessão (Laravel Auth) e o perfil
-// (funcionário ou voluntário) define quem pode cadastrar itens, ajustar e estornar.
-const CURRENT_USER = 'Renata Oliveira';
+// Quem registra cada movimentação: o usuário logado (js/auth.js) — fica no histórico.
+const CURRENT_USER = (typeof PawAuth !== 'undefined' && PawAuth.usuario()?.nome) || 'Usuário não identificado';
+// Perfil voluntário: só dá baixa por consumo ou uso em animal (app/Core/Permissoes.php).
+const SO_CONSUMO = typeof PawAuth !== 'undefined' && !PawAuth.pode('estoque.movimentar');
+const MOTIVOS_CONSUMO = ['consumo', 'uso_animal'];
 
 // ================= Estado =================
 let items = PawData.loadStockItems();
@@ -342,7 +344,10 @@ function allocate(info, qty, choice, reason) {
 }
 
 function openMoveForm({ itemId = null, type = 'entrada', reason = null, lot = null, qty = '', note = '' } = {}) {
+  if (SO_CONSUMO) type = 'saida';
   $('moveForm').reset();
+  // Sem permissão de movimentar, a opção "Entrada" nem aparece.
+  document.querySelector('input[name="mvType"][value="entrada"]').closest('label').classList.toggle('d-none', SO_CONSUMO);
   $('moveForm').querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
 
   const active = items.filter(i => i.active).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
@@ -371,7 +376,9 @@ function updateMoveForm({ reason = null, lot = null, resetMeasure = false } = {}
 
   // Motivos (ajuste e estorno têm fluxo próprio)
   const current = reason ?? $('mvReason').value;
-  const reasons = Object.entries(STOCK_REASONS[type]).filter(([key]) => key !== 'ajuste' && key !== 'estorno');
+  const reasons = Object.entries(STOCK_REASONS[type])
+    .filter(([key]) => key !== 'ajuste' && key !== 'estorno')
+    .filter(([key]) => !SO_CONSUMO || MOTIVOS_CONSUMO.includes(key));
   $('mvReason').innerHTML = reasons.map(([key, label]) => `<option value="${key}">${label}</option>`).join('');
   $('mvReason').value = reasons.some(([key]) => key === current) ? current : reasons[0][0];
   const why = $('mvReason').value;

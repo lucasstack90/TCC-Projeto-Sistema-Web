@@ -36,11 +36,11 @@
     <button class="btn btn-green" id="addAnimal" type="button"><i class="bi bi-plus-lg me-2"></i>Cadastrar animal</button>
   </header>
 
-  <!-- Aviso de perfil (aparece só para quem não cadastra animais; ver base.css) -->
-  <div class="alert-soft aviso-perfil mb-3" role="note">
+  <!-- Aviso do modo do perfil: aparece só quando falta a permissão "animais.cadastrar" (js/auth.js) -->
+  <div class="alert-soft aviso-perfil mb-3" role="note" data-sem="animais.cadastrar" hidden>
     <i class="bi bi-info-circle me-2"></i>
     <span class="so-perfil-veterinario">Perfil veterinário: você registra vacinas, histórico e pesagens nas fichas. O cadastro dos animais é feito pela equipe.</span>
-    <span class="so-perfil-voluntario">Perfil voluntário: modo consulta. Você pode ver as fichas, mas alterações são feitas pela equipe.</span>
+    <span class="so-perfil-voluntario">Perfil voluntário: modo consulta. Você pode ver as fichas; alterações são feitas pela equipe.</span>
   </div>
 
   <section class="filter-panel">

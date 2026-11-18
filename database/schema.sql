@@ -5,8 +5,8 @@
 --   1. Abra o phpMyAdmin (http://localhost/phpmyadmin) com o MySQL ligado.
 --   2. Importe este arquivo, OU cole o conteúdo na aba SQL e execute.
 --   Ele cria o banco "pawsafe", as tabelas da base (usuários) e do módulo de
---   Animais, e cadastra um usuário de cada perfil (funcionário, veterinário,
---   voluntário) para o primeiro acesso. Pode ser importado de novo sem
+--   Animais, e cadastra usuários de cada perfil (administrador, equipe,
+--   veterinário, voluntário) para o primeiro acesso. Pode ser importado de novo sem
 --   duplicar dados — e atualiza bancos criados em versões anteriores.
 --
 -- Decisões alinhadas a docs/pendencias-backend.md:
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     email        VARCHAR(150)  NOT NULL,
     senha_hash   VARCHAR(255)  NOT NULL,
     -- Perfis e o que cada um pode fazer: app/Core/Permissoes.php
-    perfil       ENUM('funcionario', 'veterinario', 'voluntario') NOT NULL DEFAULT 'voluntario',
+    perfil       ENUM('administrador', 'equipe', 'veterinario', 'voluntario') NOT NULL DEFAULT 'voluntario',
     ativo        TINYINT(1)    NOT NULL DEFAULT 1,
     criado_em    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     atualizado_em TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -45,13 +45,14 @@ CREATE TABLE IF NOT EXISTS usuarios (
     UNIQUE KEY uq_usuarios_email (email)
 ) ENGINE=InnoDB;
 
--- Atualização de bancos criados antes dos perfis (admin/equipe -> funcionario).
+-- Atualização de bancos criados em versões anteriores:
+--   'admin' e 'funcionario' -> 'administrador' (ninguém perde acesso).
 -- Em banco novo estes comandos não mudam nada; pode rodar sempre.
 ALTER TABLE usuarios MODIFY perfil
-    ENUM('admin', 'equipe', 'funcionario', 'veterinario', 'voluntario') NOT NULL DEFAULT 'voluntario';
-UPDATE usuarios SET perfil = 'funcionario' WHERE perfil IN ('admin', 'equipe');
+    ENUM('admin', 'funcionario', 'administrador', 'equipe', 'veterinario', 'voluntario') NOT NULL DEFAULT 'voluntario';
+UPDATE usuarios SET perfil = 'administrador' WHERE perfil IN ('admin', 'funcionario');
 ALTER TABLE usuarios MODIFY perfil
-    ENUM('funcionario', 'veterinario', 'voluntario') NOT NULL DEFAULT 'voluntario';
+    ENUM('administrador', 'equipe', 'veterinario', 'voluntario') NOT NULL DEFAULT 'voluntario';
 
 -- ---------------------------------------------------------------------
 -- Animais abrigados
@@ -189,16 +190,20 @@ CREATE TABLE IF NOT EXISTS contribuintes (
 -- =====================================================================
 -- Este bloco pode ser importado mais de uma vez sem duplicar nada.
 --
--- Um usuário de cada perfil para o primeiro acesso e para a apresentação.
+-- Usuários de cada perfil para o primeiro acesso e para a apresentação.
 -- Senha de todos: pawsafe123   (TROQUE depois do primeiro login)
---   admin@pawsafe.local        Funcionário(a)  — acesso total, gerencia usuários
---   veterinario@pawsafe.local  Veterinário(a)  — fichas clínicas, resgates, estoque
---   voluntario@pawsafe.local   Voluntário(a)   — consulta animais e registra resgates
+--   admin@pawsafe.local        Administrador(a) — coordenação: tudo, usuários, caixa, relatório
+--   tesouraria@pawsafe.local   Administrador(a) — segundo administrador (ex.: tesoureiro)
+--   equipe@pawsafe.local       Equipe           — operação do dia a dia
+--   veterinario@pawsafe.local  Veterinário(a)   — fichas clínicas, resgates, estoque
+--   voluntario@pawsafe.local   Voluntário(a)    — consulta animais, resgates, consumo no estoque
 -- O hash abaixo foi gerado com password_hash('pawsafe123', PASSWORD_BCRYPT).
 INSERT INTO usuarios (nome, email, senha_hash, perfil, ativo) VALUES
-('Administrador',     'admin@pawsafe.local',       '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.', 'funcionario', 1),
-('Dra. Marina Lopes', 'veterinario@pawsafe.local', '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.', 'veterinario', 1),
-('Voluntário Teste',  'voluntario@pawsafe.local',  '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.', 'voluntario',  1)
+('Administrador',     'admin@pawsafe.local',       '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.', 'administrador', 1),
+('Tesouraria',        'tesouraria@pawsafe.local',  '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.', 'administrador', 1),
+('Equipe do Abrigo',  'equipe@pawsafe.local',      '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.', 'equipe',        1),
+('Dra. Marina Lopes', 'veterinario@pawsafe.local', '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.', 'veterinario',   1),
+('Voluntário Teste',  'voluntario@pawsafe.local',  '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.', 'voluntario',    1)
 ON DUPLICATE KEY UPDATE id = id;
 
 -- Dois animais de exemplo (equivalentes ao seed do protótipo) — só se a tabela estiver vazia.

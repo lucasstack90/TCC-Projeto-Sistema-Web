@@ -75,6 +75,7 @@ final class AuthController extends Controller
         return [
             'usuario'    => $u + ['perfilRotulo' => Permissoes::ROTULOS[$u['perfil']] ?? $u['perfil']],
             'permissoes' => Permissoes::doPerfil($u['perfil']),
+            'todas'      => Permissoes::TODAS, // a interface marca o que falta (classes "sem-...")
             'csrf'       => Csrf::token(),
         ];
     }

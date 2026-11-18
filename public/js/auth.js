@@ -6,7 +6,8 @@
      - bloqueia páginas internas para quem não está logado ou não tem acesso;
      - marca o <html> com classes "perfil-x", "pagina-x" e "sem-<permissão>",
        usadas pelo CSS para esconder botões (ex.: html.sem-animais-cadastrar);
-     - esconde elementos com data-requer="permissão" quando ela falta.
+     - esconde elementos com data-requer="permissão" quando ela falta, e mostra
+       avisos com data-sem="permissão" justamente quando ela falta.
 
    Atenção: esconder na tela é só conforto. A proteção de verdade está no
    servidor, que recusa (403) qualquer ação fora do perfil.
@@ -22,12 +23,6 @@ const PawAuth = (() => {
 
   // Páginas internas: id -> arquivo (o dashboard é o index.html da raiz de public/).
   const PAGINAS = ['dashboard', 'animais', 'adocoes', 'resgates', 'voluntarios', 'doacoes', 'estoque', 'relatorios', 'cadastros'];
-  const TODAS_PERMISSOES = [
-    'pagina.dashboard', 'pagina.animais', 'pagina.adocoes', 'pagina.resgates', 'pagina.voluntarios',
-    'pagina.doacoes', 'pagina.estoque', 'pagina.relatorios', 'pagina.cadastros',
-    'animais.cadastrar', 'animais.registros', 'veterinarios.ver', 'contribuintes.ver',
-    'cadastros.gerenciar', 'usuarios.gerenciar', 'financeiro.ver'
-  ];
 
   const emPages = /\/Pages\//i.test(window.location.pathname);
   const arquivo = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase().replace('.html', '');
@@ -50,7 +45,8 @@ const PawAuth = (() => {
   const paginaInicial = () => hrefPagina(PAGINAS.find(podePagina) || 'dashboard');
 
   function salvar(resposta) {
-    dados = { usuario: resposta.usuario, permissoes: resposta.permissoes || [] };
+    // "todas" vem do servidor (app/Core/Permissoes.php): é a lista usada para marcar o que falta.
+    dados = { usuario: resposta.usuario, permissoes: resposta.permissoes || [], todas: resposta.todas || [] };
     try { sessionStorage.setItem(CHAVE, JSON.stringify(dados)); } catch (_) { /* aba privada etc. */ }
     if (resposta.csrf && typeof Api !== 'undefined') Api.definirCsrf(resposta.csrf);
     aplicar();
@@ -68,8 +64,10 @@ const PawAuth = (() => {
     raiz.classList.add(`pagina-${paginaAtual}`);
     if (!dados) return;
     raiz.classList.add(`perfil-${dados.usuario.perfil}`);
-    TODAS_PERMISSOES.filter(p => !pode(p)).forEach(p => raiz.classList.add(`sem-${p.replace('.', '-')}`));
+    (dados.todas || []).filter(p => !pode(p)).forEach(p => raiz.classList.add(`sem-${p.replace('.', '-')}`));
     document.querySelectorAll('[data-requer]').forEach(el => { el.hidden = !pode(el.dataset.requer); });
+    // data-sem="x": aparece só quando o perfil NÃO tem x (avisos do modo de cada perfil).
+    document.querySelectorAll('[data-sem]').forEach(el => { el.hidden = pode(el.dataset.sem); });
   }
 
   async function sair() {

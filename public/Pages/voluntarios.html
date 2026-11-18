@@ -39,6 +39,12 @@
     </div>
   </header>
 
+  <!-- Aviso do modo do perfil: aparece só quando falta a permissão "voluntarios.gerenciar" (js/auth.js) -->
+  <div class="alert-soft aviso-perfil mb-3" role="note" data-sem="voluntarios.gerenciar" hidden>
+    <i class="bi bi-info-circle me-2"></i>
+    <span class="so-perfil-equipe">Perfil equipe: você consulta a equipe e aprova ou arquiva inscrições. Cadastros e alterações ficam com a coordenação.</span>
+  </div>
+
   <nav class="tabs view-tabs" aria-label="Visualização">
     <button type="button" class="tab active" data-view="team"><i class="bi bi-people"></i>Equipe</button>
     <button type="button" class="tab" data-view="pending"><i class="bi bi-inbox"></i>Interessados <span id="pendingCount" class="tab-count"></span></button>

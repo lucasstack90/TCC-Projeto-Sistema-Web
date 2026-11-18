@@ -8,14 +8,14 @@ use Core\Validator;
 use Models\Usuario;
 
 /**
- * Gestão dos usuários do sistema (só o perfil funcionário).
+ * Gestão dos usuários do sistema (só o perfil administrador).
  *   GET    /api/usuarios        index
  *   POST   /api/usuarios        store
  *   PUT    /api/usuarios/{id}   update   (senha opcional: em branco mantém a atual)
  *   DELETE /api/usuarios/{id}   destroy
  *
  * Travas: ninguém exclui, desativa ou rebaixa a própria conta, e o sistema nunca
- * fica sem pelo menos um funcionário ativo.
+ * fica sem pelo menos um administrador ativo.
  */
 final class UsuarioController extends Controller
 {
@@ -70,10 +70,10 @@ final class UsuarioController extends Controller
         if ($eu && ($dados['perfil'] !== $atual['perfil'] || !$ativo)) {
             $this->erro('Você não pode mudar o próprio perfil nem desativar a própria conta.', 422);
         }
-        $deixaDeSerFuncionario = $atual['perfil'] === Permissoes::FUNCIONARIO
-            && ($dados['perfil'] !== Permissoes::FUNCIONARIO || !$ativo);
-        if ($deixaDeSerFuncionario && $this->usuarios->funcionariosAtivos($id) === 0) {
-            $this->erro('O sistema precisa de pelo menos um funcionário ativo.', 422);
+        $deixaDeSerAdmin = $atual['perfil'] === Permissoes::ADMINISTRADOR
+            && ($dados['perfil'] !== Permissoes::ADMINISTRADOR || !$ativo);
+        if ($deixaDeSerAdmin && $this->usuarios->administradoresAtivos($id) === 0) {
+            $this->erro('O sistema precisa de pelo menos um administrador ativo.', 422);
         }
 
         $alteracoes = [
@@ -99,9 +99,9 @@ final class UsuarioController extends Controller
         if ((int) ($this->usuario()['id'] ?? 0) === $id) {
             $this->erro('Você não pode excluir a própria conta.', 422);
         }
-        if ($atual['perfil'] === Permissoes::FUNCIONARIO && (int) $atual['ativo'] === 1
-            && $this->usuarios->funcionariosAtivos($id) === 0) {
-            $this->erro('O sistema precisa de pelo menos um funcionário ativo.', 422);
+        if ($atual['perfil'] === Permissoes::ADMINISTRADOR && (int) $atual['ativo'] === 1
+            && $this->usuarios->administradoresAtivos($id) === 0) {
+            $this->erro('O sistema precisa de pelo menos um administrador ativo.', 422);
         }
         $this->usuarios->remover($id);
         $this->ok(['removido' => $id]);

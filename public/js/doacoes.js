@@ -582,4 +582,6 @@ $('eAnimal').innerHTML = '<option value="">Nenhum (despesa geral)</option>' + [.
   .map(a => `<option value="${a.id}">${escapeHtml(a.name)} — ${escapeHtml(a.species)}</option>`).join('');
 
 renderMonthOptions();
-setView('summary');
+// Quem não vê o caixa (perfil equipe) só registra doações: abre direto nessa aba.
+const veFinanceiro = typeof PawAuth === 'undefined' || PawAuth.pode('financeiro.ver');
+setView(veFinanceiro ? 'summary' : 'donations');

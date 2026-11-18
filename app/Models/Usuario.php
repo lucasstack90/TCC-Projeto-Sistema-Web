@@ -6,7 +6,7 @@ use Core\Model;
 use Core\Permissoes;
 
 /**
- * Usuários do sistema. O perfil (funcionario, veterinario, voluntario) define o
+ * Usuários do sistema. O perfil (administrador, equipe, veterinario, voluntario) define o
  * que cada um pode fazer — ver Core\Permissoes.
  * A senha é guardada como hash bcrypt (password_hash), nunca em texto puro.
  */
@@ -68,10 +68,10 @@ final class Usuario extends Model
         return (bool) $stmt->fetch();
     }
 
-    /** Quantos funcionários ativos existem (para não ficar sem nenhum). */
-    public function funcionariosAtivos(?int $ignorarId = null): int
+    /** Quantos administradores ativos existem (para não ficar sem nenhum). */
+    public function administradoresAtivos(?int $ignorarId = null): int
     {
-        $sql = "SELECT COUNT(*) FROM usuarios WHERE perfil = 'funcionario' AND ativo = 1";
+        $sql = "SELECT COUNT(*) FROM usuarios WHERE perfil = 'administrador' AND ativo = 1";
         $params = [];
         if ($ignorarId) {
             $sql .= ' AND id <> :id';

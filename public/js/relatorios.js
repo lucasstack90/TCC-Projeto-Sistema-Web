@@ -21,6 +21,9 @@ const OLD_RESCUE_DAYS = 7;   // resgate em aberto há mais de 7 dias
 
 // ---------- Seções e modelos ----------
 // Cada modelo liga um conjunto de seções; o usuário ainda pode ligar ou desligar cada uma.
+// Permissões do perfil logado (js/auth.js). Sem PawAuth (protótipo), libera tudo.
+const podePerfil = (permissao) => typeof PawAuth === 'undefined' || PawAuth.pode(permissao);
+
 const SECTIONS = [
   { id: 'identificacao', label: 'Identificação', models: ['prefeitura', 'gestao', 'completo'] },
   { id: 'resumo', label: 'Resumo do período', models: ['prefeitura', 'gestao', 'completo'] },
@@ -35,7 +38,7 @@ const SECTIONS = [
   { id: 'pendencias', label: 'Pendências e pontos de atenção', models: ['gestao', 'completo'] },
   { id: 'analise', label: 'Análise da equipe', models: ['prefeitura', 'gestao', 'completo'] },
   { id: 'assinatura', label: 'Declaração e assinatura', models: ['prefeitura', 'completo'] }
-];
+].filter(s => s.id !== 'financeiro' || podePerfil('financeiro.ver')); // caixa só para quem pode ver
 
 let config = PawData.loadReportConfig();
 let enabled = new Set();
@@ -534,7 +537,7 @@ const R = {
     ];
     return fields.map(([key, label, placeholder]) => `<div class="narrative">
         <label class="form-label" for="nt-${key}">${label}</label>
-        <textarea id="nt-${key}" class="form-control no-print" rows="3" maxlength="2000" data-narrative="${key}" placeholder="${placeholder}">${escapeHtml(saved[key] || '')}</textarea>
+        <textarea id="nt-${key}" class="form-control no-print" rows="3" maxlength="2000" data-narrative="${key}" placeholder="${placeholder}"${podePerfil('relatorio.preencher') ? '' : ' readonly'}>${escapeHtml(saved[key] || '')}</textarea>
         <div class="print-only narrative-text" data-print="${key}">${escapeHtml(saved[key] || '') || '<span class="muted">Não informado.</span>'}</div>
       </div>`).join('') + '<p class="note no-print">O texto é salvo automaticamente para este período.</p>';
   },
