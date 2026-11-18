@@ -1,69 +1,56 @@
-# PAWSAFE
+# PAWSAFE — Front-end (protótipo)
 
 Sistema web para gestão de ONGs e grupos de proteção animal — TCC do Técnico em Desenvolvimento de Sistemas (C. E. Ana Vanda Bassara).
-Front-end em HTML, CSS, JavaScript, Bootstrap 5 e Chart.js. Back-end em **PHP puro com arquitetura MVC própria** (sem Laravel e sem Composer) e banco **MySQL** (XAMPP).
-
-> **Roda sem `composer install`.** O carregamento das classes é feito por um autoloader próprio (`app/Core/Autoloader.php`), então basta copiar a pasta para o `htdocs` do XAMPP. O padrão de organização do back-end está em [`docs/padrao-do-projeto.md`](docs/padrao-do-projeto.md).
+Front-end em HTML, CSS, JavaScript, Bootstrap 5 e Chart.js. Esta branch tem **só o front-end**: os dados ficam no navegador (`localStorage`) e o login é simulado. O back-end (PHP com MVC e MySQL) é desenvolvido separadamente, na branch `feature/backend-php-mvc`.
 
 ## Estrutura
 
 ```text
 PAWSAFE/
-├── public/                 # ÚNICA pasta exposta no servidor
-│   ├── index.php           # front controller (porta de entrada; trata /api/*)
-│   ├── .htaccess           # manda os pedidos /api/* para o index.php
-│   ├── index.html          # dashboard
-│   ├── Pages/              # demais telas (Pg_Login, animais, ..., cadastros)
-│   ├── CSS/                # base, sidebar, dashboard, ..., cadastros, login, tema
-│   ├── js/                 # dados.js, utils.js, api.js, sidebar.js, animais.js,
-│   │                       #   veterinarios.js, contribuintes.js, ...
-│   └── Img/
-│
-├── app/                    # back-end (fora do alcance do navegador)
-│   ├── Core/               # mini-framework: Autoloader, App, Router, Request,
-│   │                       #   Response, Controller, Model, Database, Config,
-│   │                       #   Session, Csrf, Validator, Documento, Middleware/
-│   ├── Controllers/        # Auth, Animal, Veterinario, Contribuinte, Meta
-│   ├── Models/             # Usuario, Animal, Veterinario, Contribuinte
-│   └── Views/              # telas renderizadas pelo servidor (reservado)
-│
-├── config/config.php       # credenciais do banco e ajustes do ambiente
-├── routes/web.php          # todas as rotas da API
-├── database/schema.sql     # cria o banco, as tabelas e o usuário admin
-├── storage/                # uploads (fotos) e logs
-├── docs/                   # padrão do projeto e pendências do back-end
-└── .htaccess               # redireciona a raiz para public/ (XAMPP sem vhost)
+├── CSS/
+│   ├── base.css        # cores, fontes, botões, formulários, status, componentes comuns e ícone de pata
+│   ├── sidebar.css     # menu lateral (único lugar com estilos do menu)
+│   ├── dashboard.css   # index.html
+│   ├── animais.css     # Pages/animais.html
+│   ├── adocoes.css     # Pages/adocoes.html
+│   ├── resgates.css    # Pages/resgates.html
+│   ├── voluntarios.css # Pages/voluntarios.html e voluntario-cadastro.html
+│   ├── doacoes.css     # Pages/doacoes.html
+│   ├── estoque.css     # Pages/estoque.html
+│   ├── relatorios.css  # Pages/relatorios.html (inclui layout de impressão)
+│   └── login.css       # Pages/Pg_Login.html
+├── Img/
+├── js/
+│   ├── dados.js        # fonte única de dados (localStorage) — carregar antes dos outros
+│   ├── utils.js        # datas, escape de HTML, códigos, compressão de imagem
+│   ├── sidebar.js      # menu lateral, contador de animais e botão Sair
+│   ├── dashboard.js
+│   ├── animais.js
+│   ├── adocoes.js
+│   ├── resgates.js
+│   ├── voluntarios.js
+│   ├── voluntario-cadastro.js
+│   ├── doacoes.js
+│   ├── financeiro.js   # cálculos financeiros (saldo, fluxo, orçamento) — usado por Doações e Dashboard
+│   ├── estoque.js
+│   ├── relatorios.js
+│   └── login.js
+├── Pages/
+│   ├── Pg_Login.html
+│   ├── animais.html
+│   ├── adocoes.html
+│   ├── resgates.html
+│   ├── voluntarios.html
+│   ├── doacoes.html
+│   └── voluntario-cadastro.html   # formulário público (sem login)
+│   ├── estoque.html
+│   └── relatorios.html
+└── index.html          # dashboard
 ```
-
-No front-end, cada CSS/JS continua com a mesma função de antes; a novidade é o
-`js/api.js`, o ajudante que conversa com o back-end (ver padrão do projeto).
 
 ## Executar
 
-### Protótipo só do front-end (sem banco)
-As telas ainda guardam os dados no `localStorage`, mas agora **todas exigem login**, e o login depende do back-end. Por isso, para usar o sistema, rode-o no XAMPP (abaixo); o Live Server sozinho só mostra a tela de login.
-
-### Sistema completo (com back-end, no XAMPP)
-1. Instale o **XAMPP** e ligue **Apache** e **MySQL** no painel.
-2. Copie a pasta do projeto para `xampp/htdocs/` (ex.: `htdocs/pawsafe`).
-3. Crie o banco: abra `http://localhost/phpmyadmin`, importe `database/schema.sql` (cria o banco `pawsafe`, as tabelas e um usuário de cada perfil). Se você já tinha importado uma versão anterior, importe de novo: o arquivo atualiza o banco sem duplicar dados.
-4. Confira as credenciais em `config/config.php` (no XAMPP padrão: usuário `root`, sem senha).
-5. Abra `http://localhost/pawsafe/public/Pages/Pg_Login.html`.
-   - Se o projeto estiver numa subpasta (como acima), defina `base_url` em `config/config.php` como `/pawsafe/public` (ou configure um VirtualHost com `DocumentRoot` em `public/` e deixe `base_url` vazio).
-6. Entre com um dos usuários iniciais (senha de todos: `pawsafe123` — **troque depois**, em Cadastros → Usuários, entrando como administrador):
-
-   | Perfil | E-mail | O que faz |
-   |---|---|---|
-   | Administrador(a) | `admin@pawsafe.local` | tudo: usuários, caixa, configuração do relatório |
-   | Administrador(a) | `tesouraria@pawsafe.local` | segundo administrador (ex.: tesoureiro) |
-   | Equipe | `equipe@pawsafe.local` | operação: animais, adoções, resgates, estoque, registra doações, aprova voluntários |
-   | Veterinário(a) | `veterinario@pawsafe.local` | fichas clínicas, resgates, estoque, consulta o relatório |
-   | Voluntário(a) | `voluntario@pawsafe.local` | consulta animais, registra resgates e consumo no estoque |
-
-   A regra completa de cada perfil está em [`docs/padrao-do-projeto.md`](docs/padrao-do-projeto.md#perfis-de-usuário-e-permissões).
-
-Teste rápido do back-end: abra `.../public/api/ping` — deve responder `{"ok":true,...}`.
-É preciso internet para Bootstrap, Chart.js, fontes e fotos de exemplo.
+Abra a pasta no VS Code e rode `Pages/Pg_Login.html` (ou `index.html`) com o Live Server. É preciso internet para Bootstrap, Chart.js, fontes e fotos de exemplo.
 
 ## Como os dados funcionam no protótipo
 
@@ -125,15 +112,12 @@ Para manter o padrão nas páginas de `Pages/`:
 - **Orçamento e saldo inicial:** editáveis na aba Resumo. Sem o saldo inicial, o saldo do sistema não bate com o extrato do banco.
 - Clique em uma linha para editar ou excluir.
 
-## Antes de começar o back-end
-
-Leia [`docs/pendencias-backend.md`](docs/pendencias-backend.md): proteção do formulário público contra envios em massa, regras que hoje só existem no JavaScript, ajustes no modelo de dados e LGPD.
 ## Módulo de Relatório técnico
 
 Gera o relatório a partir dos dados dos outros módulos — nenhum número é digitado à mão.
 
 - **Período:** mês atual, mês anterior, trimestre, semestre, ano, vigência da parceria ou datas personalizadas. Se o período termina no futuro, os dados vão até hoje.
-- **Modelos:** *Prestação de contas* (para a prefeitura ou outro financiador, com declaração e assinatura), *Gestão interna* (com pendências e equipe) e *Completo*. Cada seção pode ser ligada ou desligada.
+- **Modelos:** *Prestação de contas* (para a prefeitura ou outro financiador, com declaração e assinaturas do responsável legal e do veterinário responsável técnico), *Gestão interna* (com pendências e equipe) e *Completo*. Cada seção pode ser ligada ou desligada.
 - **Seções:** identificação da ONG e da parceria; resumo; metas pactuadas × realizadas; resgates (taxa de sucesso, tempo de atendimento, bairros, prioridade); balanço de animais (início + entradas − saídas = fim) e permanência; saúde (vacinas, atendimentos e cobertura de vacinação, castração e microchip); adoções (conversão e duração); insumos (doado, comprado, consumido, perdas, doadores); execução financeira; equipe; pendências; análise escrita da equipe; declaração.
 - **Estrutura de prestação de contas:** segue a lógica da Lei 13.019/2014 (MROSC) — relatório de execução do objeto (metas e resultados) e de execução financeira.
 - **Metas:** cadastradas por mês em “Configurar relatório”; o relatório calcula a meta proporcional ao período.

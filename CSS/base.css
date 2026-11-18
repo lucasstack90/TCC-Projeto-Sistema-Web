@@ -1,0 +1,579 @@
+/* =========================================================
+   PAWSAFE — base compartilhada por todas as páginas
+   Ordem no <head>: Bootstrap → Bootstrap Icons → fontes →
+   tema.css → base.css → sidebar.css (páginas internas) → CSS da página.
+   ========================================================= */
+
+:root {
+  /* As cores ficam em tema.css (tokens shadcn com versão clara e escura).
+     Os nomes antigos abaixo continuam valendo e apontam para os tokens. */
+  --bg: var(--background);
+  --surface: var(--card);
+  --text: var(--foreground);
+  --muted: var(--muted-foreground);
+  --danger: var(--destructive);
+
+  /* Tipografia, forma e profundidade */
+  --font-body: 'DM Sans', sans-serif;
+  --font-title: 'Manrope', 'DM Sans', sans-serif;
+  --radius-sm: 14px;
+
+  /* Layout */
+  --sidebar-width: 268px;
+}
+
+/* ---------- Reset ---------- */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.5 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font: inherit; }
+
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-title);
+  color: var(--text);
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(26px, 2.2vw, 34px);
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+/* ---------- Estrutura das páginas internas ---------- */
+.main-content {
+  min-height: 100vh;
+  max-width: 1900px;
+  margin-left: var(--sidebar-width);
+  padding: 14px 24px 18px 4px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+  padding: 6px 4px 0;
+}
+
+.topbar-title { flex: 1; min-width: 0; }
+
+.eyebrow {
+  display: none; /* o título da página já diz onde se está (visual mais limpo) */
+  margin-bottom: 5px;
+  color: var(--green-700);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+
+.page-subtitle {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.subtitle-dot { margin: 0 5px; color: var(--tinta-a3b0a8); }
+
+.page-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 2px 4px;
+  color: var(--tinta-87938b);
+  font-size: 10px;
+}
+
+/* Botão do menu no celular (aparece abaixo de 900px) */
+.mobile-menu {
+  display: none;
+  place-items: center;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  color: var(--foreground);
+  background: var(--surface-muted);
+  border: 0;
+  border-radius: 50%;
+  font-size: 20px;
+}
+.mobile-menu:hover { background: var(--accent); }
+
+/* ---------- Botões ---------- */
+.btn-green,
+.btn-outline-green,
+.btn-outline-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: var(--pill-radius);
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background .18s ease, border-color .18s ease, color .18s ease, transform .12s ease;
+}
+.btn-green:active,
+.btn-outline-green:active,
+.btn-outline-danger:active { transform: scale(.97); }
+
+/* Ícones dos botões já têm espaço pelo gap (anula o me-2 do Bootstrap) */
+.btn-green > i.me-2, .btn-outline-green > i.me-2, .btn-outline-danger > i.me-2 { margin-right: 0 !important; }
+
+/* Botão principal: verde-floresta com degradê, como o "Add Project" da referência */
+.btn-green {
+  color: #fff;
+  background: linear-gradient(160deg, var(--hero-from), var(--hero-to));
+  border: 1px solid var(--hero-to);
+}
+.btn-green:hover,
+.btn-green:focus-visible {
+  color: #fff;
+  background: linear-gradient(160deg, var(--hero-to), var(--hero-to));
+  border-color: var(--hero-to);
+}
+
+.btn-outline-green {
+  color: var(--foreground);
+  background: var(--surface);
+  border: 1.5px solid var(--foreground);
+}
+.btn-outline-green:hover {
+  color: var(--foreground);
+  background: var(--surface-muted);
+  border-color: var(--foreground);
+}
+
+.btn-outline-danger {
+  --bs-btn-color: var(--danger);
+  --bs-btn-border-color: color-mix(in srgb, var(--destructive) 30%, transparent);
+  --bs-btn-hover-bg: var(--danger);
+  --bs-btn-hover-border-color: var(--danger);
+  font-weight: 500;
+}
+
+/* ---------- Formulários ---------- */
+.form-label {
+  margin-bottom: 6px;
+  color: var(--tinta-3b5148);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.form-control,
+.form-select {
+  min-height: 42px;
+  color: var(--text);
+  background-color: var(--surface-muted);
+  border-color: transparent;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--card);
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 18%, transparent);
+}
+
+.form-control::placeholder { color: var(--tinta-9aa9a1); }
+
+/* ---------- Status dos animais (mesmas cores em todo o sistema) ---------- */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  border-radius: 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-disponivel { color: var(--status-ok); background: var(--status-ok-bg); }
+.status-adotado    { color: var(--status-info); background: var(--status-info-bg); }
+.status-tratamento { color: var(--status-alerta); background: var(--status-alerta-bg); }
+.status-resgatado  { color: var(--status-roxo); background: var(--status-roxo-bg); }
+.status-temporario { color: var(--status-rosa); background: var(--status-rosa-bg); }
+
+/* ---------- Etapas do processo de adoção (usam o mesmo formato .status-badge) ---------- */
+.stage-novo      { color: var(--status-info); background: var(--status-info-bg); }
+.stage-analise   { color: var(--status-alerta); background: var(--status-alerta-bg); }
+.stage-aprovada  { color: var(--status-roxo); background: var(--status-roxo-bg); }
+.stage-concluida { color: var(--status-ok); background: var(--status-ok-bg); }
+.stage-recusada  { color: var(--danger); background: var(--danger-light); }
+.stage-cancelada { color: var(--status-neutro); background: var(--status-neutro-bg); }
+
+/* ---------- Situação e prioridade dos resgates ---------- */
+.rescue-pendente    { color: var(--status-alerta); background: var(--status-alerta-bg); }
+.rescue-atendimento { color: var(--status-info); background: var(--status-info-bg); }
+.rescue-concluido   { color: var(--status-ok); background: var(--status-ok-bg); }
+.rescue-sem-sucesso { color: var(--status-neutro); background: var(--status-neutro-bg); }
+
+.priority-baixa   { color: var(--status-suave); background: var(--status-suave-bg); }
+.priority-media   { color: var(--status-atencao); background: var(--status-atencao-bg); }
+.priority-alta    { color: var(--status-critico); background: var(--status-critico-bg); }
+.priority-critica { color: var(--danger); background: var(--danger-light); }
+
+/* ---------- Situação dos itens de estoque ---------- */
+.stock-disponivel { color: var(--status-ok); background: var(--status-ok-bg); }
+.stock-baixo      { color: var(--status-atencao); background: var(--status-atencao-bg); }
+.stock-critico    { color: var(--status-critico); background: var(--status-critico-bg); }
+.stock-falta      { color: var(--danger); background: var(--danger-light); }
+
+/* Validade dos lotes */
+.lot-ok       { color: var(--status-suave); background: var(--status-suave-bg); }
+.lot-vencendo { color: var(--status-alerta); background: var(--status-alerta-bg); }
+.lot-vencido  { color: var(--danger); background: var(--danger-light); }
+
+/* ---------- Situação dos voluntários ---------- */
+.volunteer-interessado { color: var(--status-info); background: var(--status-info-bg); }
+.volunteer-ativo       { color: var(--status-ok); background: var(--status-ok-bg); }
+.volunteer-inativo     { color: var(--status-neutro); background: var(--status-neutro-bg); }
+
+/* Área com mais de um botão no cabeçalho */
+.topbar-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ---------- Ícone de pata ----------
+   O Bootstrap Icons não tem pata; "bi-paw" e "bi-paw-fill" ficariam em branco. */
+.bi-paw::before,
+.bi-paw-fill::before {
+  content: "" !important;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  background-color: currentColor;
+  -webkit-mask: var(--paw-svg) center / contain no-repeat;
+          mask: var(--paw-svg) center / contain no-repeat;
+}
+
+:root {
+  --paw-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cellipse cx='3.2' cy='7' rx='1.5' ry='1.9'/%3E%3Cellipse cx='6' cy='3.6' rx='1.6' ry='2'/%3E%3Cellipse cx='10' cy='3.6' rx='1.6' ry='2'/%3E%3Cellipse cx='12.8' cy='7' rx='1.5' ry='1.9'/%3E%3Cpath d='M8 7.6c-2.2 0-4.6 3-4.6 5.2 0 1.3 1 1.9 2.2 1.9 1 0 1.5-.5 2.4-.5s1.4.5 2.4.5c1.2 0 2.2-.6 2.2-1.9 0-2.2-2.4-5.2-4.6-5.2z'/%3E%3C/svg%3E");
+}
+
+/* =========================================================
+   Componentes compartilhados pelos módulos (Animais, Adoções...)
+   ========================================================= */
+
+/* ---------- Busca e filtros ---------- */
+.filter-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 13px;
+  padding: 12px;
+  margin-bottom: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+
+.search { position: relative; flex: 1; min-width: 180px; }
+.search > i { position: absolute; top: 50%; left: 13px; transform: translateY(-50%); color: var(--tinta-789087); }
+.search .form-control { padding-left: 37px; border-radius: var(--pill-radius); }
+
+.filter-controls { display: flex; gap: 8px; }
+.filter-controls .form-select { width: 165px; border-radius: var(--pill-radius); }
+
+/* ---------- Nenhum resultado ---------- */
+.empty {
+  padding: 65px 20px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px dashed var(--linha-cbd8cc);
+  border-radius: var(--radius);
+}
+.empty > i {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  color: var(--green-700);
+  background: var(--green-100);
+  border-radius: 50%;
+  font-size: 21px;
+}
+.empty h2 { font-size: 18px; font-weight: 800; }
+.empty p { color: var(--muted); font-size: 12px; }
+
+/* ---------- Modais ---------- */
+.modal-content {
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-header { align-items: flex-start; padding: 20px 23px 15px; border-bottom: 1px solid var(--border); }
+.modal-header h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.4px; }
+.modal-header p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+.modal-body { padding: 22px 23px; }
+.modal-footer { gap: 8px; padding: 14px 23px 18px; border-top: 1px solid var(--border); }
+
+/* O <form> fica entre .modal-content e .modal-body/.modal-footer.
+   Sem estas regras, no modal com rolagem o formulário passa da altura da tela
+   e o rodapé (com o botão de salvar) fica cortado. Assim, só o corpo rola
+   e os botões Cancelar / Salvar ficam sempre visíveis. */
+.modal-content > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.modal-content > form > .modal-body { overflow-y: auto; }
+.modal-content > form > .modal-footer { flex-shrink: 0; }
+
+.section-title {
+  margin-bottom: 13px;
+  color: var(--green-700);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+/* Opções de marcar (Vacinado, Possui quintal...) */
+.choice-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.choice-options input { position: absolute; opacity: 0; }
+
+.choice-options span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  color: var(--tinta-5c766a);
+  background: var(--fundo-f5f7f1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.choice-options input:checked + span { color: var(--tinta-28674f); background: var(--green-100); border-color: var(--linha-9dc2ad); font-weight: 700; }
+.choice-options input:focus-visible + span { outline: 3px solid var(--ring); outline-offset: 2px; }
+
+/* ---------- Consentimento LGPD (adotantes, voluntários) ---------- */
+.consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  color: var(--text);
+  background: var(--surface-muted);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  cursor: pointer;
+}
+.consent input { margin-top: 3px; accent-color: var(--green-700); }
+
+/* ---------- Tabelas dos módulos (Adoções, Doações) ---------- */
+.table-card { overflow: hidden; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+
+.data-table {
+  --bs-table-bg: transparent;
+  --bs-table-border-color: var(--border);
+  font-size: 12px;
+}
+.data-table thead th {
+  padding: 13px 16px;
+  color: var(--muted-foreground);
+  background: transparent;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.data-table td { padding: 12px 16px; color: var(--muted); }
+.data-table tbody tr { transition: background .15s ease; }
+.data-table tbody tr:hover { background: var(--surface-soft); }
+.data-table td strong { display: block; color: var(--text); }
+.data-table td small { display: block; color: var(--tinta-8a968e); font-size: 10px; }
+.data-table tbody tr:last-child td { border-bottom: 0; }
+.data-table .btn-sm { padding: 6px 12px; font-size: 11px; }
+
+/* ---------- Abas ---------- */
+.tabs { display: flex; gap: 4px; padding: 0 17px; overflow-x: auto; border-bottom: 1px solid var(--border); }
+
+.tab {
+  padding: 13px 11px 11px;
+  color: var(--tinta-71857b);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.tab i { margin-right: 6px; }
+.tab.active { color: var(--foreground); border-bottom-color: var(--primary); font-weight: 700; }
+
+/* Abas que trocam a visualização da página (Adoções, Voluntários, Doações):
+   viram um seletor em pílulas, como os filtros do painel de referência. */
+.view-tabs {
+  display: inline-flex;
+  max-width: 100%;
+  gap: 4px;
+  padding: 5px;
+  margin-bottom: 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--pill-radius);
+  box-shadow: var(--shadow);
+}
+.view-tabs .tab {
+  padding: 8px 16px;
+  color: var(--muted-foreground);
+  border: 0;
+  border-radius: var(--pill-radius);
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: background .18s ease, color .18s ease;
+}
+.view-tabs .tab:hover { color: var(--foreground); background: var(--surface-muted); }
+.view-tabs .tab.active { color: #fff; background: linear-gradient(160deg, var(--hero-from), var(--hero-to)); font-weight: 600; }
+
+
+/* ---------- Blocos de informação ---------- */
+.info-tile { padding: 14px; background: var(--surface-muted); border-radius: var(--radius-sm); }
+.info-tile small {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.info-tile strong { font-size: 12px; }
+.info-tile p { color: var(--muted); font-size: 11px; }
+
+.panel-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 0 12px; }
+.panel-toolbar h3 { margin: 0; font-size: 14px; font-weight: 700; }
+.panel-toolbar .btn,
+.detail-body .btn { padding: 8px 11px; font-size: 11px; }
+
+/* ---------- Avisos ---------- */
+.alert-soft {
+  margin-bottom: 12px;
+  padding: 12px;
+  color: var(--tinta-467665);
+  background: var(--fundo-e0eee8);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+}
+.alert-soft.warning { color: var(--tinta-a65d43); background: var(--fundo-f8e8dc); }
+
+/* Linha do tempo (histórico) */
+.timeline { display: grid; gap: 16px; margin: 6px 0 18px 7px; padding-left: 17px; border-left: 2px solid var(--linha-d9e5dc); }
+.timeline-item { position: relative; }
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: -23px;
+  width: 10px;
+  height: 10px;
+  background: var(--green-600);
+  border: 2px solid var(--linha-f5f8f1);
+  border-radius: 50%;
+}
+.timeline-item p { margin: 4px 0; font-size: 11px; }
+
+/* ---------- Aviso (toast) ---------- */
+.toast {
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  font-size: 12px;
+}
+.toast-body i { color: var(--green-700); }
+
+@media (max-width: 900px) {
+  .filter-panel { flex-direction: column; align-items: stretch; }
+  .filter-controls .form-select { flex: 1; width: auto; }
+}
+
+@media (max-width: 600px) {
+  .filter-controls { display: grid; grid-template-columns: 1fr 1fr; }
+  .filter-controls .btn { grid-column: span 2; }
+  .modal-header { padding: 17px 16px 13px; }
+  .modal-body { padding: 18px 16px; }
+  .modal-footer { padding: 13px 16px 16px; }
+  .choice-options { grid-template-columns: 1fr; }
+  .tabs { padding: 0 8px; }
+  .tab { padding-left: 9px; padding-right: 9px; }
+}
+
+/* ---------- Responsividade ---------- */
+@media (max-width: 1200px) {
+  :root { --sidebar-width: 248px; }
+  .main-content { padding: 14px 18px 16px 2px; }
+}
+
+@media (max-width: 900px) {
+  .main-content { margin-left: 0; padding: 14px 16px 16px; }
+  .mobile-menu { display: inline-grid; }
+  .topbar { align-items: flex-start; }
+}
+
+@media (max-width: 600px) {
+  .main-content { padding: 10px 10px 12px; }
+  .topbar { flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+  .topbar > .btn,
+  .topbar-actions { width: 100%; }
+  .topbar-actions .btn { flex: 1; }
+  h1 { font-size: 25px; }
+  .page-subtitle { font-size: 11px; }
+  .page-footer { flex-direction: column; gap: 5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ===== Cartões-resumo dos módulos (Doações, Resgates, Estoque) =====
+   O primeiro cartão de cada linha ganha o destaque verde do dashboard. */
+.finance-stat,
+.summary-stat { border-radius: 18px; }
+
+.finance-stats > .finance-stat:first-child,
+.summary-stats > .summary-stat:first-child {
+  color: #fff;
+  background:
+    radial-gradient(110% 120% at 100% 0%, hsl(148 55% 34% / .55), transparent 55%),
+    linear-gradient(160deg, var(--hero-from), var(--hero-to));
+  border-color: transparent;
+}
+.finance-stats > .finance-stat:first-child strong,
+.summary-stats > .summary-stat:first-child strong { color: #fff; }
+.finance-stats > .finance-stat:first-child small,
+.finance-stats > .finance-stat:first-child span:not(.finance-icon),
+.summary-stats > .summary-stat:first-child small { color: hsl(140 40% 84%); }
+.finance-stats > .finance-stat:first-child .finance-icon,
+.summary-stats > .summary-stat:first-child .summary-icon { color: #fff; background: hsl(0 0% 100% / .14); }
