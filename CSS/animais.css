@@ -65,7 +65,7 @@
 .animal-meta { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
 
 .health-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 11px; }
-.health-tag { padding: 4px 7px; border-radius: 20px; color: var(--tinta-39705e); background: var(--fundo-e2eee5); font-size: 9px; }
+.health-tag { padding: 4px 7px; border-radius: 20px; color: var(--tinta-39705e); background: var(--fundo-e2eee5); font-size: 11px; }
 .health-tag.blue { color: var(--tinta-46758b); background: var(--fundo-e0edf3); }
 .health-tag.purple { color: var(--tinta-71639a); background: var(--fundo-eae5f4); }
 
@@ -77,7 +77,7 @@
   padding-top: 10px;
   border-top: 1px solid var(--linha-edf0e9);
 }
-.card-id { color: var(--tinta-899a91); font-size: 10px; }
+.card-id { color: var(--tinta-899a91); font-size: 11px; }
 .card-details { color: var(--green-700); background: transparent; border: 0; font-size: 11px; font-weight: 700; }
 
 /* ---------- Lista ---------- */
@@ -101,7 +101,7 @@
 .animal-list-row strong,
 .animal-list-row small { display: block; }
 .animal-list-row strong { font-size: 12px; }
-.animal-list-row small { color: var(--muted); font-size: 10px; }
+.animal-list-row small { color: var(--muted); font-size: 11px; }
 
 /* Foto no cadastro */
 .photo-preview-wrap { padding: 12px; background: var(--fundo-f7f9f5); border: 1px dashed var(--border); border-radius: 12px; }
@@ -155,15 +155,15 @@
   border-radius: var(--radius-sm);
 }
 .record-item strong { display: block; font-size: 11px; }
-.record-item p { margin: 4px 0 0; color: var(--muted); font-size: 10px; }
-.record-item small { color: var(--muted); font-size: 9px; white-space: nowrap; }
+.record-item p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+.record-item small { color: var(--muted); font-size: 11px; white-space: nowrap; }
 
 /* Peso */
 .weight-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 13px; }
 .weight-card { padding: 13px 8px; text-align: center; background: var(--surface-muted); border-radius: var(--radius-sm); }
-.weight-card small { display: block; color: var(--muted); font-size: 9px; text-transform: uppercase; }
+.weight-card small { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; }
 .weight-card strong { display: block; margin: 5px 0 2px; font-size: 18px; }
-.weight-card span { color: var(--muted); font-size: 9px; }
+.weight-card span { color: var(--muted); font-size: 11px; }
 
 /* ---------- Responsividade ---------- */
 @media (max-width: 1200px) {

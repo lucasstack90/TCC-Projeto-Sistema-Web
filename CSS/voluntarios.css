@@ -14,9 +14,9 @@
   margin-left: 4px;
   padding: 0 5px;
   color: #fff;
-  background: var(--terra);
+  background: var(--status-critico); /* terracota mais escura: texto branco legível (4,5:1+) */
   border-radius: 9px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
 }
 .tab-count:empty { display: none; }
@@ -54,8 +54,8 @@
 .volunteer-name strong,
 .volunteer-name small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .volunteer-name strong { font-size: 13px; }
-.volunteer-name small { color: var(--muted); font-size: 10px; }
-.volunteer-head .status-badge { font-size: 9px; }
+.volunteer-name small { color: var(--muted); font-size: 11px; }
+.volunteer-head .status-badge { font-size: 11px; }
 
 .volunteer-contact { display: grid; gap: 3px; color: var(--muted); font-size: 11px; }
 .volunteer-contact span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -63,7 +63,7 @@
 .volunteer-availability i { margin-right: 6px; color: var(--tinta-8a9b91); }
 
 .skill-tags { display: flex; flex-wrap: wrap; gap: 5px; }
-.skill-tag { padding: 4px 8px; color: var(--tinta-39705e); background: var(--fundo-e2eee5); border-radius: 20px; font-size: 10px; }
+.skill-tag { padding: 4px 8px; color: var(--tinta-39705e); background: var(--fundo-e2eee5); border-radius: 20px; font-size: 11px; }
 .volunteer-availability { margin: 0; color: var(--text); font-size: 11px; }
 
 .volunteer-foot {
@@ -75,13 +75,13 @@
   padding-top: 10px;
   border-top: 1px solid var(--linha-edf0e9);
 }
-.volunteer-foot small { color: var(--tinta-899a91); font-size: 10px; }
+.volunteer-foot small { color: var(--tinta-899a91); font-size: 11px; }
 .volunteer-foot .waiting-late { color: var(--tinta-a65d43); font-weight: 700; }
 .volunteer-foot .btn { padding: 6px 11px; font-size: 11px; }
 
 /* ---------- Formulário (ficha e inscrição) ---------- */
 .modal-title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.modal-title-row .status-badge { font-size: 10px; }
+.modal-title-row .status-badge { font-size: 11px; }
 
 .status-bar {
   display: flex;
@@ -99,7 +99,7 @@
 .choice-options span { padding: 0 6px; text-align: center; }
 
 fieldset legend.section-title { float: none; width: auto; }
-.section-title small { margin-left: 6px; color: var(--muted); font-weight: 500; letter-spacing: 0; }
+.section-title small { margin-left: 6px; color: var(--muted); font-size: 11px; font-weight: 500; letter-spacing: 0; }
 
 /* ---------- Página pública de inscrição ---------- */
 .signup-page {

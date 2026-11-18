@@ -50,13 +50,13 @@
 
 .sidebar .brand-copy { display: flex; flex-direction: column; line-height: 1.2; }
 .sidebar .brand-copy strong { color: var(--foreground); font: 800 19px var(--font-title); letter-spacing: -.5px; }
-.sidebar .brand-copy small { margin-top: 2px; color: var(--muted-foreground); font-size: 10px; }
+.sidebar .brand-copy small { margin-top: 2px; color: var(--muted-foreground); font-size: 11px; }
 
 .sidebar-label {
   padding: 0 24px;
   margin: 0 0 8px;
   color: var(--tinta-9aa9a1);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: .9px;
   text-transform: uppercase;
@@ -74,7 +74,7 @@
   width: calc(100% - 24px);
   min-height: 40px;
   margin: 0 12px;
-  padding: 0 12px;
+  padding: 0 10px;  /* 10px: "Voluntários & Equipe" cabe inteiro mesmo em negrito (item ativo) */
   color: var(--sidebar-foreground);
   background: transparent;
   border: 0;
@@ -118,7 +118,7 @@
   border-radius: 7px;
   color: var(--primary-foreground);
   background: var(--primary);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
 }
 .sidebar-count:not(.is-alert) { color: var(--muted-foreground); background: var(--surface-muted); }
@@ -166,14 +166,16 @@
   gap: 6px;
   min-height: 36px;
   color: #fff;
-  background: hsl(0 0% 100% / .12);
-  border: 1px solid hsl(0 0% 100% / .16);
+  /* Fundo escurecido (e não clareado): o texto branco fica legível mesmo sobre a parte
+     mais clara do degradê (contraste acima de 4,5:1). */
+  background: hsl(150 50% 10% / .32);
+  border: 1px solid hsl(0 0% 100% / .2);
   border-radius: var(--pill-radius);
   font-size: 12px;
   font-weight: 600;
   transition: background .18s ease;
 }
-.sidebar-promo a:hover { background: hsl(0 0% 100% / .22); }
+.sidebar-promo a:hover { background: hsl(150 50% 10% / .5); }
 .sidebar-bottom + .sidebar-promo { margin-top: 22px; }
 
 /* Nada no menu pode ser espremido: se faltar altura, o menu rola, em vez de cortar
@@ -250,7 +252,7 @@
   border: 1px solid var(--border);
   border-radius: 7px;
   box-shadow: none;
-  font: 600 10px var(--font-body);
+  font: 600 11px var(--font-body);
 }
 
 .app-search-results {
