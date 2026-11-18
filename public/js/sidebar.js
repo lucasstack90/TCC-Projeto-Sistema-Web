@@ -52,7 +52,7 @@
   mount.innerHTML = `
     <aside class="sidebar" id="sidebar" aria-label="Menu principal">
       <a class="brand" href="${home}" aria-label="PAWSAFE página inicial">
-        <span class="brand-mark"><i class="bi bi-heart-pulse-fill"></i></span>
+        <span class="brand-mark"><svg class="paw-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="currentColor"><ellipse cx="9.1" cy="6.6" rx="2" ry="2.6" transform="rotate(-10 9.1 6.6)"/><ellipse cx="14.9" cy="6.6" rx="2" ry="2.6" transform="rotate(10 14.9 6.6)"/><ellipse cx="4.9" cy="11.2" rx="1.8" ry="2.3" transform="rotate(-30 4.9 11.2)"/><ellipse cx="19.1" cy="11.2" rx="1.8" ry="2.3" transform="rotate(30 19.1 11.2)"/><path d="M12 12.4c-2.8 0-5.6 3.1-5.6 5.7 0 1.6 1.2 2.6 2.6 2.6 1.3 0 2-.7 3-.7s1.7.7 3 .7c1.4 0 2.6-1 2.6-2.6 0-2.6-2.8-5.7-5.6-5.7z"/></g></svg></span>
         <span class="brand-copy"><strong>PAWSAFE</strong><small>Gestão e proteção animal</small></span>
       </a>
       <div class="sidebar-label">Menu</div>

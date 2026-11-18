@@ -630,3 +630,6 @@ html.perfil-voluntario .so-perfil-voluntario { display: inline; }
 /* Texto secundário do Bootstrap (.text-secondary) segue a cor de texto secundário do sistema,
    que tem contraste suficiente nos temas claro e escuro. */
 .text-secondary { color: var(--muted-foreground) !important; }
+
+/* Logo: pata desenhada em SVG, herda a cor do .brand-mark */
+.brand-mark .paw-icon { display: block; width: 1.15em; height: 1.15em; }
