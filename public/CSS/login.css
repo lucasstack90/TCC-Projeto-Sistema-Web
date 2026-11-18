@@ -79,8 +79,9 @@
 .input-wrap .form-control {
   height: 48px;
   padding: 10px 43px;
-  background-color: var(--fundo-f8faf7);
-  border-radius: 11px;
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--pill-radius);
   font-size: 13px;
 }
 .input-wrap .form-control:focus { box-shadow: 0 0 0 4px rgba(63, 121, 104, .11); }
