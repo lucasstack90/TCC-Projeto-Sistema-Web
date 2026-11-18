@@ -6,58 +6,58 @@
 
 /* ---------- Tokens shadcn: modo claro (cores atuais da marca) ---------- */
 :root {
-  --background: hsl(84 22% 96%);
-  --foreground: hsl(156 16% 18%);
+  --background: hsl(120 8% 95%);
+  --foreground: hsl(150 14% 12%);
   --card: hsl(0 0% 100%);
-  --card-foreground: hsl(156 16% 18%);
+  --card-foreground: hsl(150 14% 12%);
   --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(156 16% 18%);
-  --primary: hsl(163 35% 34%);
+  --popover-foreground: hsl(150 14% 12%);
+  --primary: hsl(152 52% 24%);
   --primary-foreground: hsl(0 0% 100%);
-  --secondary: hsl(94 22% 94%);
+  --secondary: hsl(120 9% 94%);
   --secondary-foreground: hsl(158 33% 26%);
-  --muted: hsl(94 22% 94%);
-  --muted-foreground: hsl(148 7% 42%);
+  --muted: hsl(120 9% 94%);
+  --muted-foreground: hsl(150 5% 45%);
   --accent: hsl(142 25% 92%);
   --accent-foreground: hsl(162 37% 16%);
   --destructive: hsl(0 58% 42%);
   --destructive-foreground: hsl(0 0% 100%);
-  --border: hsl(127 13% 88%);
-  --input: hsl(127 13% 88%);
-  --ring: hsl(155 22% 60%);
-  --chart-1: hsl(163 35% 34%);
-  --chart-2: hsl(127 13% 53%);
+  --border: hsl(120 9% 90%);
+  --input: hsl(120 9% 88%);
+  --ring: hsl(150 40% 45%);
+  --chart-1: hsl(152 52% 24%);
+  --chart-2: hsl(146 38% 42%);
   --chart-3: hsl(18 48% 55%);
   --chart-4: hsl(258 24% 56%);
   --chart-5: hsl(198 31% 46%);
-  --sidebar: hsl(162 37% 16%);
-  --sidebar-foreground: hsl(135 22% 92%);
-  --sidebar-primary: hsl(163 35% 34%);
+  --sidebar: hsl(0 0% 100%);
+  --sidebar-foreground: hsl(150 5% 45%);
+  --sidebar-primary: hsl(152 52% 24%);
   --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(157 31% 20%);
-  --sidebar-accent-foreground: hsl(0 0% 100%);
-  --sidebar-border: hsl(0 0% 100% / .12);
+  --sidebar-accent: hsl(120 9% 95%);
+  --sidebar-accent-foreground: hsl(150 14% 12%);
+  --sidebar-border: hsl(120 9% 91%);
   --sidebar-ring: hsl(155 42% 69%);
-  --radius: 16px;
+  --radius: 22px;
 
   /* Extras do PAWSAFE (fora do padrão shadcn) */
-  --surface-soft: hsl(100 25% 98%);
-  --surface-muted: hsl(94 22% 94%);
+  --surface-soft: hsl(120 9% 97.5%);
+  --surface-muted: hsl(120 9% 95%);
   --danger-light: hsl(4 64% 94%);
   --chart-grid: hsl(152 27% 24% / .08);
   --chart-text: hsl(143 6% 47%);
-  --chart-tooltip: hsl(162 37% 16%);
+  --chart-tooltip: hsl(155 50% 12%);
   --chart-entrada: hsl(153 76% 25%);
   --chart-saida: hsl(28 71% 53%);
   --chart-saldo: hsl(220 48% 45%);
 
   /* Escala verde da marca (no escuro os tons 800–950 viram tons claros de texto) */
-  --green-950: hsl(162 37% 16%);
-  --green-900: hsl(157 31% 20%);
-  --green-800: hsl(160 33% 26%);
-  --green-700: hsl(163 35% 34%);
-  --green-600: hsl(162 29% 42%);
-  --green-100: hsl(142 25% 92%);
+  --green-950: hsl(155 55% 11%);
+  --green-900: hsl(154 52% 16%);
+  --green-800: hsl(152 52% 21%);
+  --green-700: hsl(152 48% 27%);
+  --green-600: hsl(148 38% 40%);
+  --green-100: hsl(138 32% 92%);
   --sage: hsl(127 13% 53%);
   --terra: hsl(18 48% 55%);
   --terra-light: hsl(22 72% 94%);
@@ -77,8 +77,16 @@
   --status-neutro: hsl(150 4% 44%);     --status-neutro-bg: hsl(150 7% 92%);
   --status-suave: hsl(150 15% 36%);     --status-suave-bg: hsl(128 14% 92%);
 
-  --shadow: 0 8px 24px hsl(157 31% 20% / .045);
-  --shadow-lg: 0 16px 45px hsl(158 30% 18% / .10);
+  --shadow: 0 1px 2px hsl(150 20% 20% / .04), 0 6px 18px hsl(150 20% 20% / .035);
+  --shadow-lg: 0 18px 50px hsl(155 30% 12% / .14);
+
+  /* Destaques no estilo do painel de referência */
+  --hero-from: hsl(150 55% 27%);
+  --hero-to: hsl(156 62% 13%);
+  --hero-foreground: hsl(0 0% 100%);
+  --hatch: hsl(150 10% 72%);
+  --track: hsl(120 9% 94%);
+  --pill-radius: 999px;
 
   color-scheme: light;
 }
@@ -109,13 +117,13 @@
   --chart-3: hsl(18 52% 63%);
   --chart-4: hsl(258 30% 70%);
   --chart-5: hsl(198 36% 60%);
-  --sidebar: hsl(155 18% 6%);
-  --sidebar-foreground: hsl(130 15% 86%);
-  --sidebar-primary: hsl(158 36% 34%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(155 14% 11%);
-  --sidebar-accent-foreground: hsl(0 0% 100%);
-  --sidebar-border: hsl(0 0% 100% / .08);
+  --sidebar: hsl(150 12% 10.5%);
+  --sidebar-foreground: hsl(140 8% 64%);
+  --sidebar-primary: hsl(158 38% 52%);
+  --sidebar-primary-foreground: hsl(160 40% 8%);
+  --sidebar-accent: hsl(150 10% 14%);
+  --sidebar-accent-foreground: hsl(120 12% 92%);
+  --sidebar-border: hsl(150 9% 18%);
   --sidebar-ring: hsl(158 45% 65%);
 
   --surface-soft: hsl(150 11% 12.5%);
@@ -155,17 +163,18 @@
   --shadow: 0 8px 24px hsl(0 0% 0% / .28);
   --shadow-lg: 0 16px 45px hsl(0 0% 0% / .45);
 
+  --hero-from: hsl(152 45% 26%);
+  --hero-to: hsl(156 55% 11%);
+  --hero-foreground: hsl(0 0% 100%);
+  --hatch: hsl(150 8% 32%);
+  --track: hsl(150 10% 14%);
+
   color-scheme: dark;
 }
 
 /* ---------- Ajustes pontuais do modo escuro ----------
    Lugares onde um tom verde da marca é usado como FUNDO
    (no escuro, --green-800/950 viraram tons claros de texto). */
-.dark .sidebar { background: linear-gradient(180deg, var(--sidebar), var(--sidebar-accent)); border-right: 1px solid var(--sidebar-border); }
-.dark .sidebar .nav-link.active { background: var(--sidebar-primary); }
-.dark .btn-green { color: var(--primary-foreground); background: var(--primary); border-color: var(--primary); }
-.dark .btn-green:hover,
-.dark .btn-green:focus-visible { color: var(--primary-foreground); background: hsl(158 38% 60%); border-color: hsl(158 38% 60%); }
 .dark .step.current span,
 .dark .step.done span,
 .dark .remember-option input:checked + .custom-check,
@@ -186,15 +195,15 @@
   width: 100%;
   min-height: 43px;
   padding: 0 12px;
-  color: #c5d6cc;
+  color: var(--sidebar-foreground);
   background: transparent;
   border: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   text-align: left;
-  font-size: 12px;
+  font-size: 13px;
   transition: background .18s ease, color .18s ease;
 }
-.theme-toggle:hover { color: #fff; background: rgba(255, 255, 255, .08); }
+.theme-toggle:hover { color: var(--sidebar-accent-foreground); background: var(--sidebar-accent); }
 .theme-toggle > i { flex-shrink: 0; width: 17px; font-size: 16px; text-align: center; }
 .theme-toggle .icon-sol { display: none; }
 .dark .theme-toggle .icon-sol { display: inline-block; }
