@@ -36,10 +36,6 @@
           <h1>Dashboard</h1>
           <p class="page-subtitle mb-0">Acompanhe, priorize e cuide dos animais da organização <span class="subtitle-dot">•</span> <span id="currentDate"></span></p>
         </div>
-        <div class="topbar-actions">
-          <a class="btn btn-green" href="Pages/animais.html" data-requer="animais.cadastrar"><i class="bi bi-plus-lg"></i>Cadastrar animal</a>
-          <a class="btn btn-outline-green" href="Pages/relatorios.html" data-requer="pagina.relatorios">Relatório técnico</a>
-        </div>
       </header>
 
       <!-- Valores com data-stat são calculados a partir dos dados dos módulos (js/dashboard.js). -->
@@ -47,22 +43,22 @@
         <article class="stat-card is-featured">
           <div class="stat-top"><span class="stat-label">Animais cadastrados</span><a class="stat-link" href="Pages/animais.html" data-requer="pagina.animais" aria-label="Abrir Animais"><i class="bi bi-arrow-up-right"></i></a></div>
           <strong class="stat-value" data-stat="total">–</strong>
-          <span class="stat-foot"><span class="stat-chip"><i class="bi bi-paw"></i></span><span data-stat="availableFoot">–</span></span>
+          <span class="stat-foot"><span data-stat="availableFoot">–</span></span>
         </article>
         <article class="stat-card">
           <div class="stat-top"><span class="stat-label">Disponíveis para adoção</span><a class="stat-link" href="Pages/adocoes.html" data-requer="pagina.adocoes" aria-label="Abrir Adoções"><i class="bi bi-arrow-up-right"></i></a></div>
           <strong class="stat-value" data-stat="available">–</strong>
-          <span class="stat-foot"><span class="stat-chip"><i class="bi bi-heart"></i></span>Aguardando um lar</span>
+          <span class="stat-foot">Aguardando um lar</span>
         </article>
         <article class="stat-card">
           <div class="stat-top"><span class="stat-label">Resgates em aberto</span><a class="stat-link" href="Pages/resgates.html" data-requer="pagina.resgates" aria-label="Abrir Resgates"><i class="bi bi-arrow-up-right"></i></a></div>
           <strong class="stat-value" data-stat="openRescues">–</strong>
-          <span class="stat-foot"><span class="stat-chip"><i class="bi bi-house-heart"></i></span>Pendentes ou em atendimento</span>
+          <span class="stat-foot">Pendentes ou em atendimento</span>
         </article>
         <article class="stat-card">
           <div class="stat-top"><span class="stat-label">Voluntários ativos</span><a class="stat-link" href="Pages/voluntarios.html" data-requer="pagina.voluntarios" aria-label="Abrir Voluntários"><i class="bi bi-arrow-up-right"></i></a></div>
           <strong class="stat-value" data-stat="activeVolunteers">–</strong>
-          <span class="stat-foot"><span class="stat-chip"><i class="bi bi-people"></i></span><span data-stat="pendingVolunteers">–</span></span>
+          <span class="stat-foot"><span data-stat="pendingVolunteers">–</span></span>
         </article>
       </section>
 
