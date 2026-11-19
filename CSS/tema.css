@@ -177,14 +177,11 @@
    (no escuro, --green-800/950 viraram tons claros de texto). */
 .dark .step.current span,
 .dark .step.done span,
-.dark .remember-option input:checked + .custom-check,
 .dark .flow .flow-total { color: var(--primary-foreground); background: var(--primary); border-color: var(--primary); }
 .dark .flow .flow-total small { color: var(--primary-foreground); }
 .dark .report-brand .brand-mark { color: var(--primary-foreground); background: var(--primary); }
-.dark .btn-login { background: linear-gradient(110deg, hsl(160 33% 24%), hsl(162 30% 32%)); }
 
 .dark .profile-mini .avatar { color: var(--sidebar); }
-.dark .login-card { border-color: var(--border); }
 .dark .sidebar-count.is-alert,
 .dark .tab-count { color: hsl(18 50% 10%); }
 
