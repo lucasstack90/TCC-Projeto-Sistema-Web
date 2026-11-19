@@ -21,7 +21,7 @@ return [
         // Caminho base da URL. No XAMPP, se o projeto está em
         // htdocs/pawsafe/public, o site abre em /pawsafe/public.
         // Deixe '' quando a pasta public/ for a raiz do site (vhost).
-        'base_url'  => getenv('PAWSAFE_BASE_URL') ?: '',
+        'base_url'  => getenv('PAWSAFE_BASE_URL') ?: '/TCC-Projeto-Sistema-Web',
         'fuso'      => 'America/Sao_Paulo',
     ],
 
