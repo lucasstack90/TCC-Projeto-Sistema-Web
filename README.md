@@ -1,7 +1,7 @@
 # PAWSAFE — Front-end (protótipo)
 
 Sistema web para gestão de ONGs e grupos de proteção animal — TCC do Técnico em Desenvolvimento de Sistemas (C. E. Ana Vanda Bassara).
-Front-end em HTML, CSS, JavaScript, Bootstrap 5 e Chart.js. O back-end previsto é PHP/Laravel com MySQL.
+Front-end em HTML, CSS, JavaScript, Bootstrap 5 e Chart.js. Esta branch tem **só o front-end**: os dados ficam no navegador (`localStorage`) e o login é simulado. O back-end (PHP com MVC e MySQL) é desenvolvido separadamente, na branch `feature/backend-php-mvc`.
 
 ## Estrutura
 
@@ -112,15 +112,12 @@ Para manter o padrão nas páginas de `Pages/`:
 - **Orçamento e saldo inicial:** editáveis na aba Resumo. Sem o saldo inicial, o saldo do sistema não bate com o extrato do banco.
 - Clique em uma linha para editar ou excluir.
 
-## Antes de começar o back-end
-
-Leia [`docs/pendencias-backend.md`](docs/pendencias-backend.md): proteção do formulário público contra envios em massa, regras que hoje só existem no JavaScript, ajustes no modelo de dados e LGPD.
 ## Módulo de Relatório técnico
 
 Gera o relatório a partir dos dados dos outros módulos — nenhum número é digitado à mão.
 
 - **Período:** mês atual, mês anterior, trimestre, semestre, ano, vigência da parceria ou datas personalizadas. Se o período termina no futuro, os dados vão até hoje.
-- **Modelos:** *Prestação de contas* (para a prefeitura ou outro financiador, com declaração e assinatura), *Gestão interna* (com pendências e equipe) e *Completo*. Cada seção pode ser ligada ou desligada.
+- **Modelos:** *Prestação de contas* (para a prefeitura ou outro financiador, com declaração e assinaturas do responsável legal e do veterinário responsável técnico), *Gestão interna* (com pendências e equipe) e *Completo*. Cada seção pode ser ligada ou desligada.
 - **Seções:** identificação da ONG e da parceria; resumo; metas pactuadas × realizadas; resgates (taxa de sucesso, tempo de atendimento, bairros, prioridade); balanço de animais (início + entradas − saídas = fim) e permanência; saúde (vacinas, atendimentos e cobertura de vacinação, castração e microchip); adoções (conversão e duração); insumos (doado, comprado, consumido, perdas, doadores); execução financeira; equipe; pendências; análise escrita da equipe; declaração.
 - **Estrutura de prestação de contas:** segue a lógica da Lei 13.019/2014 (MROSC) — relatório de execução do objeto (metas e resultados) e de execução financeira.
 - **Metas:** cadastradas por mês em “Configurar relatório”; o relatório calcula a meta proporcional ao período.
