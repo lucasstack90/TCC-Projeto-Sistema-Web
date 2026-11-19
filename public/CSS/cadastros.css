@@ -86,18 +86,27 @@
 }
 .registry-card {
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background: var(--surface);
-  padding: 20px;
+  box-shadow: var(--shadow);
+  padding: 22px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
+/* Ícone em círculo, no mesmo padrão dos cartões do dashboard. */
 .registry-card i.registry-card-icon {
-  font-size: 26px;
-  color: var(--primary, var(--text));
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  font-size: 20px;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
 }
-.registry-card h2 { font-family: var(--font-title); margin: 0; }
+.registry-card h2 { font-family: var(--font-title); font-size: 18px; font-weight: 700; letter-spacing: -.3px; margin: 0; }
 .registry-card p { color: var(--muted); margin: 0 0 4px; }
 
 @media (max-width: 575px) {
