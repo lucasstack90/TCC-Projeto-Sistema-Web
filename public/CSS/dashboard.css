@@ -1,0 +1,395 @@
+/* =========================================================
+   PAWSAFE — Dashboard (index.html)
+   Menu, cabeçalho, botões e status ficam em base.css / sidebar.css.
+   Layout inspirado num painel de projetos: cartão de destaque em
+   verde, barras em pílula com trilho hachurado, lista à direita,
+   medidor semicircular e cartão escuro de destaque.
+   ========================================================= */
+
+/* ---------- Indicadores ---------- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 150px;
+  padding: 18px 18px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+.stat-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+
+.stat-label {
+  padding-top: 6px;
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.stat-link {
+  display: grid;
+  place-items: center;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  color: var(--foreground);
+  border: 1.5px solid var(--foreground);
+  border-radius: 50%;
+  font-size: 13px;
+  transition: background .18s ease, color .18s ease, transform .18s ease;
+}
+.stat-link:hover { color: var(--card); background: var(--foreground); transform: rotate(45deg); }
+
+.stat-value {
+  margin: auto 0 8px;
+  padding-top: 14px;
+  color: var(--text);
+  font: 700 46px/1 var(--font-title);
+  letter-spacing: -1.5px;
+}
+
+.stat-foot { display: flex; align-items: center; gap: 7px; color: var(--green-700); font-size: 11.5px; }
+
+/* Cartão em destaque (o primeiro), com degradê verde-floresta */
+.stat-card.is-featured {
+  color: var(--hero-foreground);
+  background:
+    radial-gradient(110% 120% at 100% 0%, hsl(148 55% 34% / .55), transparent 55%),
+    linear-gradient(160deg, var(--hero-from), var(--hero-to));
+  border-color: transparent;
+}
+.stat-card.is-featured .stat-label,
+.stat-card.is-featured .stat-value { color: #fff; }
+.stat-card.is-featured .stat-foot { color: hsl(140 45% 82%); }
+.stat-card.is-featured .stat-link { color: var(--hero-to); background: #fff; border-color: #fff; }
+.stat-card.is-featured .stat-link:hover { color: var(--hero-to); background: hsl(140 40% 90%); }
+
+/* ---------- Grade dos painéis ---------- */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-areas:
+    "chart   chart   focus  adopt"
+    "rescue  rescue  gauge  money"
+    "species species status status";
+  gap: 16px;
+}
+.area-chart     { grid-area: chart; }
+.area-focus     { grid-area: focus; }
+.area-adoptions { grid-area: adopt; }
+.area-rescues   { grid-area: rescue; }
+.area-gauge     { grid-area: gauge; }
+.area-money     { grid-area: money; }
+.area-species   { grid-area: species; }
+.area-status    { grid-area: status; }
+
+/* Sem o card de doações (perfis sem acesso ao caixa): a taxa de adoção ocupa o espaço. */
+html.sem-financeiro-gerenciar .dash-grid {
+  grid-template-areas:
+    "chart   chart   focus  adopt"
+    "rescue  rescue  gauge  gauge"
+    "species species status status";
+}
+
+.panel {
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.chart-panel,
+.list-panel,
+.focus-panel,
+.status-panel { padding: 20px; }
+
+.panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.panel-heading h2 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.3px; }
+.panel-heading p { margin: 4px 0 0; color: var(--muted-foreground); font-size: 12px; }
+
+.panel-tag {
+  padding: 5px 10px;
+  color: var(--green-700);
+  background: var(--green-100);
+  border-radius: var(--pill-radius);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pill-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  color: var(--foreground);
+  border: 1.5px solid var(--foreground);
+  border-radius: var(--pill-radius);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background .18s ease, color .18s ease;
+}
+.pill-link:hover { color: var(--card); background: var(--foreground); }
+
+.chart-wrap { position: relative; height: 230px; margin-top: 14px; }
+/* Sem dados no período: os trilhos ficam apagados e a mensagem explica, para ninguém
+   ler as barras listradas como "meses cheios". */
+.chart-wrap.is-empty canvas { opacity: .35; }
+.chart-empty {
+  position: absolute;
+  inset: 0 0 28px;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0 24px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  pointer-events: none;
+}
+.chart-empty span { padding: 7px 14px; background: var(--card); border: 1px solid var(--border); border-radius: 999px; }
+
+/* ---------- Resgate prioritário (como o "Reminders" da referência) ---------- */
+.focus-panel { display: flex; flex-direction: column; }
+.focus-panel .panel-heading { margin-bottom: 14px; }
+.focus-title {
+  display: -webkit-box;
+  margin: 0 0 8px;
+  overflow: hidden;
+  color: var(--green-800);
+  font: 700 21px/1.2 var(--font-title);
+  letter-spacing: -.4px;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+.focus-meta { display: grid; gap: 4px; margin-bottom: 14px; color: var(--muted-foreground); font-size: 12px; }
+.focus-meta i { margin-right: 5px; }
+.focus-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.focus-panel .btn-green { width: 100%; margin-top: auto; padding: 12px 18px; }
+.focus-empty { display: grid; flex: 1; place-items: center; color: var(--muted-foreground); text-align: center; font-size: 12px; }
+.focus-empty i { display: block; margin-bottom: 8px; color: var(--green-700); font-size: 28px; }
+
+/* ---------- Listas (adoções e resgates) ---------- */
+.item-list { display: grid; gap: 4px; margin: 14px 0 0; padding: 0; list-style: none; }
+
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  padding: 8px;
+  margin: 0 -8px;
+  border-radius: 14px;
+  transition: background .15s ease;
+}
+.item-row[data-href] { cursor: pointer; }
+.item-row[data-href]:hover { background: var(--surface-muted); }
+.item-row:focus-visible { outline: 3px solid var(--ring); outline-offset: 0; }
+
+.item-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 15px;
+}
+.animal-dog { color: var(--green-700); background: var(--green-100); }
+.animal-cat { color: var(--tinta-8a704d); background: var(--fundo-f4ede2); }
+.icon-blue  { color: var(--blue); background: var(--blue-light); }
+.icon-lilac { color: var(--lilac); background: var(--lilac-light); }
+
+.item-text { display: flex; flex-direction: column; flex: 1; min-width: 0; line-height: 1.3; }
+.item-text strong { color: var(--foreground); font-size: 13px; font-weight: 600; overflow-wrap: anywhere; } /* texto inteiro (antes cortava com "...") */
+.item-text small { color: var(--muted-foreground); font-size: 11px; overflow-wrap: anywhere; }
+.item-badges { display: flex; flex-shrink: 0; gap: 6px; }
+.item-empty { padding: 18px 0; color: var(--muted-foreground); text-align: center; font-size: 12px; }
+
+/* ---------- Medidor de adoção (meio-donut) ---------- */
+.gauge-panel { display: flex; flex-direction: column; }
+.gauge-wrap { position: relative; height: 170px; margin: 18px auto 0; width: 100%; max-width: 260px; }
+.gauge-center {
+  position: absolute;
+  right: 0;
+  bottom: 4px;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+.gauge-center strong { color: var(--foreground); font: 700 34px/1 var(--font-title); letter-spacing: -1px; }
+.gauge-center span { margin-top: 4px; color: var(--muted-foreground); font-size: 11px; }
+.gauge-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; margin-top: auto; padding-top: 14px; color: var(--muted-foreground); font-size: 11px; }
+.gauge-legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---------- Cartão escuro de doações (como o "Time Tracker") ---------- */
+.money-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 210px;
+  padding: 20px;
+  overflow: hidden;
+  color: #fff;
+  background:
+    repeating-radial-gradient(ellipse at 120% 130%, transparent 0 16px, hsl(140 60% 70% / .09) 16px 18px),
+    radial-gradient(90% 80% at 0% 100%, hsl(148 55% 30% / .6), transparent 70%),
+    linear-gradient(160deg, var(--hero-to), hsl(156 60% 8%));
+  border-color: transparent;
+}
+.money-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 15px; font-weight: 600; }
+.money-link {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: var(--hero-to);
+  background: #fff;
+  border-radius: 50%;
+  font-size: 13px;
+  transition: transform .18s ease;
+}
+.money-link:hover { color: var(--hero-to); transform: rotate(45deg); }
+.money-value { margin-top: auto; color: #fff; font: 700 clamp(26px, 2.4vw, 36px)/1.05 var(--font-title); letter-spacing: -1px; }
+.money-foot { margin-top: 8px; color: hsl(140 35% 78%); font-size: 12px; }
+
+/* ---------- Espécies ---------- */
+.species-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 14px;
+  min-height: 200px;
+  padding-top: 6px;
+}
+
+.donut-wrap { position: relative; width: min(170px, 48%); height: 170px; }
+
+.donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.donut-center strong { color: var(--text); font: 700 28px var(--font-title); }
+.donut-center span { margin-top: 2px; color: var(--muted); font-size: 11px; }
+
+.legend-list { display: flex; flex-direction: column; gap: 14px; min-width: 110px; }
+.legend-list > div { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 13px; }
+.legend-label { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+
+.legend-dot { display: inline-block; flex-shrink: 0; width: 10px; height: 10px; border-radius: 50%; }
+.dot-primary { background: var(--chart-1); }
+.dot-sage    { background: var(--chart-2); }
+.dot-terra   { background: var(--chart-3); }
+.dot-dark    { background: var(--green-950); }
+.dot-hatch   { background: repeating-linear-gradient(135deg, var(--hatch) 0 1.5px, transparent 1.5px 3.5px); border: 1px solid var(--hatch); }
+.dark .dot-dark { background: hsl(150 30% 75%); }
+
+/* ---------- Distribuição por status (barras com trilho hachurado) ---------- */
+.status-bars { display: grid; gap: 13px; margin-top: 16px; }
+.status-bar { display: grid; grid-template-columns: 140px minmax(0, 1fr) 28px; align-items: center; gap: 12px; font-size: 12px; }
+.status-bar > span:first-child { color: var(--muted-foreground); }
+.status-bar strong { color: var(--foreground); text-align: right; }
+
+.bar-track {
+  position: relative;
+  height: 14px;
+  overflow: hidden;
+  background: repeating-linear-gradient(135deg, var(--hatch) 0 1.5px, transparent 1.5px 6px);
+  border: 1px solid color-mix(in srgb, var(--hatch) 70%, transparent);
+  border-radius: var(--pill-radius);
+}
+.bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: currentColor;
+  border-radius: var(--pill-radius);
+  transition: width .6s cubic-bezier(.22, 1, .36, 1);
+}
+
+/* ---------- Responsividade ---------- */
+@media (min-width: 1600px) {
+  .stats-grid,
+  .dash-grid { gap: 18px; }
+  .stat-card { min-height: 164px; padding: 20px; }
+  .chart-wrap { height: 260px; }
+}
+
+@media (max-width: 1280px) {
+  .dash-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "chart   chart"
+      "focus   adopt"
+      "rescue  rescue"
+      "gauge   money"
+      "species status";
+  }
+}
+@media (max-width: 1280px) {
+  html.sem-financeiro-gerenciar .dash-grid {
+    grid-template-areas:
+      "chart   chart"
+      "focus   adopt"
+      "rescue  rescue"
+      "gauge   gauge"
+      "species status";
+  }
+}
+
+@media (max-width: 1100px) {
+  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  .dash-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "chart" "focus" "adopt" "rescue" "gauge" "money" "species" "status";
+  }
+  html.sem-financeiro-gerenciar .dash-grid {
+    grid-template-areas: "chart" "focus" "adopt" "rescue" "gauge" "species" "status";
+  }
+  .status-bar { grid-template-columns: 110px minmax(0, 1fr) 24px; }
+}
+
+@media (max-width: 600px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card { min-height: 132px; padding: 14px; }
+  .stat-label { font-size: 12px; }
+  .stat-link { flex-basis: 30px; width: 30px; height: 30px; }
+  .stat-value { font-size: 34px; }
+  .stat-foot { font-size: 11px; }
+  .chart-panel, .list-panel, .focus-panel, .status-panel { padding: 16px; }
+  .chart-wrap { height: 210px; }
+  .species-content { flex-direction: column; padding: 14px 0 4px; }
+  .legend-list { flex-direction: row; justify-content: space-around; width: 100%; }
+  .legend-list > div { flex-direction: column; gap: 5px; }
+  .rescue-list .item-badges .status-badge:last-child { display: none; }
+}

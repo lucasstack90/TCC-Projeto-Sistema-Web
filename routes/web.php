@@ -1,0 +1,91 @@
+<?php
+
+/**
+ * Rotas da aplicação.
+ *
+ * Tudo que começa com /api é a API consumida pela interface (fetch + JSON).
+ * As páginas HTML continuam sendo servidas como arquivos estáticos de public/.
+ *
+ * Proteção em camadas:
+ *   - Autenticar: exige login (grupo abaixo);
+ *   - [ExigirPermissao::class, 'x']: exige que o perfil tenha a permissão "x"
+ *     (o mapa fica em app/Core/Permissoes.php);
+ *   - VerificarCsrf: exige o token nas gravações.
+ *
+ * Para criar um módulo novo, copie o bloco de "animais": rotas apontando para
+ * as ações do controller (index, show, store, update, destroy).
+ */
+
+use Controllers\AdotanteController;
+use Controllers\AnimalController;
+use Controllers\AuthController;
+use Controllers\ContribuinteController;
+use Controllers\MetaController;
+use Controllers\UsuarioController;
+use Controllers\VeterinarioController;
+use Core\Middleware\Autenticar;
+use Core\Middleware\ExigirPermissao;
+use Core\Middleware\VerificarCsrf;
+use Core\Router;
+
+return function (Router $r): void {
+
+    // Atalho: [middleware de permissão] e [permissão + CSRF] para gravações.
+    $pode = fn (string $permissao): array => [[ExigirPermissao::class, $permissao]];
+    $grava = fn (string $permissao): array => [[ExigirPermissao::class, $permissao], VerificarCsrf::class];
+
+    // --- Públicas (sem login) -------------------------------------------
+    $r->get('/api/ping', [MetaController::class, 'ping']);
+    $r->get('/api/csrf', [MetaController::class, 'csrf']);
+    $r->post('/api/auth/login', [AuthController::class, 'login'], [VerificarCsrf::class]);
+
+    // --- Exigem login ---------------------------------------------------
+    $r->grupo([Autenticar::class], function (Router $r) use ($pode, $grava): void {
+        $r->get('/api/auth/eu', [AuthController::class, 'eu']);
+        $r->post('/api/auth/logout', [AuthController::class, 'logout'], [VerificarCsrf::class]);
+
+        // Animais: quem acessa a página consulta; administrador e equipe cadastram/editam/excluem.
+        $r->get('/api/animais', [AnimalController::class, 'index'], $pode('pagina.animais'));
+        $r->get('/api/animais/{id}', [AnimalController::class, 'show'], $pode('pagina.animais'));
+        $r->get('/api/animais/{id}/foto', [AnimalController::class, 'foto'], $pode('pagina.animais'));
+        $r->post('/api/animais', [AnimalController::class, 'store'], $grava('animais.cadastrar'));
+        $r->put('/api/animais/{id}', [AnimalController::class, 'update'], $grava('animais.cadastrar'));
+        $r->delete('/api/animais/{id}', [AnimalController::class, 'destroy'], $grava('animais.cadastrar'));
+        $r->patch('/api/animais/{id}/status', [AnimalController::class, 'status'], $grava('animais.cadastrar'));
+
+        // Adotantes e documentos (dados pessoais — LGPD): só administrador e equipe.
+        // Os documentos ficam fora da pasta pública e só abrem por estas rotas, com login.
+        $r->get('/api/adotantes', [AdotanteController::class, 'index'], $pode('adotantes.gerenciar'));
+        $r->get('/api/adotantes/{id}', [AdotanteController::class, 'show'], $pode('adotantes.gerenciar'));
+        $r->post('/api/adotantes', [AdotanteController::class, 'store'], $grava('adotantes.gerenciar'));
+        $r->put('/api/adotantes/{id}', [AdotanteController::class, 'update'], $grava('adotantes.gerenciar'));
+        $r->delete('/api/adotantes/{id}', [AdotanteController::class, 'destroy'], $grava('adotantes.gerenciar'));
+        $r->post('/api/adotantes/{id}/documentos', [AdotanteController::class, 'enviarDocumento'], $grava('adotantes.gerenciar'));
+        $r->get('/api/adotantes/{id}/documentos/{doc}', [AdotanteController::class, 'documento'], $pode('adotantes.gerenciar'));
+        $r->delete('/api/adotantes/{id}/documentos/{doc}', [AdotanteController::class, 'removerDocumento'], $grava('adotantes.gerenciar'));
+
+        // Ficha clínica: vacinas, histórico e pesagens ({tipo} = vacinas | historico | pesagens).
+        // Veterinário, equipe e administrador registram, corrigem e removem (removido fica guardado).
+        $r->post('/api/animais/{id}/{tipo}', [AnimalController::class, 'registrar'], $grava('animais.registros'));
+        $r->put('/api/animais/{id}/{tipo}/{registro}', [AnimalController::class, 'corrigir'], $grava('animais.registros'));
+        $r->delete('/api/animais/{id}/{tipo}/{registro}', [AnimalController::class, 'removerRegistro'], $grava('animais.registros'));
+
+        // Veterinários: lista para quem registra vacinas; gestão só do administrador (módulo Cadastros).
+        $r->get('/api/veterinarios', [VeterinarioController::class, 'index'], $pode('veterinarios.ver'));
+        $r->post('/api/veterinarios', [VeterinarioController::class, 'store'], $grava('veterinarios.gerenciar'));
+        $r->put('/api/veterinarios/{id}', [VeterinarioController::class, 'update'], $grava('veterinarios.gerenciar'));
+        $r->delete('/api/veterinarios/{id}', [VeterinarioController::class, 'destroy'], $grava('veterinarios.gerenciar'));
+
+        // Contribuintes: têm CPF/CNPJ (LGPD) — equipe e financeiro consultam para registrar doações; gestão só do administrador.
+        $r->get('/api/contribuintes', [ContribuinteController::class, 'index'], $pode('contribuintes.ver'));
+        $r->post('/api/contribuintes', [ContribuinteController::class, 'store'], $grava('contribuintes.gerenciar'));
+        $r->put('/api/contribuintes/{id}', [ContribuinteController::class, 'update'], $grava('contribuintes.gerenciar'));
+        $r->delete('/api/contribuintes/{id}', [ContribuinteController::class, 'destroy'], $grava('contribuintes.gerenciar'));
+
+        // Usuários do sistema: só administrador.
+        $r->get('/api/usuarios', [UsuarioController::class, 'index'], $pode('usuarios.gerenciar'));
+        $r->post('/api/usuarios', [UsuarioController::class, 'store'], $grava('usuarios.gerenciar'));
+        $r->put('/api/usuarios/{id}', [UsuarioController::class, 'update'], $grava('usuarios.gerenciar'));
+        $r->delete('/api/usuarios/{id}', [UsuarioController::class, 'destroy'], $grava('usuarios.gerenciar'));
+    });
+};

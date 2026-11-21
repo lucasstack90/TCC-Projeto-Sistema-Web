@@ -1,0 +1,17 @@
+# PAWSAFE — redireciona tudo para a pasta public/.
+#
+# Isto faz o sistema funcionar no XAMPP mesmo sem configurar um VirtualHost:
+# basta copiar a pasta do projeto para htdocs/ e abrir no navegador. Só o
+# conteúdo de public/ fica acessível; app/, config/, database/ e storage/
+# ficam fora do alcance do navegador.
+#
+# Se você configurar um VirtualHost com DocumentRoot apontando para public/,
+# este arquivo é ignorado e não atrapalha.
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Evita prefixar "public/" duas vezes.
+    RewriteCond %{REQUEST_URI} !(^|/)public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

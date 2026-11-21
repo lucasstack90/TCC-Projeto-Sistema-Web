@@ -1,0 +1,110 @@
+/* =========================================================
+   PAWSAFE — tela de login
+   Um cartão central com a logo e o formulário, no mesmo visual
+   das telas internas (campos cinza, botão verde em pílula).
+   A logo e o fundo vêm de publico.css.
+   ========================================================= */
+
+.login-shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 100vh;
+  padding: 32px 16px;
+}
+
+.login-card {
+  width: min(420px, 100%);
+  padding: 30px 30px 26px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.login-heading { margin: 26px 0 22px; }
+.login-heading h1 { font-size: 26px; letter-spacing: -.6px; }
+.login-heading p { margin: 6px 0 0; color: var(--muted-foreground); font-size: 13px; }
+
+/* Campo com ícone à esquerda (igual à busca das telas internas) */
+.input-wrap { position: relative; }
+.input-wrap > i {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  z-index: 2;
+  transform: translateY(-50%);
+  color: var(--tinta-789087);
+  pointer-events: none;
+}
+.input-wrap .form-control { min-height: 44px; padding-left: 40px; }
+.password-wrap .form-control { padding-right: 46px; }
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: var(--muted-foreground);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  transform: translateY(-50%);
+}
+.password-toggle:hover { color: var(--foreground); background: var(--accent); }
+
+.invalid-feedback { font-size: 12px; }
+
+.login-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 18px;
+  font-size: 12px;
+}
+.remember-option { display: inline-flex; align-items: center; gap: 8px; color: var(--muted-foreground); cursor: pointer; }
+.remember-option input { width: 16px; height: 16px; margin: 0; accent-color: var(--primary); }
+.login-options a { color: var(--primary); font-weight: 600; }
+.login-options a:hover { text-decoration: underline; }
+
+/* Mensagens: mesmo visual dos avisos das telas internas (.alert-soft) */
+.login-alert {
+  margin-bottom: 14px;
+  padding: 11px 13px;
+  color: var(--tinta-467665);
+  background: var(--fundo-e0eee8);
+  border: 0;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+}
+.login-alert.alert-warning { color: var(--tinta-a65d43); background: var(--fundo-f8e8dc); }
+
+.btn-entrar { min-height: 46px; font-size: 14px; }
+
+.login-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 14px 0 0;
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+
+.login-footer { display: flex; gap: 8px; color: var(--muted-foreground); font-size: 11px; }
+
+@media (max-width: 480px) {
+  .login-card { padding: 24px 20px 22px; }
+}
+
+/* Sem o ícone de alerta do Bootstrap: ele cobriria o botão de mostrar a senha.
+   A borda vermelha e a mensagem abaixo já indicam o erro. */
+.input-wrap .form-control.is-invalid { background-image: none; padding-right: 12px; }
+.password-wrap .form-control.is-invalid { padding-right: 46px; }
