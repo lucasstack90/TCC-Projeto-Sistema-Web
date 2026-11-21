@@ -140,6 +140,20 @@
 
 .detail-body { padding: 17px; background: var(--surface-soft); }
 
+/* Rolagem da ficha: o modal "scrollable" do Bootstrap só rola dentro de
+   .modal-body, que a ficha não usa. Aqui o corpo da ficha rola sozinho,
+   enquanto o nome do animal e os botões de ação ficam fixos no topo. */
+.detail-modal { display: flex; flex-direction: column; overflow: hidden; }
+.detail-modal .detail-hero,
+.detail-modal .detail-actions { flex-shrink: 0; }
+.detail-modal .detail-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: 24px;
+}
+
 /* Ações logo abaixo do nome do animal: fixas no topo enquanto a ficha rola. */
 .detail-actions {
   position: sticky;
