@@ -389,7 +389,7 @@ h1 {
 .consent input { margin-top: 3px; accent-color: var(--green-700); }
 
 /* ---------- Tabelas dos módulos (Adoções, Doações) ---------- */
-.table-card { overflow: hidden; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+.table-card { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
 
 .data-table {
   --bs-table-bg: transparent;

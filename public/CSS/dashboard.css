@@ -221,8 +221,8 @@ html.sem-financeiro-gerenciar .dash-grid {
 .icon-lilac { color: var(--lilac); background: var(--lilac-light); }
 
 .item-text { display: flex; flex-direction: column; flex: 1; min-width: 0; line-height: 1.3; }
-.item-text strong { overflow: hidden; color: var(--foreground); font-size: 13px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-.item-text small { overflow: hidden; color: var(--muted-foreground); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.item-text strong { color: var(--foreground); font-size: 13px; font-weight: 600; overflow-wrap: anywhere; } /* texto inteiro (antes cortava com "...") */
+.item-text small { color: var(--muted-foreground); font-size: 11px; overflow-wrap: anywhere; }
 .item-badges { display: flex; flex-shrink: 0; gap: 6px; }
 .item-empty { padding: 18px 0; color: var(--muted-foreground); text-align: center; font-size: 12px; }
 

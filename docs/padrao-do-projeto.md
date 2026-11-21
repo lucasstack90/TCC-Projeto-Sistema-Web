@@ -248,9 +248,12 @@ Regras que valem no servidor:
 - **Vacinado** passa a "sim" quando há vacina registrada. Um evento do tipo
   **Castração** marca o animal como castrado.
 - **Veterinário** escolhido da lista é guardado por id (`veterinario_id`, com
-  chave estrangeira); o nome digitado fica como alternativa. Para o perfil
-  veterinário, o próprio nome já vem selecionado quando existe no cadastro de
-  Veterinários com o mesmo nome do login.
+  chave estrangeira); o nome digitado fica como alternativa (administrador e
+  equipe registram pelo profissional que atendeu).
+- **Perfil veterinário não escolhe o responsável:** o registro sai em nome da
+  própria conta, e o servidor ignora o que vier no formulário. O cadastro de
+  Veterinários com o mesmo nome do login é ligado automaticamente. Numa
+  correção, o responsável original é mantido e fica registrado quem corrigiu.
 - **Foto** enviada fica em `storage/uploads/animais/` (fora da pasta pública),
   com o tipo conferido pelo conteúdo do arquivo, e é entregue pela rota
   `/foto`, que exige login.

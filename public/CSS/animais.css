@@ -186,6 +186,20 @@
 .clinical-card .record-item { background: var(--surface-soft); }
 .clinical-card .timeline { margin-bottom: 0; }
 
+/* Responsável fixo no registro feito pelo veterinário (sem escolha). */
+.responsavel-fixo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--green-100);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.responsavel-fixo > i { color: var(--green-700); font-size: 18px; }
+.responsavel-fixo strong { display: block; font-size: 13px; }
+.responsavel-fixo small { color: var(--muted); font-size: 11px; }
+
 .record-side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; }
 .record-audit { margin: 4px 0 0; color: var(--muted); font-size: 10.5px; font-style: italic; }
 .record-tools { display: flex; gap: 4px; }

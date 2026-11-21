@@ -72,6 +72,28 @@ final class Veterinario extends Model
     }
 
     /** Checa se já existe o mesmo CRMV+UF em outro registro (unicidade). */
+    /**
+     * Cadastro de veterinário com o mesmo nome do usuário logado (ignora
+     * maiúsculas e acentos). Liga a conta de login ao cadastro profissional.
+     */
+    public function doUsuario(string $nome): ?array
+    {
+        $chave = self::semAcento($nome);
+        foreach ($this->todos('ativo DESC, id ASC') as $linha) {
+            if (self::semAcento((string) $linha['nome']) === $chave) {
+                return $linha;
+            }
+        }
+        return null;
+    }
+
+    private static function semAcento(string $texto): string
+    {
+        $t = mb_strtolower(trim($texto));
+        $t = strtr($t, ['á'=>'a','à'=>'a','â'=>'a','ã'=>'a','ä'=>'a','é'=>'e','è'=>'e','ê'=>'e','ë'=>'e','í'=>'i','ì'=>'i','î'=>'i','ï'=>'i','ó'=>'o','ò'=>'o','ô'=>'o','õ'=>'o','ö'=>'o','ú'=>'u','ù'=>'u','û'=>'u','ü'=>'u','ç'=>'c']);
+        return preg_replace('/\s+/', ' ', $t);
+    }
+
     public function crmvEmUso(string $crmv, string $uf, ?int $ignorarId = null): bool
     {
         $sql = 'SELECT id FROM veterinarios WHERE crmv = :crmv AND crmv_uf = :uf';

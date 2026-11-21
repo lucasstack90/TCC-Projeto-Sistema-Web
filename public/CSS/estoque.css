@@ -66,7 +66,7 @@
 .alert-item > i { flex-shrink: 0; font-size: 16px; }
 .alert-item div { min-width: 0; }
 .alert-item strong,
-.alert-item small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.alert-item small { display: block; overflow-wrap: anywhere; } /* texto inteiro, quebrando linha (antes cortava com "...") */
 .alert-item strong { font-size: 12px; }
 .alert-item small { color: var(--muted); font-size: 11px; }
 .alert-item.is-danger > i { color: var(--danger); }
@@ -86,7 +86,9 @@
 
 /* ---------- Tabela de itens ---------- */
 .stock-table-wrap {
-  overflow: hidden;
+  /* Antes "hidden": em telas de notebook a coluna Ações saía da tabela e os
+     botões ficavam cortados. Agora, se faltar espaço, a tabela rola de lado. */
+  overflow-x: auto;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -258,6 +260,15 @@
 .move-tag { padding: 2px 7px; color: var(--status-neutro); background: var(--status-neutro-bg); border-radius: 20px; font-size: 11px; font-weight: 700; }
 
 /* ---------- Responsividade ---------- */
+/* Notebook: células e botões mais compactos para a tabela caber inteira. */
+@media (max-width: 1366px) {
+  .stock-table th,
+  .stock-table td { padding-left: 10px; padding-right: 10px; }
+  .item-cell { min-width: 170px; }
+  .row-actions { gap: 4px; }
+  .row-actions .btn { padding: 5px 8px; }
+}
+
 @media (max-width: 1100px) {
   .stock-table th:nth-child(6),
   .stock-table td:nth-child(6) { display: none; }

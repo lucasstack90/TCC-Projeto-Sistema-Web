@@ -19,6 +19,9 @@ const $ = (id) => document.getElementById(id);
 const podePerfil = (permissao) => typeof PawAuth === 'undefined' || PawAuth.pode(permissao);
 const PODE_CADASTRAR = podePerfil('animais.cadastrar');
 const PODE_REGISTRAR = podePerfil('animais.registros');
+// Veterinário registra pela própria conta: não escolhe o responsável (o servidor também garante).
+const USUARIO = typeof PawAuth !== 'undefined' ? PawAuth.usuario() : null;
+const EH_VETERINARIO = USUARIO?.perfil === 'veterinario';
 
 // ================= Estado =================
 let animals = PawData.loadAnimals(); // cópia local até a resposta do servidor
@@ -476,29 +479,33 @@ const dateField = (valor) => `<div class="mb-3"><label class="form-label" for="r
 
 // Campo de veterinário: um <select> dos cadastrados (API) que preenche o nome,
 // com o campo de texto como alternativa (quem não está cadastrado).
-const vetField = (label, item) => `
+// Perfil veterinário: no lugar da escolha, mostra que o responsável é a própria conta.
+const vetField = (label, item) => (EH_VETERINARIO ? `
+  <div class="mb-3">
+    <span class="form-label d-block">Responsável</span>
+    <div class="responsavel-fixo">
+      <i class="bi bi-person-check"></i>
+      <div><strong>${escapeHtml(item ? (item.vet || 'Não informado') : USUARIO.nome)}</strong>
+      <small>${item ? 'O responsável original do registro é mantido na correção.' : 'Registrado automaticamente pela sua conta.'}</small></div>
+    </div>
+  </div>` : `
   <div class="mb-3">
     <label class="form-label" for="rVetSelect">${label}</label>
     <select id="rVetSelect" class="form-select mb-2"><option value="">— selecionar veterinário cadastrado —</option></select>
     <input id="rVet" class="form-control" maxlength="120" placeholder="ou digite o nome do responsável" value="${escapeHtml(item?.vet || '')}">
-  </div>`;
+  </div>`);
 
-const normalizar = (texto) => String(texto || '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase();
+// Nome e cadastro do veterinário escolhidos (o veterinário logado não envia: o servidor usa a conta dele).
+const vetPayload = () => (EH_VETERINARIO ? {} : { vet: $('rVet').value.trim(), vetId: Number($('rVetSelect')?.value) || null });
 
-// Preenche o <select> de veterinário. Num registro novo, o veterinário logado
-// já vem selecionado (quando o nome dele bate com um cadastro de Veterinários).
+// Preenche o <select> de veterinário (administrador e equipe).
 function populateVetField(item) {
+  if (EH_VETERINARIO) return;
   const sel = $('rVetSelect');
   if (!sel || typeof PawVets === 'undefined') return;
-  const usuario = typeof PawAuth !== 'undefined' ? PawAuth.usuario() : null;
   const fill = () => {
-    let atual = sel.value || (item?.vetId ? String(item.vetId) : '');
-    if (!item && !atual && usuario?.perfil === 'veterinario') {
-      const eu = PawData.loadVets().find(v => normalizar(v.name) === normalizar(usuario.nome));
-      if (eu) atual = String(eu.id);
-    }
+    const atual = sel.value || (item?.vetId ? String(item.vetId) : '');
     sel.innerHTML = '<option value="">— selecionar veterinário cadastrado —</option>' + PawVets.options(atual);
-    if (!item && atual && !$('rVet').value) $('rVet').value = PawVets.find(atual)?.name || '';
     sel.onchange = () => {
       const v = PawVets.find(sel.value);
       if (v) $('rVet').value = v.name;
@@ -519,7 +526,7 @@ const RECORDS = {
       ${vetField('Veterinário', item)}`,
     payload: () => ({
       name: $('rName').value.trim(), date: $('rDate').value, next: $('rNext').value, lot: $('rLot').value.trim(),
-      vet: $('rVet').value.trim(), vetId: Number($('rVetSelect')?.value) || null
+      ...vetPayload()
     }),
     message: (item) => (item ? 'Vacina corrigida.' : 'Vacina registrada.')
   },
@@ -535,7 +542,7 @@ const RECORDS = {
       <div><label class="form-label" for="rNotes">Notas clínicas</label><textarea id="rNotes" class="form-control" rows="3" maxlength="2000">${escapeHtml(item?.notes || '')}</textarea></div>`,
     payload: () => ({
       type: $('rType').value, date: $('rDate').value, description: $('rDesc').value.trim(),
-      vet: $('rVet').value.trim(), vetId: Number($('rVetSelect')?.value) || null, notes: $('rNotes').value.trim()
+      ...vetPayload(), notes: $('rNotes').value.trim()
     }),
     message: (item) => (item ? 'Evento corrigido.' : 'Evento adicionado ao histórico.')
   },

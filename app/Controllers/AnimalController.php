@@ -165,6 +165,7 @@ final class AnimalController extends Controller
         $this->animalOu404($id);
         $dados = $this->req->todos();
         $colunas = $this->validarRegistro($tipo, $dados);
+        $colunas = $this->responsavelDoVeterinario($tipo, $colunas, novo: true);
 
         $this->registros->inserir($tipo, (int) $id, $colunas, $this->usuarioId());
         if ($tipo === 'historico' && ($colunas['tipo'] ?? '') === 'Castração') {
@@ -182,6 +183,7 @@ final class AnimalController extends Controller
             $this->erro('Registro não encontrado.', 404);
         }
         $colunas = $this->validarRegistro($tipo, $this->req->todos());
+        $colunas = $this->responsavelDoVeterinario($tipo, $colunas, novo: false);
         $this->registros->corrigir($tipo, (int) $registroId, $colunas, $this->usuarioId());
         $this->animais->sincronizarComRegistros((int) $id);
         $this->ok($this->animais->comDetalhes((int) $id));
@@ -197,6 +199,28 @@ final class AnimalController extends Controller
         $this->registros->removerRegistro($tipo, (int) $registroId, $this->usuarioId());
         $this->animais->sincronizarComRegistros((int) $id);
         $this->ok($this->animais->comDetalhes((int) $id));
+    }
+
+    /**
+     * Perfil veterinário: o responsável pelo registro é sempre a própria conta,
+     * não o que veio do formulário. Num registro novo, grava o nome do usuário
+     * logado (e o cadastro de Veterinários com o mesmo nome, se houver). Numa
+     * correção, o responsável original é mantido. Administrador e equipe
+     * continuam escolhendo o veterinário (registram pelo profissional).
+     */
+    private function responsavelDoVeterinario(string $tipo, array $colunas, bool $novo): array
+    {
+        $usuario = $this->usuario();
+        if (($usuario['perfil'] ?? '') !== 'veterinario' || $tipo === 'pesagens') {
+            return $colunas;
+        }
+        unset($colunas['veterinario'], $colunas['veterinario_id']);
+        if ($novo) {
+            $cadastro = (new Veterinario())->doUsuario((string) $usuario['nome']);
+            $colunas['veterinario'] = $usuario['nome'];
+            $colunas['veterinario_id'] = $cadastro ? (int) $cadastro['id'] : null;
+        }
+        return $colunas;
     }
 
     private function tipoOu404(string $tipo): void
