@@ -165,7 +165,7 @@ um voluntário de confiança que conduz adoções pode receber o perfil **Equipe
 | Animais — consultar fichas | ✓ | — | ✓ | ✓ | ✓ |
 | Animais — cadastrar, editar, excluir | ✓ | — | ✓ | — | — |
 | Animais — vacinas, histórico, pesagens | ✓ | — | ✓ | ✓ | — |
-| Adoções | ✓ | — | ✓ | — | — |
+| Adoções (inclui adotantes e os documentos deles) | ✓ | — | ✓ | — | — |
 | Resgates | ✓ | — | ✓ | ✓ | ✓ |
 | Voluntários — aprovar ou arquivar inscrições | ✓ | — | ✓ | — | — |
 | Voluntários — cadastrar, editar, inativar, excluir | ✓ | — | consulta | — | — |
@@ -219,6 +219,33 @@ movimentação de estoque registra o nome do usuário logado que a fez.
 > Enquanto Adoções, Resgates, Estoque etc. ainda gravam no `localStorage`, o
 > bloqueio desses módulos é feito na interface. Quando cada um migrar para a API,
 > basta proteger as rotas dele com a permissão correspondente.
+
+## Adotantes e documentos (já no servidor)
+
+O cadastro de adotantes (módulo de Adoções) usa a API `/api/adotantes`; os
+processos de adoção ainda ficam no navegador e apontam para o id do adotante.
+Todas as rotas exigem `adotantes.gerenciar` (administrador e equipe) — são dados
+pessoais (LGPD).
+
+| Rota | O que faz |
+|---|---|
+| `GET`, `POST /api/adotantes` · `GET`, `PUT`, `DELETE /api/adotantes/{id}` | Lista, cadastra, edita, exclui (lógico) |
+| `POST /api/adotantes/{id}/documentos` | Envia um documento (`{ name, file: dataURL }`) |
+| `GET /api/adotantes/{id}/documentos/{doc}` | Abre o documento no navegador |
+| `DELETE /api/adotantes/{id}/documentos/{doc}` | Remove (fica guardado com quem removeu) |
+
+- Documentos: imagem (JPG, PNG, WEBP) ou PDF, até 5 MB cada e 5 por adotante
+  (`config/config.php`, `uploads.documentos`). O tipo é conferido pelo conteúdo
+  do arquivo. Ficam em `storage/uploads/adotantes/` com nome aleatório, fora da
+  pasta pública, e só abrem pela rota acima, com login (sem cache no navegador).
+- Na ficha, os arquivos escolhidos aparecem como "Será enviado ao salvar"; ao
+  salvar, vão para o servidor e qualquer pessoa da equipe passa a abri-los, de
+  qualquer computador. Cada documento mostra quem enviou e quando.
+- O servidor repete as regras da tela: CPF válido e único, 18 anos ou mais,
+  consentimento LGPD obrigatório (a data do consentimento é guardada).
+- Adotantes e documentos que existiam só no navegador (antes do servidor) são
+  enviados automaticamente na primeira vez que a tela de Adoções abre, e os
+  processos passam a apontar para o id do servidor.
 
 ## Módulo de Animais e ficha clínica (já no servidor)
 

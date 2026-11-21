@@ -211,6 +211,67 @@ CREATE TABLE IF NOT EXISTS contribuintes (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------
+-- Adotantes (módulo de Adoções) — dados pessoais (LGPD)
+-- ---------------------------------------------------------------------
+-- Só administrador e equipe acessam (permissão adotantes.gerenciar). Excluir é
+-- lógico: o cadastro some da lista, mas fica no histórico das adoções.
+CREATE TABLE IF NOT EXISTS adotantes (
+    id               INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    nome             VARCHAR(120) NOT NULL,
+    cpf              CHAR(11)     NOT NULL,           -- só os dígitos
+    nascimento       DATE         NULL,
+    telefone         VARCHAR(20)  NULL,
+    email            VARCHAR(160) NULL,
+    rua              VARCHAR(120) NULL,
+    numero           VARCHAR(10)  NULL,
+    bairro           VARCHAR(80)  NULL,
+    cidade           VARCHAR(80)  NULL,
+    tipo_moradia     VARCHAR(20)  NULL,
+    propriedade      VARCHAR(20)  NULL,
+    tem_quintal      TINYINT(1)   NOT NULL DEFAULT 0,
+    tem_telas        TINYINT(1)   NOT NULL DEFAULT 0,
+    moradores        TINYINT UNSIGNED NULL,
+    tem_criancas     TINYINT(1)   NOT NULL DEFAULT 0,
+    outros_animais   VARCHAR(200) NULL,
+    horas_sozinho    TINYINT UNSIGNED NULL,
+    experiencia      VARCHAR(500) NULL,
+    motivacao        VARCHAR(500) NULL,
+    consentimento    TINYINT(1)   NOT NULL DEFAULT 0, -- autorização LGPD
+    consentimento_em DATETIME     NULL,
+    criado_em        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    criado_por       INT UNSIGNED NULL,
+    atualizado_em    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    atualizado_por   INT UNSIGNED NULL,
+    excluido_em      DATETIME     NULL,
+    excluido_por     INT UNSIGNED NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_adotantes_cpf (cpf),
+    CONSTRAINT fk_adotantes_criado     FOREIGN KEY (criado_por)     REFERENCES usuarios (id) ON DELETE SET NULL,
+    CONSTRAINT fk_adotantes_atualizado FOREIGN KEY (atualizado_por) REFERENCES usuarios (id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- Documentos anexados ao adotante (RG, CPF, comprovante de residência...).
+-- O arquivo fica em storage/uploads/adotantes/ (fora da pasta pública) e só é
+-- entregue pela API a quem tem acesso aos adotantes. Remover não apaga: guarda
+-- quem removeu e quando.
+CREATE TABLE IF NOT EXISTS documentos_adotante (
+    id            INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    adotante_id   INT UNSIGNED NOT NULL,
+    nome_original VARCHAR(160) NOT NULL,
+    arquivo       VARCHAR(80)  NOT NULL,              -- nome no disco (aleatório)
+    tipo          VARCHAR(60)  NOT NULL,              -- tipo conferido pelo conteúdo (image/jpeg, application/pdf...)
+    tamanho       INT UNSIGNED NOT NULL,
+    enviado_por   INT UNSIGNED NULL,
+    criado_em     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    removido_em   DATETIME     NULL,
+    removido_por  INT UNSIGNED NULL,
+    PRIMARY KEY (id),
+    KEY idx_documentos_adotante (adotante_id),
+    CONSTRAINT fk_documentos_adotante FOREIGN KEY (adotante_id) REFERENCES adotantes (id) ON DELETE RESTRICT,
+    CONSTRAINT fk_documentos_enviado  FOREIGN KEY (enviado_por) REFERENCES usuarios (id)  ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
 -- Atualização de bancos criados em versões anteriores (ficha do animal)
 -- ---------------------------------------------------------------------
 -- Pode rodar sempre: em banco novo não muda nada. Usa a sintaxe IF EXISTS /
@@ -392,3 +453,10 @@ INSERT INTO pesagens (animal_id, peso, data, nota)
 SELECT * FROM (
     SELECT 8 AS animal_id, 6.2 AS peso, '2026-02-18' AS data, 'Chegada' AS nota
 ) AS w WHERE NOT EXISTS (SELECT 1 FROM pesagens WHERE animal_id = 8);
+
+-- Adotantes de exemplo: os mesmos 3 do protótipo (js/dados.js), com os mesmos ids,
+-- porque os processos de adoção (ainda no navegador) apontam para eles.
+INSERT IGNORE INTO adotantes (id, nome, cpf, nascimento, telefone, email, rua, numero, bairro, cidade, tipo_moradia, propriedade, tem_quintal, tem_telas, moradores, tem_criancas, outros_animais, horas_sozinho, experiencia, motivacao, consentimento, consentimento_em, criado_em) VALUES
+(1, 'Carlos Mendes', '52998224725', '1988-05-14', '(42) 99912-3456', 'carlos.mendes@email.com', 'Rua XV de Novembro', '1240', 'Centro', 'Guarapuava - PR', 'Casa', 'Própria', 1, 0, 3, 1, 'Uma gata castrada', 4, 'Já teve cães de grande porte.', 'Família procura um cão companheiro para as crianças.', 1, '2025-12-10 10:00:00', '2025-12-10 10:00:00'),
+(2, 'Fernanda Lima', '31298765455', '1995-09-02', '(42) 99845-1122', 'fernanda.lima@email.com', 'Rua Saldanha Marinho', '310', 'Trianon', 'Guarapuava - PR', 'Casa', 'Alugada', 1, 0, 2, 0, NULL, 6, 'Primeiro animal.', 'Quer um cão ativo para acompanhar nas caminhadas.', 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00'),
+(3, 'Juliana Alves', '47123659864', '1990-01-23', '(42) 99734-8890', 'juliana.alves@email.com', 'Rua Pedro Alves', '85', 'Bairro Santa Cruz', 'Guarapuava - PR', 'Apartamento', 'Própria', 0, 1, 1, 0, NULL, 8, 'Já teve gatos.', 'Mora sozinha e quer um gato tranquilo.', 1, '2026-10-14 10:00:00', '2026-10-14 10:00:00');

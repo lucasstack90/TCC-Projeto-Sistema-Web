@@ -1,7 +1,12 @@
 /* PAWSAFE — módulo de Adoções
    Cadastro de adotantes (CPF, telefone, e-mail, endereço, residência, família e documentos)
    e acompanhamento do processo: Novo → Em análise → Aprovada → Concluída (ou Recusada/Cancelada).
-   Depende de: Bootstrap 5, js/dados.js (PawData), js/utils.js (PawUtils) e js/sidebar.js. */
+
+   Adotantes e documentos ficam no SERVIDOR (API /api/adotantes): qualquer pessoa da
+   equipe, em qualquer computador, abre os documentos depois de salvos. Os processos
+   de adoção ainda ficam no navegador (PawData) e apontam para o id do adotante.
+
+   Depende de: Bootstrap 5, js/dados.js (PawData), js/utils.js (PawUtils), js/api.js e js/sidebar.js. */
 
 const $ = (id) => document.getElementById(id);
 const { today, formatDate, escapeHtml, plural, compressImage } = PawUtils;
@@ -16,9 +21,16 @@ let adoptions = PawData.loadAdoptions();
 let currentView = 'processes';  // 'processes' | 'adopters'
 let stageFilter = 'Todas';
 let openProcessId = null;       // processo aberto na ficha
-let adopterDocs = [];           // documentos do adotante em edição
+// Documentos do adotante aberto no formulário:
+//   docsSalvos   já estão no servidor ({ id, name, type, url, uploadedBy, uploadedAt })
+//   docsNovos    escolhidos agora, enviados ao salvar ({ name, type, size, data })
+//   docsRemover  ids dos salvos que serão removidos ao salvar
+let docsSalvos = [];
+let docsNovos = [];
+let docsRemover = [];
 
-const MAX_DOCS = 3;
+const MAX_DOCS = 5;                    // por adotante (o servidor confere o mesmo limite)
+const MAX_DOC_BYTES = 5 * 1024 * 1024; // 5 MB por arquivo
 const ADOPTABLE_STATUS = ['Disponível', 'Em Lar Temporário'];
 
 const adopterModal = new bootstrap.Modal($('adopterModal'));
@@ -50,6 +62,62 @@ async function registrarAdocaoNoServidor(animal, adopter, processo) {
   } catch (erro) {
     notify(`A adoção foi concluída, mas a ficha do animal não foi atualizada no servidor: ${erro.message}`);
   }
+}
+
+// ================= Servidor (adotantes e documentos) =================
+const erroDaApi = (erro) => (erro.status === undefined
+  ? 'Sem conexão com o servidor. Verifique se o Apache e o MySQL do XAMPP estão ligados.'
+  : erro.campos ? `${erro.message} ${Object.values(erro.campos).join(' ')}` : erro.message);
+
+async function carregarAdotantes() {
+  let lista;
+  try {
+    lista = (await Api.get('/adotantes')).map(PawData.normalizeServerAdopter);
+  } catch (erro) {
+    if (erro.status !== 401) notify(`Adotantes: ${erroDaApi(erro)} Mostrando a última cópia deste computador.`);
+    return;
+  }
+  lista = await migrarAdotantesLocais(lista);
+  adopters = lista;
+  PawData.saveAdopters(adopters);
+  render();
+}
+
+// Antes, adotantes e documentos ficavam só no navegador. Na primeira vez que esta
+// tela abre com o servidor ligado, o que existir só aqui é enviado para lá, e os
+// processos passam a apontar para o id do servidor (nada se perde).
+async function migrarAdotantesLocais(servidor) {
+  const digitos = (cpf) => String(cpf || '').replace(/\D/g, '');
+  const novosIds = new Map();
+  let mudou = false;
+  for (const local of PawData.loadAdopters()) {
+    let remoto = servidor.find(s => digitos(s.cpf) === digitos(local.cpf));
+    try {
+      if (!remoto) {
+        const { id, documents, createdAt, ...dados } = local;
+        remoto = PawData.normalizeServerAdopter(await Api.post('/adotantes', { ...dados, consent: true }));
+        servidor.push(remoto);
+        mudou = true;
+      }
+      const antigos = (local.documents || []).filter(d => d.data && !d.id);
+      if (antigos.length && !remoto.documents.length) {
+        for (const doc of antigos.slice(0, MAX_DOCS)) {
+          Object.assign(remoto, PawData.normalizeServerAdopter(await Api.post(`/adotantes/${remoto.id}/documentos`, { name: doc.name, file: doc.data })));
+        }
+        mudou = true;
+      }
+    } catch (erro) {
+      notify(`Não foi possível enviar ao servidor o adotante ${local.name}: ${erroDaApi(erro)}`);
+      continue;
+    }
+    if (remoto.id !== local.id) novosIds.set(local.id, remoto.id);
+  }
+  if (novosIds.size) {
+    adoptions.forEach(o => { if (novosIds.has(o.adopterId)) o.adopterId = novosIds.get(o.adopterId); });
+    PawData.saveAdoptions(adoptions);
+  }
+  if (mudou) notify('Adotantes e documentos que estavam só neste computador foram enviados ao servidor.');
+  return servidor;
 }
 
 function saveAll() {
@@ -205,7 +273,9 @@ function openAdopterForm(adopter = null) {
     $('adCity').value = 'Guarapuava - PR';
   }
 
-  adopterDocs = structuredClone(adopter?.documents ?? []);
+  docsSalvos = [...(adopter?.documents ?? [])].filter(d => d.id);
+  docsNovos = [];
+  docsRemover = [];
   renderDocs();
 
   $('adopterTitle').textContent = adopter ? 'Ficha do adotante' : 'Cadastrar adotante';
@@ -214,21 +284,68 @@ function openAdopterForm(adopter = null) {
   adopterModal.show();
 }
 
-function renderDocs() {
-  $('docPreview').innerHTML = adopterDocs.map((doc, index) => `
-    <figure class="doc-item">
-      <img src="${doc.data}" alt="${escapeHtml(doc.name)}">
-      <figcaption title="${escapeHtml(doc.name)}">${escapeHtml(doc.name)}</figcaption>
-      <button type="button" class="doc-remove" data-doc-remove="${index}" aria-label="Remover ${escapeHtml(doc.name)}"><i class="bi bi-x"></i></button>
-    </figure>`).join('');
-  $('adDocs').disabled = adopterDocs.length >= MAX_DOCS;
+const ehPdf = (doc) => doc.type === 'application/pdf';
+const docsVisiveis = () => docsSalvos.filter(d => !docsRemover.includes(d.id));
+const tamanho = (bytes) => (bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`);
+
+function miniatura(doc, src) {
+  return ehPdf(doc)
+    ? '<div class="doc-thumb doc-thumb-pdf"><i class="bi bi-file-earmark-pdf"></i><span>PDF</span></div>'
+    : `<img class="doc-thumb" src="${escapeHtml(src)}" alt="" loading="lazy">`;
 }
 
+function renderDocs() {
+  const salvos = docsVisiveis().map(doc => `
+    <figure class="doc-item">
+      <a href="${escapeHtml(doc.url)}" target="_blank" rel="noopener" title="Abrir ${escapeHtml(doc.name)}">${miniatura(doc, doc.url)}</a>
+      <figcaption>
+        <strong title="${escapeHtml(doc.name)}">${escapeHtml(doc.name)}</strong>
+        <small>${doc.uploadedBy ? `Enviado por ${escapeHtml(doc.uploadedBy)}` : 'Enviado'} em ${formatDate(String(doc.uploadedAt).slice(0, 10))}</small>
+      </figcaption>
+      <div class="doc-actions">
+        <a class="btn btn-outline-green btn-sm" href="${escapeHtml(doc.url)}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir</a>
+        <button type="button" class="btn btn-outline-danger btn-sm" data-doc-remove="${doc.id}" aria-label="Remover ${escapeHtml(doc.name)}"><i class="bi bi-trash"></i></button>
+      </div>
+    </figure>`);
+  const novos = docsNovos.map((doc, index) => `
+    <figure class="doc-item is-pending">
+      ${miniatura(doc, doc.data)}
+      <figcaption>
+        <strong title="${escapeHtml(doc.name)}">${escapeHtml(doc.name)}</strong>
+        <small><i class="bi bi-cloud-upload me-1"></i>Será enviado ao salvar · ${tamanho(doc.size)}</small>
+      </figcaption>
+      <div class="doc-actions">
+        <button type="button" class="btn btn-outline-danger btn-sm" data-doc-cancel="${index}" aria-label="Tirar ${escapeHtml(doc.name)}"><i class="bi bi-x-lg"></i></button>
+      </div>
+    </figure>`);
+  $('docPreview').innerHTML = [...salvos, ...novos].join('');
+  const total = docsVisiveis().length + docsNovos.length;
+  $('adDocs').disabled = total >= MAX_DOCS;
+  $('docCount').textContent = `${total} de ${MAX_DOCS}`;
+  $('docRemovedNote').classList.toggle('d-none', docsRemover.length === 0);
+  $('docRemovedNote').textContent = `${plural(docsRemover.length, 'documento será removido', 'documentos serão removidos')} ao salvar.`;
+}
+
+const lerArquivo = (file) => new Promise((resolve, reject) => {
+  const leitor = new FileReader();
+  leitor.onload = () => resolve(leitor.result);
+  leitor.onerror = () => reject(new Error('Não foi possível ler o arquivo.'));
+  leitor.readAsDataURL(file);
+});
+
 $('adDocs').addEventListener('change', async (event) => {
-  const files = [...event.target.files].slice(0, MAX_DOCS - adopterDocs.length);
+  const vagas = MAX_DOCS - docsVisiveis().length - docsNovos.length;
+  const files = [...event.target.files].slice(0, vagas);
   for (const file of files) {
     try {
-      adopterDocs.push({ name: file.name, data: await compressImage(file, 1000, 0.7) });
+      if (file.type === 'application/pdf') {
+        if (file.size > MAX_DOC_BYTES) throw new Error('o PDF passou de 5 MB.');
+        docsNovos.push({ name: file.name, type: file.type, size: file.size, data: await lerArquivo(file) });
+      } else {
+        // Foto do documento: reduzida para ficar legível e leve.
+        const data = await compressImage(file, 1600, 0.82);
+        docsNovos.push({ name: file.name, type: 'image/jpeg', size: Math.round(data.length * 0.75), data });
+      }
     } catch (error) {
       notify(`${file.name}: ${error.message}`);
     }
@@ -243,7 +360,7 @@ $('adCpf').addEventListener('input', (e) => { e.target.value = maskCpf(e.target.
 $('adPhone').addEventListener('input', (e) => { e.target.value = maskPhone(e.target.value); });
 $('adBirth').addEventListener('input', (e) => e.target.setCustomValidity(''));
 
-$('adopterForm').addEventListener('submit', (event) => {
+$('adopterForm').addEventListener('submit', async (event) => {
   event.preventDefault();
   const form = event.target;
   const id = Number($('adopterId').value);
@@ -255,24 +372,57 @@ $('adopterForm').addEventListener('submit', (event) => {
   $('adBirth').setCustomValidity($('adBirth').value && ageOf($('adBirth').value) < 18 ? 'O adotante precisa ter 18 anos ou mais.' : '');
   if (!form.reportValidity()) return;
 
-  const data = { documents: adopterDocs };
+  const data = {};
   Object.entries(ADOPTER_FIELDS).forEach(([field, key]) => { data[key] = $(field).value.trim(); });
   Object.entries(ADOPTER_CHECKS).forEach(([field, key]) => { data[key] = $(field).checked; });
   data.residents = Number(data.residents);
   data.hoursAlone = data.hoursAlone === '' ? null : Number(data.hoursAlone);
 
   const existing = findAdopter(id);
-  const backup = JSON.stringify(adopters);
-  if (existing) Object.assign(existing, data);
-  else adopters.push({ id: PawUtils.nextId(adopters), createdAt: today(), ...data });
+  const botao = $('saveAdopterButton');
+  botao.disabled = true;
+  let salvo;
+  try {
+    // 1) os dados do adotante
+    salvo = await (existing ? Api.put(`/adotantes/${id}`, data) : Api.post('/adotantes', data));
+  } catch (erro) {
+    botao.disabled = false;
+    notify(erroDaApi(erro));
+    return;
+  }
+  // 2) os documentos: remove os marcados e envia os novos
+  const falhas = [];
+  for (const docId of docsRemover) {
+    try { salvo = await Api.del(`/adotantes/${salvo.id}/documentos/${docId}`); } catch (erro) { falhas.push(`remover documento: ${erroDaApi(erro)}`); }
+  }
+  for (const doc of docsNovos) {
+    try { salvo = await Api.post(`/adotantes/${salvo.id}/documentos`, { name: doc.name, file: doc.data }); } catch (erro) { falhas.push(`${doc.name}: ${erroDaApi(erro)}`); }
+  }
+  botao.disabled = false;
 
-  if (!saveAll()) { adopters = JSON.parse(backup); return; }
-  adopterModal.hide();
+  const adotante = PawData.normalizeServerAdopter(salvo);
+  const i = adopters.findIndex(p => p.id === adotante.id);
+  if (i === -1) adopters.push(adotante); else adopters[i] = adotante;
+  PawData.saveAdopters(adopters);
   render();
-  notify(existing ? 'Cadastro do adotante atualizado.' : 'Adotante cadastrado.');
+
+  if (falhas.length) {
+    // Dados salvos, mas algum documento não foi: a ficha continua aberta para tentar de novo.
+    $('adopterId').value = adotante.id;
+    docsSalvos = adotante.documents;
+    docsNovos = docsNovos.filter(d => falhas.some(f => f.startsWith(`${d.name}:`)));
+    docsRemover = [];
+    renderDocs();
+    notify(`Cadastro salvo, mas houve problema com documento(s): ${falhas.join(' · ')}`);
+    return;
+  }
+  adopterModal.hide();
+  const enviados = docsNovos.length;
+  notify((existing ? 'Cadastro do adotante atualizado.' : 'Adotante cadastrado.')
+    + (enviados ? ` ${plural(enviados, 'documento enviado', 'documentos enviados')} — a equipe já pode abrir.` : ''));
 });
 
-$('deleteAdopter').addEventListener('click', () => {
+$('deleteAdopter').addEventListener('click', async () => {
   const adopter = findAdopter(Number($('adopterId').value));
   if (!adopter) return;
   if (adoptions.some(o => o.adopterId === adopter.id)) {
@@ -280,8 +430,14 @@ $('deleteAdopter').addEventListener('click', () => {
     return;
   }
   if (!window.confirm(`Excluir o cadastro de ${adopter.name}?`)) return;
+  try {
+    await Api.del(`/adotantes/${adopter.id}`);
+  } catch (erro) {
+    notify(erroDaApi(erro));
+    return;
+  }
   adopters = adopters.filter(p => p.id !== adopter.id);
-  saveAll();
+  PawData.saveAdopters(adopters);
   adopterModal.hide();
   render();
   notify('Adotante excluído.');
@@ -522,7 +678,7 @@ $('stageNote').addEventListener('input', () => $('stageNote').classList.remove('
 
 // ================= Eventos =================
 document.addEventListener('click', (event) => {
-  const target = event.target.closest('[data-stage], [data-view], [data-process], [data-adopter], [data-new-process], [data-doc-remove], [data-action], [data-adopter-from-process]');
+  const target = event.target.closest('[data-stage], [data-view], [data-process], [data-adopter], [data-new-process], [data-doc-remove], [data-doc-cancel], [data-action], [data-adopter-from-process]');
   if (!target) return;
   const d = target.dataset;
 
@@ -531,7 +687,14 @@ document.addEventListener('click', (event) => {
   else if (d.process) openProcess(Number(d.process));
   else if (d.adopter) openAdopterForm(findAdopter(Number(d.adopter)));
   else if (d.newProcess) openAdoptionForm(Number(d.newProcess));
-  else if (d.docRemove !== undefined) { adopterDocs.splice(Number(d.docRemove), 1); renderDocs(); }
+  else if (d.docRemove) {
+    const doc = docsSalvos.find(x => x.id === Number(d.docRemove));
+    if (doc && window.confirm(`Remover o documento "${doc.name}"?\nEle sai da ficha ao salvar, mas fica guardado no sistema com o seu nome.`)) {
+      docsRemover.push(doc.id);
+      renderDocs();
+    }
+  }
+  else if (d.docCancel !== undefined) { docsNovos.splice(Number(d.docCancel), 1); renderDocs(); }
   else if (d.action) changeStage(d.action);
   else if (d.adopterFromProcess) {
     const adopter = findAdopter(Number(d.adopterFromProcess));
@@ -550,3 +713,5 @@ render();
 // Link direto para um processo (usado pelo dashboard): adocoes.html?processo=2
 const linkedId = Number(new URLSearchParams(window.location.search).get('processo'));
 if (findAdoption(linkedId)) openProcess(linkedId);
+
+carregarAdotantes(); // atualiza com o servidor (e envia o que estava só neste computador)

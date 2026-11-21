@@ -46,6 +46,12 @@ return [
     'uploads' => [
         'pasta'        => dirname(__DIR__) . '/storage/uploads',
         'max_bytes'    => 4 * 1024 * 1024, // 4 MB por arquivo
-        'tipos'        => ['image/jpeg', 'image/png', 'image/webp'],
+        'tipos'        => ['image/jpeg', 'image/png', 'image/webp'], // fotos de animais
+        // Documentos de adotantes: imagens ou PDF, até 5 MB cada, até 5 por adotante.
+        'documentos'   => [
+            'tipos'     => ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+            'max_bytes' => 5 * 1024 * 1024,
+            'max_por_adotante' => 5,
+        ],
     ],
 ];

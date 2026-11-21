@@ -95,6 +95,10 @@ const PawAuth = (() => {
           if (paginaAtual !== 'animais' && pode('pagina.animais') && typeof PawData !== 'undefined') {
             PawData.syncAnimalsFromServer().catch(() => { /* segue com a cópia */ });
           }
+          // Adotantes (dados pessoais): só para quem tem acesso; a tela de Adoções carrega sozinha.
+          if (paginaAtual !== 'adocoes' && pode('adotantes.gerenciar') && typeof PawData !== 'undefined') {
+            PawData.syncAdoptersFromServer().catch(() => { /* segue com a cópia */ });
+          }
           document.dispatchEvent(new CustomEvent('pawsafe:sessao', { detail: usuario() }));
         }).catch((erro) => {
           // Sem resposta (servidor desligado) mantém a tela; sessão inválida volta ao login.

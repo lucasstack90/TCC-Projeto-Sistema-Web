@@ -16,6 +16,7 @@
  * as ações do controller (index, show, store, update, destroy).
  */
 
+use Controllers\AdotanteController;
 use Controllers\AnimalController;
 use Controllers\AuthController;
 use Controllers\ContribuinteController;
@@ -51,6 +52,17 @@ return function (Router $r): void {
         $r->put('/api/animais/{id}', [AnimalController::class, 'update'], $grava('animais.cadastrar'));
         $r->delete('/api/animais/{id}', [AnimalController::class, 'destroy'], $grava('animais.cadastrar'));
         $r->patch('/api/animais/{id}/status', [AnimalController::class, 'status'], $grava('animais.cadastrar'));
+
+        // Adotantes e documentos (dados pessoais — LGPD): só administrador e equipe.
+        // Os documentos ficam fora da pasta pública e só abrem por estas rotas, com login.
+        $r->get('/api/adotantes', [AdotanteController::class, 'index'], $pode('adotantes.gerenciar'));
+        $r->get('/api/adotantes/{id}', [AdotanteController::class, 'show'], $pode('adotantes.gerenciar'));
+        $r->post('/api/adotantes', [AdotanteController::class, 'store'], $grava('adotantes.gerenciar'));
+        $r->put('/api/adotantes/{id}', [AdotanteController::class, 'update'], $grava('adotantes.gerenciar'));
+        $r->delete('/api/adotantes/{id}', [AdotanteController::class, 'destroy'], $grava('adotantes.gerenciar'));
+        $r->post('/api/adotantes/{id}/documentos', [AdotanteController::class, 'enviarDocumento'], $grava('adotantes.gerenciar'));
+        $r->get('/api/adotantes/{id}/documentos/{doc}', [AdotanteController::class, 'documento'], $pode('adotantes.gerenciar'));
+        $r->delete('/api/adotantes/{id}/documentos/{doc}', [AdotanteController::class, 'removerDocumento'], $grava('adotantes.gerenciar'));
 
         // Ficha clínica: vacinas, histórico e pesagens ({tipo} = vacinas | historico | pesagens).
         // Veterinário, equipe e administrador registram, corrigem e removem (removido fica guardado).

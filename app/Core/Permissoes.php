@@ -54,6 +54,7 @@ final class Permissoes
         // Ações
         'animais.cadastrar',     // cadastrar, editar e excluir animais
         'animais.registros',     // vacinas, histórico e pesagens
+        'adotantes.gerenciar',   // cadastro de adotantes e seus documentos (dados pessoais — LGPD)
         'veterinarios.ver',      // lista de veterinários (para registrar vacinas)
         'contribuintes.ver',     // lista de contribuintes, com CPF/CNPJ (LGPD)
         'veterinarios.gerenciar',  // criar/editar/excluir veterinários
@@ -83,7 +84,7 @@ final class Permissoes
             'pagina.dashboard', 'pagina.animais', 'pagina.adocoes', 'pagina.resgates',
             'pagina.voluntarios', 'pagina.doacoes', 'pagina.estoque', 'pagina.relatorios',
             'animais.cadastrar', 'animais.registros', 'veterinarios.ver', 'contribuintes.ver',
-            'doacoes.material', 'voluntarios.aprovar',
+            'adotantes.gerenciar', 'doacoes.material', 'voluntarios.aprovar',
             'estoque.movimentar', 'estoque.consumo', 'relatorio.preencher',
         ],
 

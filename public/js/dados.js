@@ -632,6 +632,30 @@ const PawData = (() => {
     return list;
   }
 
+  // --- Adotantes vindos do servidor (/api/adotantes) ---
+  // Documentos: o servidor manda só os dados (nome, tipo, quem enviou) e o caminho
+  // da rota protegida; aqui vira o endereço completo para abrir no navegador.
+  function normalizeServerAdopter(adopter) {
+    const p = { ...adopter, documents: (adopter.documents || []).map(d => ({ ...d })) };
+    p.documents.forEach(d => {
+      if (d.path && typeof Api !== 'undefined') d.url = `${Api.base}/api${d.path}`;
+      delete d.path;
+    });
+    return p;
+  }
+  async function syncAdoptersFromServer() {
+    if (typeof Api === 'undefined') return null;
+    const list = (await Api.get('/adotantes')).map(normalizeServerAdopter);
+    // Não sobrescreve o que ainda só existe neste navegador (adotante ou documento
+    // de antes do servidor): a tela de Adoções envia isso ao servidor primeiro.
+    const digitos = (cpf) => String(cpf || '').replace(/\D/g, '');
+    const pendente = load(KEYS.adopters, SEED_ADOPTERS).some(local =>
+      !list.some(s => digitos(s.cpf) === digitos(local.cpf))
+      || (local.documents || []).some(d => d.data && !d.id));
+    if (!pendente) save(KEYS.adopters, list);
+    return list;
+  }
+
   return {
     STATUS, SPECIES, statusClass,
     ADOPTION_STAGES, ACTIVE_STAGES, CHECKLIST, stageClass,
@@ -641,6 +665,7 @@ const PawData = (() => {
     loadAnimals: () => load(KEYS.animals, SEED),
     saveAnimals: (list) => save(KEYS.animals, list),
     normalizeServerAnimal, syncAnimalsFromServer,
+    normalizeServerAdopter, syncAdoptersFromServer,
     loadAdopters: () => load(KEYS.adopters, SEED_ADOPTERS),
     saveAdopters: (list) => save(KEYS.adopters, list),
     loadAdoptions: () => load(KEYS.adoptions, SEED_ADOPTIONS),

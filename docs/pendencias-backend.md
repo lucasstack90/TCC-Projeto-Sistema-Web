@@ -37,7 +37,7 @@ resolvidos quando o back-end for implementado. Marque cada item ao concluir.
 
 Precisam ser repetidas no servidor, senão qualquer pessoa contorna pelo console:
 
-- [ ] Adotantes: CPF válido e único, maior de 18 anos, consentimento LGPD.
+- [x] Adotantes: CPF válido e único, maior de 18 anos, consentimento LGPD (AdotanteController).
 - [ ] Adoções: só abre processo para animal Disponível ou Em Lar Temporário; aprovar exige
       entrevista, visita e documentos; concluir exige o termo; concluir muda o animal para
       "Adotado" e cancela os outros processos do mesmo animal (fazer numa transação).
@@ -49,7 +49,7 @@ Precisam ser repetidas no servidor, senão qualquer pessoa contorna pelo console
 - [ ] Resgate guarda o **id** do voluntário responsável (chave estrangeira), não o nome.
       Remove o remendo atual que renomeia os resgates quando o voluntário muda de nome.
 - [ ] Animal ↔ resgate de origem também por chave estrangeira.
-- [ ] Fotos de animais (✓ feito: storage/uploads/animais) e documentos de adotantes em armazenamento de arquivos
+- [x] Fotos de animais (storage/uploads/animais) e documentos de adotantes (storage/uploads/adotantes) em armazenamento de arquivos
       (`storage`), não em base64 dentro do banco.
 - [ ] Valores em dinheiro em colunas `DECIMAL(10,2)`, nunca `FLOAT` (o JavaScript do protótipo
       usa números decimais comuns, que podem gerar erros de centavos em somas grandes).

@@ -3,6 +3,9 @@ storage/logs/*
 !storage/logs/.gitkeep
 storage/uploads/animais/*
 !storage/uploads/animais/.gitkeep
+# documentos de adotantes: dados pessoais (LGPD), nunca vão para o GitHub
+storage/uploads/adotantes/*
+!storage/uploads/adotantes/.gitkeep
 
 # Configuração local com senha real (opcional): se um dia você criar um
 # config.local.php com a senha do banco, ele não deve ir para o repositório.
