@@ -49,7 +49,7 @@ Precisam ser repetidas no servidor, senão qualquer pessoa contorna pelo console
 - [ ] Resgate guarda o **id** do voluntário responsável (chave estrangeira), não o nome.
       Remove o remendo atual que renomeia os resgates quando o voluntário muda de nome.
 - [ ] Animal ↔ resgate de origem também por chave estrangeira.
-- [ ] Fotos de animais e documentos de adotantes em armazenamento de arquivos
+- [ ] Fotos de animais (✓ feito: storage/uploads/animais) e documentos de adotantes em armazenamento de arquivos
       (`storage`), não em base64 dentro do banco.
 - [ ] Valores em dinheiro em colunas `DECIMAL(10,2)`, nunca `FLOAT` (o JavaScript do protótipo
       usa números decimais comuns, que podem gerar erros de centavos em somas grandes).

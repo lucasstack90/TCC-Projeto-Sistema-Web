@@ -44,6 +44,11 @@
     <span class="so-perfil-voluntario">Perfil voluntário: modo consulta. Você pode ver as fichas; alterações são feitas pela equipe.</span>
   </div>
 
+  <!-- Aparece só se o servidor não responder: mostra a última cópia, sem salvar (js/animais.js) -->
+  <div class="alert-soft warning mb-3 d-none" role="status" id="offlineNote">
+    <i class="bi bi-wifi-off me-2"></i>Sem conexão com o servidor: mostrando a última cópia salva neste computador. Ligue o Apache e o MySQL do XAMPP para registrar.
+  </div>
+
   <section class="filter-panel">
     <div class="search"><i class="bi bi-search"></i><input id="search" type="search" class="form-control" placeholder="Buscar por nome, raça ou código (PAW-0001)..." aria-label="Buscar animais"></div>
     <div class="filter-controls">
@@ -124,24 +129,23 @@
     <button type="button" class="detail-close" data-bs-dismiss="modal" aria-label="Fechar"><i class="bi bi-x-lg"></i></button>
     <div><span id="detailStatus" class="status-badge"></span><h2 id="detailName"></h2><p id="detailMeta"></p></div>
   </div>
-  <div class="tabs" role="tablist">
-    <button type="button" class="tab active" data-tab="profile"><i class="bi bi-info-circle"></i> Ficha</button>
-    <button type="button" class="tab" data-tab="vaccines"><i class="bi bi-eyedropper"></i> Vacinas <span id="vaccineCount"></span></button>
-    <button type="button" class="tab" data-tab="history"><i class="bi bi-journal-text"></i> Histórico <span id="historyCount"></span></button>
-    <button type="button" class="tab" data-tab="weight"><i class="bi bi-speedometer2"></i> Peso</button>
-  </div>
+  <!-- Ações logo abaixo do nome (antes ficavam no fim da ficha). Os botões dependem do perfil (js/animais.js). -->
+  <div class="detail-actions" id="detailActions" aria-label="Ações da ficha"></div>
+  <!-- Ficha numa tela só: resumo, vacinas, peso e histórico aparecem direto, sem abas. -->
   <div class="detail-body">
-    <section id="panel-profile"></section>
-    <section id="panel-vaccines" class="d-none"></section>
-    <section id="panel-history" class="d-none"></section>
-    <section id="panel-weight" class="d-none"></section>
+    <section id="panel-summary"></section>
+    <div class="clinical-grid">
+      <section id="panel-vaccines" class="clinical-card"></section>
+      <section id="panel-weight" class="clinical-card"></section>
+    </div>
+    <section id="panel-history" class="clinical-card"></section>
   </div>
 </div></div></div>
 
 <!-- Novo registro (vacina / histórico / peso) -->
 <div class="modal fade" id="recordModal" tabindex="-1" aria-labelledby="recordTitle" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
-  <div class="modal-header"><div><h2 id="recordTitle">Novo registro</h2><p>Este registro será adicionado à ficha do animal.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
-  <form id="recordForm"><div class="modal-body" id="recordFields"></div><div class="modal-footer"><button type="button" class="btn btn-outline-green" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-green">Salvar registro</button></div></form>
+  <div class="modal-header"><div><h2 id="recordTitle">Novo registro</h2><p id="recordHint">Este registro será adicionado à ficha do animal.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+  <form id="recordForm"><div class="modal-body" id="recordFields"></div><div class="modal-footer"><button type="button" class="btn btn-outline-green" data-bs-dismiss="modal">Cancelar</button><button type="submit" id="saveRecordButton" class="btn btn-green">Salvar registro</button></div></form>
 </div></div></div>
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3"><div id="toast" class="toast" role="status" aria-live="polite"><div class="toast-body"><i class="bi bi-check-circle-fill me-2"></i><span id="toastText"></span></div></div></div>

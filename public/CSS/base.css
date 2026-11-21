@@ -569,6 +569,7 @@ html.pagina-animais.sem-animais-cadastrar #addAnimal,
 html.pagina-animais.sem-animais-cadastrar [data-edit],
 html.pagina-animais.sem-animais-cadastrar [data-delete],
 html.pagina-animais.sem-animais-registros [data-add-record],
+html.pagina-resgates.sem-animais-cadastrar #registerAnimal,
 
 /* Doações: quem não cuida do caixa (equipe) só registra doações materiais
    (sem resumo, saldo, despesas e doações em dinheiro). */

@@ -90,6 +90,11 @@ const PawAuth = (() => {
         Api.get('/auth/eu').then((resposta) => {
           salvar(resposta);
           if (!podePagina(paginaAtual)) window.location.replace(paginaInicial());
+          // A tela de Animais carrega do servidor sozinha; nas outras, atualiza a cópia
+          // local (Dashboard, Adoções, Resgates... ainda leem dela) para a próxima abertura.
+          if (paginaAtual !== 'animais' && pode('pagina.animais') && typeof PawData !== 'undefined') {
+            PawData.syncAnimalsFromServer().catch(() => { /* segue com a cópia */ });
+          }
           document.dispatchEvent(new CustomEvent('pawsafe:sessao', { detail: usuario() }));
         }).catch((erro) => {
           // Sem resposta (servidor desligado) mantém a tela; sessão inválida volta ao login.

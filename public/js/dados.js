@@ -614,6 +614,24 @@ const PawData = (() => {
     return loadVets();
   }
 
+  // --- Animais vindos do servidor (/api/animais) ---
+  // A tela de Animais já usa a API. As outras telas ainda leem os animais daqui,
+  // por isso a lista do servidor é copiada para o localStorage a cada carregamento.
+  // Foto enviada vem como photoPath (rota protegida da API): vira URL completa.
+  function normalizeServerAnimal(animal) {
+    const a = { vaccines: [], history: [], weights: [], ...animal };
+    if (a.photoPath && typeof Api !== 'undefined') a.photo = `${Api.base}/api${a.photoPath}`;
+    delete a.photoPath;
+    return a;
+  }
+  // Atualiza a cópia local com o servidor (chamado por js/auth.js nas outras páginas).
+  async function syncAnimalsFromServer() {
+    if (typeof Api === 'undefined') return null;
+    const list = (await Api.get('/animais')).map(normalizeServerAnimal);
+    save(KEYS.animals, list);
+    return list;
+  }
+
   return {
     STATUS, SPECIES, statusClass,
     ADOPTION_STAGES, ACTIVE_STAGES, CHECKLIST, stageClass,
@@ -622,6 +640,7 @@ const PawData = (() => {
     ORIGINS, DONATION_TYPES, PAYMENT_METHODS, UNITS, EXPENSE_CATEGORIES,
     loadAnimals: () => load(KEYS.animals, SEED),
     saveAnimals: (list) => save(KEYS.animals, list),
+    normalizeServerAnimal, syncAnimalsFromServer,
     loadAdopters: () => load(KEYS.adopters, SEED_ADOPTERS),
     saveAdopters: (list) => save(KEYS.adopters, list),
     loadAdoptions: () => load(KEYS.adoptions, SEED_ADOPTIONS),

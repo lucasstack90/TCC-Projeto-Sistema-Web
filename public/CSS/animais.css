@@ -119,8 +119,8 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 210px;
-  padding: 22px 25px;
+  min-height: 150px;
+  padding: 18px 25px;
   color: #fff;
   background: linear-gradient(135deg, var(--green-700), var(--green-950)) center 40% / cover;
 }
@@ -139,6 +139,56 @@
 }
 
 .detail-body { padding: 17px; background: var(--surface-soft); }
+
+/* Ações logo abaixo do nome do animal: fixas no topo enquanto a ficha rola. */
+.detail-actions {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 17px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+.detail-actions .btn { padding: 7px 14px; font-size: 12px; }
+.detail-actions .btn-outline-danger { margin-left: auto; }
+
+/* Dados gerais numa linha compacta, para sobrar espaço para a parte clínica. */
+#panel-summary .profile-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+#panel-summary .info-tile { padding: 9px 11px; }
+#panel-summary .info-tile small { font-size: 10px; }
+#panel-summary .info-tile strong { font-size: 12px; }
+#panel-summary .alert-soft { padding-top: 8px; padding-bottom: 8px; }
+
+/* Vacinas, peso e histórico aparecem direto, lado a lado em telas largas. */
+.clinical-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.clinical-card { min-width: 0; padding: 14px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+#panel-history { margin-top: 12px; }
+.clinical-heading { margin: 0 0 10px; }
+.clinical-heading h3 { margin: 0; font-size: 14px; }
+.clinical-card .record-list { margin-bottom: 0; }
+.clinical-card .record-item { background: var(--surface-soft); }
+.clinical-card .timeline { margin-bottom: 0; }
+
+.record-side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; }
+.record-audit { margin: 4px 0 0; color: var(--muted); font-size: 10.5px; font-style: italic; }
+.record-tools { display: flex; gap: 4px; }
+.btn-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.btn-icon:hover { color: var(--green-700); border-color: var(--green-700); }
+.btn-icon.danger:hover { color: var(--status-alerta, #b54708); border-color: currentColor; }
+.btn-icon:disabled { opacity: .5; }
 
 .profile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 
@@ -172,6 +222,8 @@
 
 @media (max-width: 900px) {
   .animal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .clinical-grid { grid-template-columns: 1fr; }
+  #panel-summary .profile-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 600px) {

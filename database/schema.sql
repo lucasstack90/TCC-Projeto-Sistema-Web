@@ -5,7 +5,7 @@
 --   1. Abra o phpMyAdmin (http://localhost/phpmyadmin) com o MySQL ligado.
 --   2. Importe este arquivo, OU cole o conteúdo na aba SQL e execute.
 --   Ele cria o banco "pawsafe", as tabelas da base (usuários) e do módulo de
---   Animais, e cadastra usuários de cada perfil (administrador, equipe,
+--   Animais, e cadastra usuários de cada perfil (administrador, financeiro, equipe,
 --   veterinário, voluntário) para o primeiro acesso. Pode ser importado de novo sem
 --   duplicar dados — e atualiza bancos criados em versões anteriores.
 --
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS animais (
     cor           VARCHAR(60)  NULL,
     idade         VARCHAR(40)  NULL,
     data_chegada  DATE         NULL,
-    sexo          ENUM('Macho', 'Fêmea') NULL,
+    sexo          ENUM('Macho', 'Fêmea', 'Não identificado') NULL,
     porte         ENUM('Pequeno', 'Médio', 'Grande') NULL,
     status        ENUM('Disponível', 'Adotado', 'Em Tratamento', 'Resgatado', 'Em Lar Temporário')
                   NOT NULL DEFAULT 'Disponível',
@@ -75,6 +75,10 @@ CREATE TABLE IF NOT EXISTS animais (
     castrado      TINYINT(1)   NOT NULL DEFAULT 0,
     microchip     TINYINT(1)   NOT NULL DEFAULT 0,
     observacoes   TEXT         NULL,
+    -- Exclusão lógica: o animal some das listas, mas a ficha clínica, as adoções
+    -- e as despesas ligadas a ele continuam guardadas (prestação de contas).
+    excluido_em   DATETIME     NULL,
+    excluido_por  INT UNSIGNED NULL,
     -- origem_resgate_id virá quando o módulo de Resgates existir:
     -- origem_resgate_id INT UNSIGNED NULL, FOREIGN KEY -> resgates(id)
     criado_em     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -84,47 +88,68 @@ CREATE TABLE IF NOT EXISTS animais (
     KEY idx_animais_especie (especie)
 ) ENGINE=InnoDB;
 
+-- Registros clínicos da ficha do animal (vacinas, histórico, pesagens)
+-- ---------------------------------------------------------------------
+-- Auditoria em todos: quem registrou (registrado_por), quem corrigiu por último
+-- (atualizado_por) e quem removeu (removido_por). Registro removido não é
+-- apagado: some da ficha, mas fica guardado. As chaves estrangeiras para
+-- usuarios e veterinarios são criadas mais abaixo, depois dessas tabelas.
+
 -- Vacinas aplicadas a um animal
 CREATE TABLE IF NOT EXISTS vacinas (
-    id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    animal_id  INT UNSIGNED NOT NULL,
-    nome       VARCHAR(80)  NOT NULL,
-    data       DATE         NULL,
-    proxima    DATE         NULL,
-    lote       VARCHAR(60)  NULL,
-    veterinario VARCHAR(120) NULL,
+    id             INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    animal_id      INT UNSIGNED NOT NULL,
+    nome           VARCHAR(80)  NOT NULL,
+    data           DATE         NULL,
+    proxima        DATE         NULL,
+    lote           VARCHAR(60)  NULL,
+    veterinario    VARCHAR(120) NULL,                -- nome (também de quem não é cadastrado)
+    veterinario_id INT UNSIGNED NULL,                -- veterinário cadastrado, quando houver
+    registrado_por INT UNSIGNED NULL,
+    criado_em      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_por INT UNSIGNED NULL,
+    atualizado_em  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    removido_em    DATETIME     NULL,
+    removido_por   INT UNSIGNED NULL,
     PRIMARY KEY (id),
-    KEY idx_vacinas_animal (animal_id),
-    CONSTRAINT fk_vacinas_animal FOREIGN KEY (animal_id)
-        REFERENCES animais (id) ON DELETE CASCADE
+    KEY idx_vacinas_animal (animal_id)
 ) ENGINE=InnoDB;
 
 -- Atendimentos / histórico clínico
 CREATE TABLE IF NOT EXISTS atendimentos (
-    id          INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    animal_id   INT UNSIGNED NOT NULL,
-    tipo        VARCHAR(40)  NULL,
-    data        DATE         NULL,
-    descricao   VARCHAR(255) NULL,
-    veterinario VARCHAR(120) NULL,
-    observacoes TEXT         NULL,
+    id             INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    animal_id      INT UNSIGNED NOT NULL,
+    tipo           VARCHAR(40)  NULL,
+    data           DATE         NULL,
+    descricao      VARCHAR(255) NULL,
+    veterinario    VARCHAR(120) NULL,
+    veterinario_id INT UNSIGNED NULL,
+    observacoes    TEXT         NULL,
+    registrado_por INT UNSIGNED NULL,
+    criado_em      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_por INT UNSIGNED NULL,
+    atualizado_em  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    removido_em    DATETIME     NULL,
+    removido_por   INT UNSIGNED NULL,
     PRIMARY KEY (id),
-    KEY idx_atendimentos_animal (animal_id),
-    CONSTRAINT fk_atendimentos_animal FOREIGN KEY (animal_id)
-        REFERENCES animais (id) ON DELETE CASCADE
+    KEY idx_atendimentos_animal (animal_id)
 ) ENGINE=InnoDB;
 
--- Pesagens
+-- Pesagens (o peso atual do animal é sempre a pesagem mais recente)
 CREATE TABLE IF NOT EXISTS pesagens (
-    id        INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    animal_id INT UNSIGNED NOT NULL,
-    peso      DECIMAL(6,2) NOT NULL,
-    data      DATE         NULL,
-    nota      VARCHAR(120) NULL,
+    id             INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    animal_id      INT UNSIGNED NOT NULL,
+    peso           DECIMAL(6,2) NOT NULL,
+    data           DATE         NULL,
+    nota           VARCHAR(120) NULL,
+    registrado_por INT UNSIGNED NULL,
+    criado_em      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_por INT UNSIGNED NULL,
+    atualizado_em  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    removido_em    DATETIME     NULL,
+    removido_por   INT UNSIGNED NULL,
     PRIMARY KEY (id),
-    KEY idx_pesagens_animal (animal_id),
-    CONSTRAINT fk_pesagens_animal FOREIGN KEY (animal_id)
-        REFERENCES animais (id) ON DELETE CASCADE
+    KEY idx_pesagens_animal (animal_id)
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------
@@ -185,6 +210,64 @@ CREATE TABLE IF NOT EXISTS contribuintes (
     KEY idx_contrib_papel (doador, fornecedor)
 ) ENGINE=InnoDB;
 
+-- ---------------------------------------------------------------------
+-- Atualização de bancos criados em versões anteriores (ficha do animal)
+-- ---------------------------------------------------------------------
+-- Pode rodar sempre: em banco novo não muda nada. Usa a sintaxe IF EXISTS /
+-- IF NOT EXISTS do MariaDB (o banco do XAMPP).
+ALTER TABLE animais
+    MODIFY sexo ENUM('Macho', 'Fêmea', 'Não identificado') NULL,
+    ADD COLUMN IF NOT EXISTS excluido_em  DATETIME     NULL AFTER observacoes,
+    ADD COLUMN IF NOT EXISTS excluido_por INT UNSIGNED NULL AFTER excluido_em;
+
+ALTER TABLE vacinas
+    ADD COLUMN IF NOT EXISTS veterinario_id INT UNSIGNED NULL AFTER veterinario,
+    ADD COLUMN IF NOT EXISTS registrado_por INT UNSIGNED NULL,
+    ADD COLUMN IF NOT EXISTS criado_em      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ADD COLUMN IF NOT EXISTS atualizado_por INT UNSIGNED NULL,
+    ADD COLUMN IF NOT EXISTS atualizado_em  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    ADD COLUMN IF NOT EXISTS removido_em    DATETIME NULL,
+    ADD COLUMN IF NOT EXISTS removido_por   INT UNSIGNED NULL;
+ALTER TABLE atendimentos
+    ADD COLUMN IF NOT EXISTS veterinario_id INT UNSIGNED NULL AFTER veterinario,
+    ADD COLUMN IF NOT EXISTS registrado_por INT UNSIGNED NULL,
+    ADD COLUMN IF NOT EXISTS criado_em      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ADD COLUMN IF NOT EXISTS atualizado_por INT UNSIGNED NULL,
+    ADD COLUMN IF NOT EXISTS atualizado_em  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    ADD COLUMN IF NOT EXISTS removido_em    DATETIME NULL,
+    ADD COLUMN IF NOT EXISTS removido_por   INT UNSIGNED NULL;
+ALTER TABLE pesagens
+    ADD COLUMN IF NOT EXISTS registrado_por INT UNSIGNED NULL,
+    ADD COLUMN IF NOT EXISTS criado_em      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ADD COLUMN IF NOT EXISTS atualizado_por INT UNSIGNED NULL,
+    ADD COLUMN IF NOT EXISTS atualizado_em  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    ADD COLUMN IF NOT EXISTS removido_em    DATETIME NULL,
+    ADD COLUMN IF NOT EXISTS removido_por   INT UNSIGNED NULL;
+
+-- Chaves estrangeiras. A do animal deixa de ser ON DELETE CASCADE: excluir um
+-- animal não apaga mais o histórico clínico (ele é só marcado como excluído).
+ALTER TABLE vacinas DROP FOREIGN KEY IF EXISTS fk_vacinas_animal;
+ALTER TABLE vacinas DROP FOREIGN KEY IF EXISTS fk_vacinas_veterinario;
+ALTER TABLE vacinas DROP FOREIGN KEY IF EXISTS fk_vacinas_registrado;
+ALTER TABLE vacinas
+    ADD CONSTRAINT fk_vacinas_animal      FOREIGN KEY (animal_id)      REFERENCES animais (id)      ON DELETE RESTRICT,
+    ADD CONSTRAINT fk_vacinas_veterinario FOREIGN KEY (veterinario_id) REFERENCES veterinarios (id) ON DELETE SET NULL,
+    ADD CONSTRAINT fk_vacinas_registrado  FOREIGN KEY (registrado_por) REFERENCES usuarios (id)     ON DELETE SET NULL;
+
+ALTER TABLE atendimentos DROP FOREIGN KEY IF EXISTS fk_atendimentos_animal;
+ALTER TABLE atendimentos DROP FOREIGN KEY IF EXISTS fk_atendimentos_veterinario;
+ALTER TABLE atendimentos DROP FOREIGN KEY IF EXISTS fk_atendimentos_registrado;
+ALTER TABLE atendimentos
+    ADD CONSTRAINT fk_atendimentos_animal      FOREIGN KEY (animal_id)      REFERENCES animais (id)      ON DELETE RESTRICT,
+    ADD CONSTRAINT fk_atendimentos_veterinario FOREIGN KEY (veterinario_id) REFERENCES veterinarios (id) ON DELETE SET NULL,
+    ADD CONSTRAINT fk_atendimentos_registrado  FOREIGN KEY (registrado_por) REFERENCES usuarios (id)     ON DELETE SET NULL;
+
+ALTER TABLE pesagens DROP FOREIGN KEY IF EXISTS fk_pesagens_animal;
+ALTER TABLE pesagens DROP FOREIGN KEY IF EXISTS fk_pesagens_registrado;
+ALTER TABLE pesagens
+    ADD CONSTRAINT fk_pesagens_animal     FOREIGN KEY (animal_id)      REFERENCES animais (id)  ON DELETE RESTRICT,
+    ADD CONSTRAINT fk_pesagens_registrado FOREIGN KEY (registrado_por) REFERENCES usuarios (id) ON DELETE SET NULL;
+
 -- =====================================================================
 -- Dados iniciais
 -- =====================================================================
@@ -211,14 +294,6 @@ ON DUPLICATE KEY UPDATE id = id;
 UPDATE usuarios SET perfil = 'financeiro'
  WHERE email = 'tesouraria@pawsafe.local' AND perfil = 'administrador';
 
--- Dois animais de exemplo (equivalentes ao seed do protótipo) — só se a tabela estiver vazia.
-INSERT INTO animais (nome, especie, raca, cor, idade, data_chegada, sexo, porte, status, peso, vacinado, castrado, microchip, observacoes)
-SELECT * FROM (
-    SELECT 'Thor' AS nome, 'Cão' AS especie, 'Labrador' AS raca, 'Dourado' AS cor, '3 anos' AS idade, DATE('2026-03-14') AS data_chegada, 'Macho' AS sexo, 'Grande' AS porte, 'Disponível' AS status, 26.40 AS peso, 1 AS vacinado, 1 AS castrado, 0 AS microchip, 'Sociável e ativo. Gosta de passeios.' AS observacoes
-    UNION ALL
-    SELECT 'Mia', 'Gato', 'Siamês', 'Creme e marrom', '2 anos', DATE('2026-02-09'), 'Fêmea', 'Pequeno', 'Disponível', 4.20, 1, 1, 0, 'Tranquila e aparentemente saudável.'
-) AS exemplos
-WHERE NOT EXISTS (SELECT 1 FROM animais);
 
 -- Dois veterinários de exemplo (o CRMV é único: reimportar não duplica).
 INSERT IGNORE INTO veterinarios (nome, crmv, crmv_uf, vinculo, especialidade, clinica, telefone, email, ativo) VALUES
@@ -228,3 +303,92 @@ INSERT IGNORE INTO veterinarios (nome, crmv, crmv_uf, vinculo, especialidade, cl
 -- Um contribuinte de exemplo (pessoa jurídica, CNPJ de exemplo válido).
 INSERT IGNORE INTO contribuintes (tipo, nome, documento, nome_fantasia, contato, telefone, email, cidade, uf, doador, fornecedor, ativo) VALUES
 ('Pessoa jurídica', 'Associação de Proteção Animal (exemplo)', '11222333000181', 'APA Guarapuava', 'Setor de parcerias', '(42) 3333-4444', 'contato@exemplo.org', 'Guarapuava', 'PR', 1, 0, 1);
+
+-- Animais de exemplo: os mesmos 8 do protótipo (js/dados.js), com os mesmos ids,
+-- para que Adoções, Resgates, Estoque e Relatório continuem batendo com a ficha.
+-- INSERT IGNORE: reimportar não duplica nem sobrescreve o que já foi editado.
+INSERT IGNORE INTO animais (id, nome, especie, raca, cor, idade, data_chegada, sexo, porte, status, foto, peso, vacinado, castrado, microchip, observacoes) VALUES
+(1, 'Thor', 'Cão', 'Labrador', 'Dourado', '3 anos', '2026-03-14', 'Macho', 'Grande', 'Disponível', 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=900&q=80', 26.4, 1, 1, 0, 'Sociável e ativo. Gosta de passeios.'),
+(2, 'Mia', 'Gato', 'Siamês', 'Creme e marrom', '2 anos', '2026-02-09', 'Fêmea', 'Pequeno', 'Disponível', 'https://images.unsplash.com/photo-1573865526739-10659f8f3bcf?auto=format&fit=crop&w=900&q=80', 4.2, 1, 1, 0, 'Tranquila e aparentemente saudável.'),
+(3, 'Bolinha', 'Cão', 'Vira-lata', 'Branco e marrom', '1 ano', '2026-04-02', 'Macho', 'Médio', 'Em Tratamento', 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=900&q=80', 12.1, 0, 0, 0, 'Em acompanhamento veterinário.'),
+(4, 'Nina', 'Gato', 'Persa', 'Caramelo', '4 anos', '2026-01-20', 'Fêmea', 'Médio', 'Em Lar Temporário', 'https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&w=900&q=80', 3.9, 1, 1, 1, 'Em lar temporário.'),
+(5, 'Rex', 'Cão', 'Pastor Alemão', 'Preto e caramelo', '5 anos', '2025-12-11', 'Macho', 'Grande', 'Adotado', 'https://images.unsplash.com/photo-1568572933382-74d440642117?auto=format&fit=crop&w=900&q=80', 31.5, 1, 1, 1, 'Adoção concluída.'),
+(6, 'Pérola', 'Outros', 'Coelho angorá', 'Branco', '8 meses', '2026-05-02', 'Fêmea', 'Pequeno', 'Disponível', 'https://images.unsplash.com/photo-1591382386627-349b692688ff?auto=format&fit=crop&w=900&q=80', 1.8, 1, 0, 0, 'Coelha dócil.'),
+(7, 'Mel', 'Cão', 'Golden Retriever', 'Dourado', '2 anos', '2026-04-12', 'Fêmea', 'Grande', 'Resgatado', 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&w=900&q=80', 24.7, 0, 0, 0, 'Resgate recente. Aguardando avaliação veterinária.'),
+(8, 'Simba', 'Gato', 'Maine Coon', 'Laranja', '3 anos', '2026-02-18', 'Macho', 'Grande', 'Disponível', 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=900&q=80', 6.2, 1, 1, 1, 'Sociável com pessoas.');
+
+-- Registros clínicos de exemplo (só para o animal que ainda não tem nenhum).
+INSERT INTO vacinas (animal_id, nome, data, proxima, lote, veterinario, veterinario_id)
+SELECT * FROM (
+    SELECT 1 AS animal_id, 'V8' AS nome, '2026-03-15' AS data, '2027-03-15' AS proxima, 'V8-2048' AS lote, 'Dra. Marina Lopes' AS veterinario, (SELECT id FROM veterinarios WHERE nome = 'Dra. Marina Lopes' LIMIT 1) AS veterinario_id
+) AS v WHERE NOT EXISTS (SELECT 1 FROM vacinas WHERE animal_id = 1);
+INSERT INTO atendimentos (animal_id, tipo, data, descricao, veterinario, veterinario_id, observacoes)
+SELECT * FROM (
+    SELECT 1 AS animal_id, 'Consulta' AS tipo, '2026-03-14' AS data, 'Avaliação geral de chegada' AS descricao, 'Dra. Marina Lopes' AS veterinario, (SELECT id FROM veterinarios WHERE nome = 'Dra. Marina Lopes' LIMIT 1) AS veterinario_id, 'Saúde geral boa.' AS observacoes
+) AS h WHERE NOT EXISTS (SELECT 1 FROM atendimentos WHERE animal_id = 1);
+INSERT INTO pesagens (animal_id, peso, data, nota)
+SELECT * FROM (
+    SELECT 1 AS animal_id, 26.4 AS peso, '2026-03-14' AS data, 'Avaliação inicial' AS nota
+) AS w WHERE NOT EXISTS (SELECT 1 FROM pesagens WHERE animal_id = 1);
+INSERT INTO vacinas (animal_id, nome, data, proxima, lote, veterinario, veterinario_id)
+SELECT * FROM (
+    SELECT 2 AS animal_id, 'Tríplice Felina' AS nome, '2026-02-10' AS data, '2027-02-10' AS proxima, 'TF-2026-220' AS lote, 'Dr. Henrique Farias' AS veterinario, (SELECT id FROM veterinarios WHERE nome = 'Dr. Henrique Farias' LIMIT 1) AS veterinario_id
+    UNION ALL
+    SELECT 2, 'Antirrábica', '2026-02-10', '2027-02-10', 'AR-2026-046', 'Dr. Henrique Farias', (SELECT id FROM veterinarios WHERE nome = 'Dr. Henrique Farias' LIMIT 1)
+) AS v WHERE NOT EXISTS (SELECT 1 FROM vacinas WHERE animal_id = 2);
+INSERT INTO atendimentos (animal_id, tipo, data, descricao, veterinario, veterinario_id, observacoes)
+SELECT * FROM (
+    SELECT 2 AS animal_id, 'Consulta' AS tipo, '2026-03-10' AS data, 'Retorno — avaliação nutricional' AS descricao, 'Dr. Henrique Farias' AS veterinario, (SELECT id FROM veterinarios WHERE nome = 'Dr. Henrique Farias' LIMIT 1) AS veterinario_id, 'Ganhou 400 g. Ótima evolução.' AS observacoes
+    UNION ALL
+    SELECT 2, 'Consulta', '2026-02-09', 'Avaliação geral de chegada', 'Dr. Henrique Farias', (SELECT id FROM veterinarios WHERE nome = 'Dr. Henrique Farias' LIMIT 1), 'Dieta de recuperação prescrita.'
+) AS h WHERE NOT EXISTS (SELECT 1 FROM atendimentos WHERE animal_id = 2);
+INSERT INTO pesagens (animal_id, peso, data, nota)
+SELECT * FROM (
+    SELECT 2 AS animal_id, 4.2 AS peso, '2026-03-10' AS data, 'Retorno' AS nota
+    UNION ALL
+    SELECT 2, 3.8, '2026-02-09', 'Chegada'
+) AS w WHERE NOT EXISTS (SELECT 1 FROM pesagens WHERE animal_id = 2);
+INSERT INTO atendimentos (animal_id, tipo, data, descricao, veterinario, veterinario_id, observacoes)
+SELECT * FROM (
+    SELECT 3 AS animal_id, 'Tratamento' AS tipo, '2026-04-02' AS data, 'Início de tratamento dermatológico' AS descricao, 'Dra. Marina Lopes' AS veterinario, (SELECT id FROM veterinarios WHERE nome = 'Dra. Marina Lopes' LIMIT 1) AS veterinario_id, 'Retorno agendado.' AS observacoes
+) AS h WHERE NOT EXISTS (SELECT 1 FROM atendimentos WHERE animal_id = 3);
+INSERT INTO pesagens (animal_id, peso, data, nota)
+SELECT * FROM (
+    SELECT 3 AS animal_id, 12.1 AS peso, '2026-04-02' AS data, 'Pesagem de chegada' AS nota
+) AS w WHERE NOT EXISTS (SELECT 1 FROM pesagens WHERE animal_id = 3);
+INSERT INTO vacinas (animal_id, nome, data, proxima, lote, veterinario, veterinario_id)
+SELECT * FROM (
+    SELECT 4 AS animal_id, 'Antirrábica' AS nome, '2026-01-20' AS data, '2027-01-20' AS proxima, 'AR-9012' AS lote, 'Dr. Henrique Farias' AS veterinario, (SELECT id FROM veterinarios WHERE nome = 'Dr. Henrique Farias' LIMIT 1) AS veterinario_id
+) AS v WHERE NOT EXISTS (SELECT 1 FROM vacinas WHERE animal_id = 4);
+INSERT INTO pesagens (animal_id, peso, data, nota)
+SELECT * FROM (
+    SELECT 4 AS animal_id, 3.9 AS peso, '2026-01-20' AS data, 'Chegada' AS nota
+) AS w WHERE NOT EXISTS (SELECT 1 FROM pesagens WHERE animal_id = 4);
+INSERT INTO atendimentos (animal_id, tipo, data, descricao, veterinario, veterinario_id, observacoes)
+SELECT * FROM (
+    SELECT 5 AS animal_id, 'Adoção' AS tipo, '2025-12-20' AS data, 'Adoção concluída' AS descricao, 'Equipe PAWSAFE' AS veterinario, (SELECT id FROM veterinarios WHERE nome = 'Equipe PAWSAFE' LIMIT 1) AS veterinario_id, 'Termo arquivado.' AS observacoes
+) AS h WHERE NOT EXISTS (SELECT 1 FROM atendimentos WHERE animal_id = 5);
+INSERT INTO pesagens (animal_id, peso, data, nota)
+SELECT * FROM (
+    SELECT 5 AS animal_id, 31.5 AS peso, '2025-12-11' AS data, 'Chegada' AS nota
+) AS w WHERE NOT EXISTS (SELECT 1 FROM pesagens WHERE animal_id = 5);
+INSERT INTO pesagens (animal_id, peso, data, nota)
+SELECT * FROM (
+    SELECT 6 AS animal_id, 1.8 AS peso, '2026-05-02' AS data, 'Chegada' AS nota
+) AS w WHERE NOT EXISTS (SELECT 1 FROM pesagens WHERE animal_id = 6);
+INSERT INTO atendimentos (animal_id, tipo, data, descricao, veterinario, veterinario_id, observacoes)
+SELECT * FROM (
+    SELECT 7 AS animal_id, 'Resgate' AS tipo, '2026-04-12' AS data, 'Resgate em área urbana' AS descricao, 'Equipe PAWSAFE' AS veterinario, (SELECT id FROM veterinarios WHERE nome = 'Equipe PAWSAFE' LIMIT 1) AS veterinario_id, 'Encaminhada para avaliação.' AS observacoes
+) AS h WHERE NOT EXISTS (SELECT 1 FROM atendimentos WHERE animal_id = 7);
+INSERT INTO pesagens (animal_id, peso, data, nota)
+SELECT * FROM (
+    SELECT 7 AS animal_id, 24.7 AS peso, '2026-04-12' AS data, 'Chegada' AS nota
+) AS w WHERE NOT EXISTS (SELECT 1 FROM pesagens WHERE animal_id = 7);
+INSERT INTO vacinas (animal_id, nome, data, proxima, lote, veterinario, veterinario_id)
+SELECT * FROM (
+    SELECT 8 AS animal_id, 'Tríplice Felina' AS nome, '2026-02-18' AS data, '2027-02-18' AS proxima, 'TF-2210' AS lote, 'Dr. Henrique Farias' AS veterinario, (SELECT id FROM veterinarios WHERE nome = 'Dr. Henrique Farias' LIMIT 1) AS veterinario_id
+) AS v WHERE NOT EXISTS (SELECT 1 FROM vacinas WHERE animal_id = 8);
+INSERT INTO pesagens (animal_id, peso, data, nota)
+SELECT * FROM (
+    SELECT 8 AS animal_id, 6.2 AS peso, '2026-02-18' AS data, 'Chegada' AS nota
+) AS w WHERE NOT EXISTS (SELECT 1 FROM pesagens WHERE animal_id = 8);

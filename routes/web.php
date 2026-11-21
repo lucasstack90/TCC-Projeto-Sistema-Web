@@ -43,12 +43,20 @@ return function (Router $r): void {
         $r->get('/api/auth/eu', [AuthController::class, 'eu']);
         $r->post('/api/auth/logout', [AuthController::class, 'logout'], [VerificarCsrf::class]);
 
-        // Animais: todos os perfis consultam; administrador e equipe cadastram/editam/excluem.
+        // Animais: quem acessa a página consulta; administrador e equipe cadastram/editam/excluem.
         $r->get('/api/animais', [AnimalController::class, 'index'], $pode('pagina.animais'));
         $r->get('/api/animais/{id}', [AnimalController::class, 'show'], $pode('pagina.animais'));
+        $r->get('/api/animais/{id}/foto', [AnimalController::class, 'foto'], $pode('pagina.animais'));
         $r->post('/api/animais', [AnimalController::class, 'store'], $grava('animais.cadastrar'));
         $r->put('/api/animais/{id}', [AnimalController::class, 'update'], $grava('animais.cadastrar'));
         $r->delete('/api/animais/{id}', [AnimalController::class, 'destroy'], $grava('animais.cadastrar'));
+        $r->patch('/api/animais/{id}/status', [AnimalController::class, 'status'], $grava('animais.cadastrar'));
+
+        // Ficha clínica: vacinas, histórico e pesagens ({tipo} = vacinas | historico | pesagens).
+        // Veterinário, equipe e administrador registram, corrigem e removem (removido fica guardado).
+        $r->post('/api/animais/{id}/{tipo}', [AnimalController::class, 'registrar'], $grava('animais.registros'));
+        $r->put('/api/animais/{id}/{tipo}/{registro}', [AnimalController::class, 'corrigir'], $grava('animais.registros'));
+        $r->delete('/api/animais/{id}/{tipo}/{registro}', [AnimalController::class, 'removerRegistro'], $grava('animais.registros'));
 
         // Veterinários: lista para quem registra vacinas; gestão só do administrador (módulo Cadastros).
         $r->get('/api/veterinarios', [VeterinarioController::class, 'index'], $pode('veterinarios.ver'));

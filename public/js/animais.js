@@ -1,28 +1,44 @@
 /* PAWSAFE — módulo de Animais
-   Depende de: Bootstrap 5 (modais e toast), js/dados.js (PawData), js/utils.js (PawUtils) e js/sidebar.js. */
+   Os dados vêm do servidor (API /api/animais, PHP + MySQL). Depois de cada
+   carregamento ou alteração, a lista também é guardada em js/dados.js
+   (PawData), porque Dashboard, Adoções, Resgates, Estoque e Relatório ainda
+   leem os animais de lá.
+
+   Permissões (app/Core/Permissoes.php):
+     animais.cadastrar  cadastrar, editar e excluir animais (administrador, equipe)
+     animais.registros  vacinas, histórico e pesagens: registrar, corrigir, remover
+                        (administrador, equipe, veterinário)
+   Esconder botões é só conforto: o servidor recusa (403) o que o perfil não pode.
+
+   Depende de: Bootstrap 5, js/dados.js, js/utils.js, js/api.js, js/auth.js,
+   js/sidebar.js e js/veterinarios.js. */
 
 const $ = (id) => document.getElementById(id);
 
+// ================= Perfil =================
+const podePerfil = (permissao) => typeof PawAuth === 'undefined' || PawAuth.pode(permissao);
+const PODE_CADASTRAR = podePerfil('animais.cadastrar');
+const PODE_REGISTRAR = podePerfil('animais.registros');
+
 // ================= Estado =================
-let animals = PawData.loadAnimals();
-let selectedId = null;     // animal aberto na ficha
-let recordType = null;     // 'vaccine' | 'history' | 'weight'
-let viewMode = 'grid';     // 'grid' | 'list'
-let selectedPhoto = null;  // null = manter a foto atual | '' = remover | dataURL = nova foto
+let animals = PawData.loadAnimals(); // cópia local até a resposta do servidor
+let selectedId = null;               // animal aberto na ficha
+let record = null;                   // { type: 'vaccine' | 'history' | 'weight', item: registro em edição ou null }
+let viewMode = 'grid';               // 'grid' | 'list'
+let selectedPhoto = null;            // null = manter a foto atual | '' = remover | dataURL = nova foto
 let rescues = PawData.loadRescues();
-let fromRescueId = null;   // resgate de origem quando o cadastro vem do módulo de Resgates
+let fromRescueId = null;             // resgate de origem quando o cadastro vem do módulo de Resgates
 
 const animalModal = new bootstrap.Modal($('animalModal'));
 const detailModal = new bootstrap.Modal($('detailModal'));
 const recordModal = new bootstrap.Modal($('recordModal'));
-const toast = new bootstrap.Toast($('toast'), { delay: 2500 });
+const toast = new bootstrap.Toast($('toast'), { delay: 2800 });
 
 // ================= Utilitários =================
 const { today, formatDate, escapeHtml, plural, compressImage } = PawUtils;
 const animalCode = (id) => PawUtils.code('PAW', id);
 const photoHtml = PawUtils.animalPhoto;
 const findAnimal = (id) => animals.find(a => a.id === id);
-
 const statusClass = PawData.statusClass;
 
 function notify(message) {
@@ -30,10 +46,48 @@ function notify(message) {
   toast.show();
 }
 
-function save() {
-  if (PawData.saveAnimals(animals)) return true;
-  notify('Não foi possível salvar. A imagem pode ser muito grande; escolha uma menor.');
-  return false;
+// Mensagem de erro da API (validação, permissão ou servidor desligado).
+function erroDaApi(erro) {
+  if (erro.status === undefined) return 'Sem conexão com o servidor. Verifique se o Apache e o MySQL do XAMPP estão ligados.';
+  if (erro.campos) return `${erro.message} ${Object.values(erro.campos).join(' ')}`;
+  return erro.message || 'Não foi possível concluir.';
+}
+
+// Desabilita o botão enquanto a requisição está em andamento.
+async function comBotao(botao, acao) {
+  if (botao) botao.disabled = true;
+  try {
+    return await acao();
+  } catch (erro) {
+    if (erro.status === 401) { window.location.replace('Pg_Login.html'); return null; } // sessão expirou
+    notify(erroDaApi(erro));
+    return null;
+  } finally {
+    if (botao) botao.disabled = false;
+  }
+}
+
+// Coloca o animal que voltou do servidor no lugar certo da lista e atualiza a cópia local.
+function guardar(animal) {
+  const pronto = PawData.normalizeServerAnimal(animal);
+  const i = animals.findIndex(a => a.id === pronto.id);
+  if (i === -1) animals.unshift(pronto); else animals[i] = pronto;
+  PawData.saveAnimals(animals);
+  return pronto;
+}
+
+async function carregar() {
+  try {
+    const lista = await Api.get('/animais');
+    animals = lista.map(PawData.normalizeServerAnimal);
+    PawData.saveAnimals(animals);
+    $('offlineNote')?.classList.add('d-none');
+  } catch (erro) {
+    if (erro.status === 401) return;
+    // Servidor fora do ar: mostra a última cópia, só para consulta.
+    $('offlineNote')?.classList.remove('d-none');
+  }
+  render();
 }
 
 // ================= Listagem =================
@@ -71,7 +125,7 @@ function cardHtml(a) {
         <div class="card-title-row">
           <div>
             <h3>${escapeHtml(a.name)}</h3>
-            <p class="animal-meta">${escapeHtml(a.breed)} · ${escapeHtml(a.age || 'Idade não informada')} · ${escapeHtml(a.sex)}</p>
+            <p class="animal-meta">${escapeHtml(a.breed || 'Raça não informada')} · ${escapeHtml(a.age || 'Idade não informada')} · ${escapeHtml(a.sex || '—')}</p>
           </div>
         </div>
         <div class="health-tags">${healthTags(a)}</div>
@@ -87,7 +141,7 @@ function rowHtml(a) {
   return `
     <article class="animal-list-row">
       ${photoHtml(a, 'list-photo', 'list-placeholder')}
-      <div><strong>${escapeHtml(a.name)}</strong><small>${escapeHtml(a.breed)} · ${escapeHtml(a.age || 'Idade não informada')}</small></div>
+      <div><strong>${escapeHtml(a.name)}</strong><small>${escapeHtml(a.breed || 'Raça não informada')} · ${escapeHtml(a.age || 'Idade não informada')}</small></div>
       <div class="list-species"><small>Espécie</small><strong>${escapeHtml(a.species)}</strong></div>
       <div class="list-status"><span class="status-badge ${statusClass(a.status)}">${escapeHtml(a.status)}</span></div>
       <button type="button" class="btn btn-outline-green" data-detail="${a.id}">Abrir ficha</button>
@@ -137,6 +191,11 @@ function setPhotoPreview(src) {
 }
 
 function openForm(animal = null, rescue = null) {
+  // O formulário também abre por link (animais.html?resgate=4): confere o perfil aqui.
+  if (!PODE_CADASTRAR) {
+    notify('Seu perfil não cadastra nem edita animais. Peça à equipe.');
+    return;
+  }
   $('animalForm').reset();
   $('animalId').value = animal ? animal.id : '';
   fromRescueId = rescue ? rescue.id : null;
@@ -152,6 +211,7 @@ function openForm(animal = null, rescue = null) {
   } else {
     $('arrival').value = today();
   }
+  $('arrival').max = today();
   selectedPhoto = null;
   setPhotoPreview(animal?.photo || null);
 
@@ -182,11 +242,10 @@ $('removePhoto').addEventListener('click', () => {
   setPhotoPreview(null);
 });
 
-$('animalForm').addEventListener('submit', (event) => {
+$('animalForm').addEventListener('submit', async (event) => {
   event.preventDefault();
+  if (!PODE_CADASTRAR) return;
   const existing = findAnimal(Number($('animalId').value));
-  const weight = $('weight').value ? Number($('weight').value) : null;
-  const backup = JSON.stringify(animals);
 
   const data = {
     name: $('name').value.trim(),
@@ -198,7 +257,7 @@ $('animalForm').addEventListener('submit', (event) => {
     sex: $('sex').value,
     size: $('size').value,
     status: $('status').value,
-    weight,
+    weight: $('weight').value ? Number($('weight').value) : null,
     vaccinated: $('vaccinated').checked,
     neutered: $('neutered').checked,
     chip: $('chip').checked,
@@ -206,42 +265,27 @@ $('animalForm').addEventListener('submit', (event) => {
   };
   if (selectedPhoto !== null) data.photo = selectedPhoto;
 
-  if (existing) {
-    if (weight && weight !== existing.weight) {
-      existing.weights.unshift({ weight, date: today(), note: 'Peso atualizado na ficha' });
-    }
-    Object.assign(existing, data);
-  } else {
-    const animal = {
-      id: PawUtils.nextId(animals),
-      photo: '',
-      ...data,
-      vaccines: [],
-      history: [{ type: 'Cadastro', date: today(), description: 'Animal cadastrado no sistema', vet: 'Equipe PAWSAFE', notes: '' }],
-      weights: weight ? [{ weight, date: data.arrival, note: 'Peso inicial' }] : []
+  const rescue = !existing ? rescues.find(r => r.id === fromRescueId) : null;
+  if (rescue) {
+    // O servidor registra a origem no histórico do animal.
+    data.rescue = {
+      code: PawUtils.code('RES', rescue.id), date: rescue.date, district: rescue.district,
+      responsible: rescue.responsible, description: rescue.description
     };
-    animals.unshift(animal);
-
-    const rescue = rescues.find(r => r.id === fromRescueId);
-    if (rescue) {
-      // Liga o animal ao resgate nos dois sentidos: histórico do animal e acompanhamento do resgate
-      animal.history.push({
-        type: 'Resgate', date: rescue.date, description: `Resgate ${PawUtils.code('RES', rescue.id)} — ${rescue.district}`,
-        vet: rescue.responsible, notes: rescue.description
-      });
-      rescue.animalIds.push(animal.id);
-      rescue.log.unshift({ date: today(), stage: rescue.stage, text: `Animal ${animal.name} (${animalCode(animal.id)}) cadastrado.` });
-    }
   }
 
-  if (!save()) {
-    animals = JSON.parse(backup); // desfaz a alteração que não pôde ser salva
-    return;
-  }
-  if (!existing && fromRescueId) {
+  const salvo = await comBotao($('saveAnimalButton'), () => (existing
+    ? Api.put(`/animais/${existing.id}`, data)
+    : Api.post('/animais', data)));
+  if (!salvo) return;
+  const animal = guardar(salvo);
+
+  if (rescue) {
+    // O resgate ainda fica no navegador até o módulo de Resgates ir para o servidor.
+    rescue.animalIds.push(animal.id);
+    rescue.log.unshift({ date: today(), stage: rescue.stage, text: `Animal ${animal.name} (${animalCode(animal.id)}) cadastrado.` });
     PawData.saveRescues(rescues);
-    // Volta para a ficha do resgate, que já mostra o animal cadastrado
-    window.location.href = `resgates.html?resgate=${fromRescueId}`;
+    window.location.href = `resgates.html?resgate=${rescue.id}`; // volta para a ficha do resgate
     return;
   }
   animalModal.hide();
@@ -255,156 +299,209 @@ function afterDetailCloses(callback) {
   detailModal.hide();
 }
 
-function deleteAnimal(id) {
+async function deleteAnimal(id, botao) {
   const animal = findAnimal(id);
-  if (!animal || !window.confirm(`Excluir ${animal.name} (${animalCode(id)})? Esta ação não pode ser desfeita.`)) return;
+  if (!PODE_CADASTRAR || !animal) return;
+  if (!window.confirm(`Excluir ${animal.name} (${animalCode(id)})?\nEle sai da lista, mas a ficha clínica fica guardada.`)) return;
+  const ok = await comBotao(botao, () => Api.del(`/animais/${id}`));
+  if (!ok) return;
   animals = animals.filter(a => a.id !== id);
-  save();
+  PawData.saveAnimals(animals);
   detailModal.hide();
   render();
   notify('Animal excluído.');
 }
 
 // ================= Ficha do animal =================
-function openDetail(id, tab = 'profile') {
+// Uma tela só: ações no topo e, logo abaixo, vacinas, pesagens e histórico —
+// sem abas, para o veterinário ver tudo assim que abre a ficha.
+const infoTile = (label, value) => `<div class="info-tile"><small>${label}</small><strong>${value}</strong></div>`;
+const recentesPrimeiro = (lista) => [...lista].sort((x, y) => (y.date || '').localeCompare(x.date || '') || (y.id || 0) - (x.id || 0));
+
+function openDetail(id) {
   const a = findAnimal(id);
   if (!a) return;
   selectedId = id;
 
   $('detailName').textContent = a.name;
-  $('detailMeta').textContent = `${animalCode(a.id)} · ${a.species} · ${a.breed} · ${a.age || 'Idade não informada'} · ${a.sex}`;
+  $('detailMeta').textContent = `${animalCode(a.id)} · ${a.species} · ${a.breed || 'Raça não informada'} · ${a.age || 'Idade não informada'} · ${a.sex || '—'}`;
   $('detailStatus').textContent = a.status;
   $('detailStatus').className = `status-badge ${statusClass(a.status)}`;
-  // Sem foto: usa só o degradê (antes aparecia a foto de outro cão/gato).
+  // Sem foto: usa só o degradê.
   $('detailHero').style.backgroundImage = a.photo
     ? `linear-gradient(180deg, #1d3a3040, #142a21d9), url("${a.photo}")`
     : 'linear-gradient(135deg, #397665, #19372e)';
-  $('vaccineCount').textContent = `(${a.vaccines.length})`;
-  $('historyCount').textContent = `(${a.history.length})`;
 
-  renderProfile(a);
+  renderActions(a);
+  renderSummary(a);
   renderVaccines(a);
-  renderHistory(a);
   renderWeights(a);
-  setTab(tab);
-  detailModal.show();
+  renderHistory(a);
+  if (!$('detailModal').classList.contains('show')) detailModal.show();
 }
 
-function setTab(tab) {
-  document.querySelectorAll('.tab').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
-  ['profile', 'vaccines', 'history', 'weight'].forEach(key => $(`panel-${key}`).classList.toggle('d-none', key !== tab));
+function renderActions(a) {
+  const botoes = [];
+  if (PODE_REGISTRAR) {
+    botoes.push(
+      '<button type="button" class="btn btn-green" data-add-record="vaccine"><i class="bi bi-eyedropper me-1"></i>Registrar vacina</button>',
+      '<button type="button" class="btn btn-green" data-add-record="history"><i class="bi bi-journal-plus me-1"></i>Adicionar histórico</button>',
+      '<button type="button" class="btn btn-green" data-add-record="weight"><i class="bi bi-speedometer2 me-1"></i>Registrar peso</button>'
+    );
+  }
+  if (PODE_CADASTRAR) {
+    botoes.push(
+      `<button type="button" class="btn btn-outline-green" data-edit="${a.id}"><i class="bi bi-pencil me-1"></i>Editar ficha</button>`,
+      `<button type="button" class="btn btn-outline-danger" data-delete="${a.id}"><i class="bi bi-trash me-1"></i>Excluir</button>`
+    );
+  }
+  $('detailActions').innerHTML = botoes.join('');
+  $('detailActions').classList.toggle('d-none', botoes.length === 0);
 }
 
-const infoTile = (label, value) => `<div class="info-tile"><small>${label}</small><strong>${value}</strong></div>`;
-
-function renderProfile(a) {
+function renderSummary(a) {
   const origin = rescues.find(r => r.animalIds.includes(a.id));
-  $('panel-profile').innerHTML = `
-    ${origin ? `<div class="alert-soft"><i class="bi bi-house-heart me-2"></i>Chegou pelo resgate
+  $('panel-summary').innerHTML = `
+    ${origin ? `<div class="alert-soft mb-2"><i class="bi bi-house-heart me-2"></i>Chegou pelo resgate
       <a class="fw-bold" href="resgates.html?resgate=${origin.id}">${PawUtils.code('RES', origin.id)}</a>
       em ${formatDate(origin.date)} (${escapeHtml(origin.district)}).</div>` : ''}
     <div class="profile-grid">
-      ${infoTile('Espécie / raça', `${escapeHtml(a.species)} · ${escapeHtml(a.breed)}`)}
-      ${infoTile('Sexo / porte', `${escapeHtml(a.sex)} · ${escapeHtml(a.size)}`)}
-      ${infoTile('Data de chegada', formatDate(a.arrival))}
       ${infoTile('Peso atual', a.weight ? `${a.weight} kg` : 'Não informado')}
       ${infoTile('Vacinação', a.vaccinated ? 'Registrada' : 'Verificar vacinas')}
+      ${infoTile('Castrado', a.neutered ? 'Sim' : 'Não')}
+      ${infoTile('Sexo / porte', `${escapeHtml(a.sex || '—')} · ${escapeHtml(a.size || '—')}`)}
+      ${infoTile('Data de chegada', formatDate(a.arrival))}
       ${infoTile('Microchip', a.chip ? 'Registrado' : 'Não registrado')}
     </div>
-    <div class="panel-toolbar mt-4"><h3>Observações de saúde</h3></div>
-    <div class="info-tile"><p class="m-0">${escapeHtml(a.notes || 'Nenhuma observação registrada.')}</p></div>
-    <div class="panel-toolbar mt-4"><h3>Ações</h3></div>
-    <div class="d-flex flex-wrap gap-2">
-      <button type="button" class="btn btn-green" data-edit="${a.id}"><i class="bi bi-pencil me-1"></i>Editar ficha</button>
-      <button type="button" class="btn btn-outline-green" data-add-record="vaccine"><i class="bi bi-eyedropper me-1"></i>Registrar vacina</button>
-      <button type="button" class="btn btn-outline-green" data-add-record="history"><i class="bi bi-journal-plus me-1"></i>Adicionar histórico</button>
-      <button type="button" class="btn btn-outline-green" data-add-record="weight"><i class="bi bi-speedometer2 me-1"></i>Registrar peso</button>
-      <button type="button" class="btn btn-outline-danger ms-auto" data-delete="${a.id}"><i class="bi bi-trash me-1"></i>Excluir</button>
-    </div>`;
+    ${a.notes ? `<div class="info-tile mt-2"><small>Observações de saúde</small><p class="m-0">${escapeHtml(a.notes)}</p></div>` : ''}`;
 }
 
+// Quem registrou / corrigiu (auditoria vinda do servidor).
+function auditoria(r) {
+  const partes = [];
+  if (r.registeredBy) partes.push(`Registrado por ${escapeHtml(r.registeredBy)}`);
+  if (r.updatedBy) partes.push(`corrigido por ${escapeHtml(r.updatedBy)} em ${formatDate(String(r.updatedAt).slice(0, 10))}`);
+  return partes.length ? `<p class="record-audit">${partes.join(' · ')}</p>` : '';
+}
+
+// Botões de corrigir e remover de cada registro (só para quem registra).
+function botoesDoRegistro(tipo, r) {
+  if (!PODE_REGISTRAR || !r.id) return '';
+  return `<div class="record-tools">
+    <button type="button" class="btn-icon" data-fix-record="${tipo}" data-record-id="${r.id}" aria-label="Corrigir registro" title="Corrigir"><i class="bi bi-pencil"></i></button>
+    <button type="button" class="btn-icon danger" data-remove-record="${tipo}" data-record-id="${r.id}" aria-label="Remover registro" title="Remover"><i class="bi bi-trash"></i></button>
+  </div>`;
+}
+
+const secao = (id, icone, titulo, contagem) =>
+  `<div class="panel-toolbar clinical-heading" id="${id}"><h3><i class="bi bi-${icone} me-2"></i>${titulo} <span class="text-secondary fw-normal">(${contagem})</span></h3></div>`;
+
 function renderVaccines(a) {
-  const overdue = a.vaccines.filter(v => v.next && v.next < today()).length;
-  const items = a.vaccines.map(v => {
+  const lista = recentesPrimeiro(a.vaccines);
+  const overdue = lista.filter(v => v.next && v.next < today()).length;
+  const items = lista.map(v => {
     const late = v.next && v.next < today();
     return `
       <div class="record-item">
         <div>
           <strong>${escapeHtml(v.name)}</strong>
-          <p><i class="bi bi-calendar3 me-1"></i>${formatDate(v.date)} · ${escapeHtml(v.vet || 'Veterinário não informado')}</p>
-          <p>Lote: ${escapeHtml(v.lot || '—')}</p>
+          <p><i class="bi bi-calendar3 me-1"></i>${formatDate(v.date)} · ${escapeHtml(v.vet || 'Veterinário não informado')}${v.lot ? ` · Lote ${escapeHtml(v.lot)}` : ''}</p>
+          ${auditoria(v)}
         </div>
-        <div class="text-end"><small>Próxima dose</small><p><span class="status-badge ${late ? 'status-tratamento' : 'status-disponivel'}">${formatDate(v.next)}</span></p></div>
+        <div class="record-side">
+          ${v.next ? `<small>Próxima dose</small><span class="status-badge ${late ? 'status-tratamento' : 'status-disponivel'}">${formatDate(v.next)}</span>` : ''}
+          ${botoesDoRegistro('vaccine', v)}
+        </div>
       </div>`;
   }).join('');
 
   $('panel-vaccines').innerHTML = `
-    <div class="alert-soft ${overdue ? 'warning' : ''}">
-      <i class="bi bi-${overdue ? 'exclamation-circle' : 'shield-check'} me-2"></i>
-      ${overdue ? `${overdue} vacina(s) com próxima dose vencida.` : 'Acompanhe as doses aplicadas e as próximas datas recomendadas.'}
-    </div>
-    <div class="panel-toolbar"><h3>Vacinas registradas</h3><button type="button" class="btn btn-green" data-add-record="vaccine"><i class="bi bi-plus-lg me-1"></i>Nova vacina</button></div>
-    <div class="record-list">${items || '<p class="text-secondary small">Nenhuma vacina registrada.</p>'}</div>`;
-}
-
-function renderHistory(a) {
-  const items = [...a.history]
-    .sort((x, y) => y.date.localeCompare(x.date))
-    .map(h => `
-      <div class="timeline-item">
-        <span class="health-tag blue">${escapeHtml(h.type)}</span>
-        <small class="float-end">${formatDate(h.date)}</small>
-        <p><strong>${escapeHtml(h.description)}</strong></p>
-        <small>${escapeHtml(h.vet || 'Responsável não informado')}${h.notes ? ` · ${escapeHtml(h.notes)}` : ''}</small>
-      </div>`).join('');
-
-  $('panel-history').innerHTML = `
-    <div class="panel-toolbar"><h3>Histórico médico e de cuidados</h3><button type="button" class="btn btn-green" data-add-record="history"><i class="bi bi-plus-lg me-1"></i>Novo evento</button></div>
-    ${items ? `<div class="timeline">${items}</div>` : '<p class="text-secondary small">Histórico vazio. Registre consultas, tratamentos, exames e outros eventos.</p>'}`;
+    ${secao('secVacinas', 'eyedropper', 'Vacinas', lista.length)}
+    ${overdue ? `<div class="alert-soft warning mb-2"><i class="bi bi-exclamation-circle me-2"></i>${overdue} vacina(s) com próxima dose vencida.</div>` : ''}
+    <div class="record-list">${items || '<p class="text-secondary small m-0">Nenhuma vacina registrada.</p>'}</div>`;
 }
 
 function renderWeights(a) {
-  const list = [...a.weights].sort((x, y) => y.date.localeCompare(x.date));
+  const list = recentesPrimeiro(a.weights);
   const current = list[0]?.weight ?? a.weight;
   const initial = list.at(-1)?.weight ?? current;
   const delta = current != null && initial != null ? current - initial : null;
   const kg = (v) => (v != null ? `${v} kg` : '—');
 
   $('panel-weight').innerHTML = `
+    ${secao('secPeso', 'speedometer2', 'Peso', list.length)}
     <div class="weight-summary">
-      <div class="weight-card"><small>Peso atual</small><strong>${kg(current)}</strong><span>${list[0] ? formatDate(list[0].date) : 'Sem registro'}</span></div>
-      <div class="weight-card"><small>Peso inicial</small><strong>${kg(initial)}</strong><span>Primeiro registro</span></div>
-      <div class="weight-card"><small>Variação</small><strong>${delta == null ? '—' : `${delta > 0 ? '+' : ''}${delta.toFixed(1)} kg`}</strong><span>Desde o primeiro registro</span></div>
+      <div class="weight-card"><small>Atual</small><strong>${kg(current)}</strong><span>${list[0] ? formatDate(list[0].date) : 'Sem registro'}</span></div>
+      <div class="weight-card"><small>Inicial</small><strong>${kg(initial)}</strong><span>1º registro</span></div>
+      <div class="weight-card"><small>Variação</small><strong>${delta == null ? '—' : `${delta > 0 ? '+' : ''}${delta.toFixed(1)} kg`}</strong><span>no período</span></div>
     </div>
-    <div class="panel-toolbar"><h3>Registros de pesagem</h3><button type="button" class="btn btn-green" data-add-record="weight"><i class="bi bi-plus-lg me-1"></i>Nova pesagem</button></div>
     <div class="record-list">
-      ${list.map(w => `<div class="record-item"><div><strong>${w.weight} kg</strong><p>${escapeHtml(w.note || 'Pesagem registrada')}</p></div><small>${formatDate(w.date)}</small></div>`).join('')
-        || '<p class="small text-secondary">Nenhuma pesagem registrada.</p>'}
+      ${list.map(w => `
+        <div class="record-item">
+          <div><strong>${w.weight} kg</strong><p>${formatDate(w.date)} · ${escapeHtml(w.note || 'Pesagem registrada')}</p>${auditoria(w)}</div>
+          <div class="record-side">${botoesDoRegistro('weight', w)}</div>
+        </div>`).join('') || '<p class="small text-secondary m-0">Nenhuma pesagem registrada.</p>'}
     </div>`;
 }
 
+// Registros que o próprio sistema cria (cadastro do animal) não são corrigidos à mão.
+const ehAutomatico = (h) => h.type === 'Cadastro';
+
+function renderHistory(a) {
+  const items = recentesPrimeiro(a.history).map(h => `
+      <div class="timeline-item">
+        <div class="d-flex justify-content-between gap-2">
+          <div>
+            <span class="health-tag blue">${escapeHtml(h.type)}</span>
+            <small class="ms-2 text-secondary">${formatDate(h.date)}</small>
+            <p class="mb-1"><strong>${escapeHtml(h.description)}</strong></p>
+            <small>${escapeHtml(h.vet || 'Responsável não informado')}${h.notes ? ` · ${escapeHtml(h.notes)}` : ''}</small>
+            ${auditoria(h)}
+          </div>
+          ${ehAutomatico(h) ? '' : botoesDoRegistro('history', h)}
+        </div>
+      </div>`).join('');
+
+  $('panel-history').innerHTML = `
+    ${secao('secHistorico', 'journal-text', 'Histórico médico e de cuidados', a.history.length)}
+    ${items ? `<div class="timeline">${items}</div>` : '<p class="text-secondary small m-0">Histórico vazio. Registre consultas, tratamentos, exames e outros eventos.</p>'}`;
+}
+
 // ================= Registros (vacina, histórico, peso) =================
-const dateField = () => `<div class="mb-3"><label class="form-label" for="rDate">Data *</label><input id="rDate" type="date" class="form-control" required max="${today()}" value="${today()}"></div>`;
+const API_TIPO = { vaccine: 'vacinas', history: 'historico', weight: 'pesagens' };
+const COLECAO = { vaccine: 'vaccines', history: 'history', weight: 'weights' };
+const TIPOS_DE_EVENTO = ['Consulta', 'Cirurgia', 'Castração', 'Tratamento', 'Exame', 'Banho e Tosa', 'Resgate', 'Adoção', 'Outro'];
+
+const dateField = (valor) => `<div class="mb-3"><label class="form-label" for="rDate">Data *</label><input id="rDate" type="date" class="form-control" required max="${today()}" value="${escapeHtml(valor || today())}"></div>`;
 
 // Campo de veterinário: um <select> dos cadastrados (API) que preenche o nome,
 // com o campo de texto como alternativa (quem não está cadastrado).
-const vetField = (label = 'Veterinário') => `
+const vetField = (label, item) => `
   <div class="mb-3">
     <label class="form-label" for="rVetSelect">${label}</label>
     <select id="rVetSelect" class="form-select mb-2"><option value="">— selecionar veterinário cadastrado —</option></select>
-    <input id="rVet" class="form-control" placeholder="ou digite o nome do responsável">
+    <input id="rVet" class="form-control" maxlength="120" placeholder="ou digite o nome do responsável" value="${escapeHtml(item?.vet || '')}">
   </div>`;
 
-// Preenche o <select> de veterinário após o formulário aparecer e liga a seleção ao campo de nome.
-function populateVetField() {
-  const sel = typeof $ !== 'undefined' ? $('rVetSelect') : document.getElementById('rVetSelect');
+const normalizar = (texto) => String(texto || '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase();
+
+// Preenche o <select> de veterinário. Num registro novo, o veterinário logado
+// já vem selecionado (quando o nome dele bate com um cadastro de Veterinários).
+function populateVetField(item) {
+  const sel = $('rVetSelect');
   if (!sel || typeof PawVets === 'undefined') return;
+  const usuario = typeof PawAuth !== 'undefined' ? PawAuth.usuario() : null;
   const fill = () => {
-    const atual = sel.value;
+    let atual = sel.value || (item?.vetId ? String(item.vetId) : '');
+    if (!item && !atual && usuario?.perfil === 'veterinario') {
+      const eu = PawData.loadVets().find(v => normalizar(v.name) === normalizar(usuario.nome));
+      if (eu) atual = String(eu.id);
+    }
     sel.innerHTML = '<option value="">— selecionar veterinário cadastrado —</option>' + PawVets.options(atual);
+    if (!item && atual && !$('rVet').value) $('rVet').value = PawVets.find(atual)?.name || '';
     sel.onchange = () => {
       const v = PawVets.find(sel.value);
-      if (v) document.getElementById('rVet').value = v.name;
+      if (v) $('rVet').value = v.name;
     };
   };
   fill();
@@ -413,85 +510,107 @@ function populateVetField() {
 
 const RECORDS = {
   vaccine: {
-    title: 'Registrar vacina',
-    tab: 'vaccines',
-    fields: () => `
-      <div class="mb-3"><label class="form-label" for="rName">Vacina *</label><input id="rName" class="form-control" required placeholder="Ex.: V10, Antirrábica"></div>
-      ${dateField()}
-      <div class="mb-3"><label class="form-label" for="rNext">Próxima dose</label><input id="rNext" type="date" class="form-control"></div>
-      <div class="mb-3"><label class="form-label" for="rLot">Lote</label><input id="rLot" class="form-control" placeholder="Ex.: V10-2026-001"></div>
-      ${vetField('Veterinário')}`,
-    apply: (a) => {
-      a.vaccines.unshift({ name: $('rName').value.trim(), date: $('rDate').value, next: $('rNext').value, lot: $('rLot').value.trim(), vet: $('rVet').value.trim(), vetId: Number($('rVetSelect')?.value) || null });
-      a.vaccinated = true;
-      return 'Vacina registrada.';
-    }
+    title: (item) => (item ? 'Corrigir vacina' : 'Registrar vacina'),
+    fields: (item) => `
+      <div class="mb-3"><label class="form-label" for="rName">Vacina *</label><input id="rName" class="form-control" required maxlength="80" placeholder="Ex.: V10, Antirrábica" value="${escapeHtml(item?.name || '')}"></div>
+      ${dateField(item?.date)}
+      <div class="mb-3"><label class="form-label" for="rNext">Próxima dose</label><input id="rNext" type="date" class="form-control" value="${escapeHtml(item?.next || '')}"></div>
+      <div class="mb-3"><label class="form-label" for="rLot">Lote</label><input id="rLot" class="form-control" maxlength="60" placeholder="Ex.: V10-2026-001" value="${escapeHtml(item?.lot || '')}"></div>
+      ${vetField('Veterinário', item)}`,
+    payload: () => ({
+      name: $('rName').value.trim(), date: $('rDate').value, next: $('rNext').value, lot: $('rLot').value.trim(),
+      vet: $('rVet').value.trim(), vetId: Number($('rVetSelect')?.value) || null
+    }),
+    message: (item) => (item ? 'Vacina corrigida.' : 'Vacina registrada.')
   },
   history: {
-    title: 'Novo evento médico',
-    tab: 'history',
-    fields: () => `
+    title: (item) => (item ? 'Corrigir evento' : 'Novo evento médico'),
+    fields: (item) => `
       <div class="mb-3"><label class="form-label" for="rType">Tipo de evento *</label><select id="rType" class="form-select" required>
-        ${['Consulta', 'Cirurgia', 'Tratamento', 'Exame', 'Banho e Tosa', 'Resgate', 'Adoção', 'Outro'].map(t => `<option>${t}</option>`).join('')}
-      </select></div>
-      <div class="mb-3"><label class="form-label" for="rDesc">Descrição *</label><input id="rDesc" class="form-control" required placeholder="Ex.: Avaliação geral, retorno..."></div>
-      ${dateField()}
-      ${vetField('Veterinário / responsável')}
-      <div><label class="form-label" for="rNotes">Notas clínicas</label><textarea id="rNotes" class="form-control" rows="3"></textarea></div>`,
-    apply: (a) => {
-      a.history.unshift({ type: $('rType').value, date: $('rDate').value, description: $('rDesc').value.trim(), vet: $('rVet').value.trim(), vetId: Number($('rVetSelect')?.value) || null, notes: $('rNotes').value.trim() });
-      return 'Evento adicionado ao histórico.';
-    }
+        ${TIPOS_DE_EVENTO.map(t => `<option${item?.type === t ? ' selected' : ''}>${t}</option>`).join('')}
+      </select><small class="text-secondary d-none" id="rTypeHint">Ao salvar, o animal fica marcado como castrado na ficha.</small></div>
+      <div class="mb-3"><label class="form-label" for="rDesc">Descrição *</label><input id="rDesc" class="form-control" required maxlength="255" placeholder="Ex.: Avaliação geral, retorno..." value="${escapeHtml(item?.description || '')}"></div>
+      ${dateField(item?.date)}
+      ${vetField('Veterinário / responsável', item)}
+      <div><label class="form-label" for="rNotes">Notas clínicas</label><textarea id="rNotes" class="form-control" rows="3" maxlength="2000">${escapeHtml(item?.notes || '')}</textarea></div>`,
+    payload: () => ({
+      type: $('rType').value, date: $('rDate').value, description: $('rDesc').value.trim(),
+      vet: $('rVet').value.trim(), vetId: Number($('rVetSelect')?.value) || null, notes: $('rNotes').value.trim()
+    }),
+    message: (item) => (item ? 'Evento corrigido.' : 'Evento adicionado ao histórico.')
   },
   weight: {
-    title: 'Registrar pesagem',
-    tab: 'weight',
-    fields: () => `
-      <div class="mb-3"><label class="form-label" for="rWeight">Peso (kg) *</label><input id="rWeight" type="number" min="0.01" step="0.01" class="form-control" required placeholder="Ex.: 12.5"></div>
-      ${dateField()}
-      <div><label class="form-label" for="rNotes">Observação</label><input id="rNotes" class="form-control" placeholder="Ex.: retorno, rotina..."></div>`,
-    apply: (a) => {
-      const weight = Number($('rWeight').value);
-      a.weights.unshift({ weight, date: $('rDate').value, note: $('rNotes').value.trim() || 'Pesagem registrada' });
-      a.weight = weight;
-      return 'Pesagem registrada.';
-    }
+    title: (item) => (item ? 'Corrigir pesagem' : 'Registrar pesagem'),
+    fields: (item) => `
+      <div class="mb-3"><label class="form-label" for="rWeight">Peso (kg) *</label><input id="rWeight" type="number" min="0.01" max="200" step="0.01" class="form-control" required placeholder="Ex.: 12.5" value="${item?.weight ?? ''}"></div>
+      ${dateField(item?.date)}
+      <div><label class="form-label" for="rNotes">Observação</label><input id="rNotes" class="form-control" maxlength="120" placeholder="Ex.: retorno, rotina..." value="${escapeHtml(item?.note || '')}"></div>`,
+    payload: () => ({ weight: Number($('rWeight').value), date: $('rDate').value, note: $('rNotes').value.trim() }),
+    message: (item) => (item ? 'Pesagem corrigida.' : 'Pesagem registrada.')
   }
 };
 
-function openRecord(type) {
-  recordType = type;
-  $('recordTitle').textContent = RECORDS[type].title;
-  $('recordFields').innerHTML = RECORDS[type].fields();
-  if (type === 'vaccine' || type === 'history') populateVetField();
+function openRecord(type, item = null) {
+  if (!PODE_REGISTRAR) return;
+  record = { type, item };
+  const def = RECORDS[type];
+  $('recordTitle').textContent = def.title(item);
+  $('recordHint').textContent = item
+    ? 'A correção fica registrada com o seu nome e a data.'
+    : 'Este registro será adicionado à ficha do animal.';
+  $('recordFields').innerHTML = def.fields(item);
+  if (type === 'vaccine' || type === 'history') populateVetField(item);
+  if (type === 'history') {
+    const dica = () => $('rTypeHint').classList.toggle('d-none', $('rType').value !== 'Castração');
+    $('rType').addEventListener('change', dica);
+    dica();
+  }
   afterDetailCloses(() => recordModal.show());
 }
 
-$('recordForm').addEventListener('submit', (event) => {
+$('recordForm').addEventListener('submit', async (event) => {
   event.preventDefault();
   const animal = findAnimal(selectedId);
-  if (!animal) return;
-  const message = RECORDS[recordType].apply(animal);
-  if (!save()) return;
+  if (!animal || !record) return;
+  const { type, item } = record;
+  const rota = `/animais/${animal.id}/${API_TIPO[type]}${item ? `/${item.id}` : ''}`;
+  const corpo = RECORDS[type].payload();
+  const salvo = await comBotao($('saveRecordButton'), () => (item ? Api.put(rota, corpo) : Api.post(rota, corpo)));
+  if (!salvo) return;
+  guardar(salvo);
   render();
-  notify(message);
-  recordModal.hide(); // ao fechar, a ficha reabre na aba do registro (listener abaixo)
+  notify(RECORDS[type].message(item));
+  recordModal.hide(); // ao fechar, a ficha reabre (listener abaixo)
 });
 
+async function removeRecord(type, id, botao) {
+  const animal = findAnimal(selectedId);
+  const item = animal?.[COLECAO[type]].find(r => r.id === id);
+  if (!item) return;
+  const nome = type === 'vaccine' ? `a vacina ${item.name}` : type === 'weight' ? `a pesagem de ${item.weight} kg` : `o evento "${item.description}"`;
+  if (!window.confirm(`Remover ${nome} (${formatDate(item.date)}) da ficha?\nO registro fica guardado no sistema com o seu nome.`)) return;
+  const salvo = await comBotao(botao, () => Api.del(`/animais/${animal.id}/${API_TIPO[type]}/${id}`));
+  if (!salvo) return;
+  openDetail(guardar(salvo).id);
+  render();
+  notify('Registro removido da ficha.');
+}
+
 // Ao fechar o registro (salvando ou cancelando), volta para a ficha do animal.
-$('recordModal').addEventListener('hidden.bs.modal', () => openDetail(selectedId, RECORDS[recordType].tab));
+$('recordModal').addEventListener('hidden.bs.modal', () => openDetail(selectedId));
 
 // ================= Eventos =================
 document.addEventListener('click', (event) => {
-  const target = event.target.closest('[data-detail], [data-edit], [data-delete], [data-add-record], [data-tab]');
+  const target = event.target.closest('[data-detail], [data-edit], [data-delete], [data-add-record], [data-fix-record], [data-remove-record]');
   if (!target) return;
-  const { detail, edit, delete: remove, addRecord, tab } = target.dataset;
+  const d = target.dataset;
 
-  if (detail) openDetail(Number(detail));
-  else if (edit) afterDetailCloses(() => openForm(findAnimal(Number(edit))));
-  else if (remove) deleteAnimal(Number(remove));
-  else if (addRecord) openRecord(addRecord);
-  else if (tab) setTab(tab);
+  if (d.detail) openDetail(Number(d.detail));
+  else if (d.edit) afterDetailCloses(() => openForm(findAnimal(Number(d.edit))));
+  else if (d.delete) deleteAnimal(Number(d.delete), target);
+  else if (d.addRecord) openRecord(d.addRecord);
+  else if (d.fixRecord) openRecord(d.fixRecord, findAnimal(selectedId)?.[COLECAO[d.fixRecord]].find(r => r.id === Number(d.recordId)));
+  else if (d.removeRecord) removeRecord(d.removeRecord, Number(d.recordId), target);
 });
 
 document.addEventListener('keydown', (event) => {
@@ -512,12 +631,15 @@ $('addAnimal').addEventListener('click', () => openForm());
 
 render();
 
-// Links vindos de outras páginas:
+// Links vindos de outras páginas (tratados depois de carregar do servidor):
 //   animais.html?animal=3   → abre a ficha do animal
-//   animais.html?resgate=4  → abre o cadastro já preenchido com o resgate
+//   animais.html?resgate=4  → abre o cadastro já preenchido com o resgate (só quem cadastra)
 const params = new URLSearchParams(window.location.search);
-const linkedAnimal = findAnimal(Number(params.get('animal')));
-const linkedRescue = rescues.find(r => r.id === Number(params.get('resgate')));
-if (linkedAnimal) openDetail(linkedAnimal.id);
-else if (linkedRescue && linkedRescue.stage !== 'Sem sucesso') openForm(null, linkedRescue);
 if (params.toString()) history.replaceState(null, '', window.location.pathname); // recarregar não reabre
+
+carregar().then(() => {
+  const linkedAnimal = findAnimal(Number(params.get('animal')));
+  const linkedRescue = rescues.find(r => r.id === Number(params.get('resgate')));
+  if (linkedAnimal) openDetail(linkedAnimal.id);
+  else if (linkedRescue && linkedRescue.stage !== 'Sem sucesso') openForm(null, linkedRescue);
+});

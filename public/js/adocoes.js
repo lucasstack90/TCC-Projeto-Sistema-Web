@@ -37,6 +37,21 @@ function notify(message) {
   toast.show();
 }
 
+// A ficha do animal já está no servidor: a adoção concluída muda o status lá e
+// entra no histórico clínico. (As adoções ainda ficam no navegador.)
+async function registrarAdocaoNoServidor(animal, adopter, processo) {
+  if (typeof Api === 'undefined') return;
+  try {
+    await Api.patch(`/animais/${animal.id}/status`, { status: 'Adotado' });
+    await Api.post(`/animais/${animal.id}/historico`, {
+      type: 'Adoção', date: today(), description: `Adotado por ${adopter.name}`.slice(0, 255),
+      vet: 'Equipe PAWSAFE', notes: `Processo ${adoptionCode(processo.id)}`
+    });
+  } catch (erro) {
+    notify(`A adoção foi concluída, mas a ficha do animal não foi atualizada no servidor: ${erro.message}`);
+  }
+}
+
 function saveAll() {
   const ok = PawData.saveAnimals(animals) && PawData.saveAdopters(adopters) && PawData.saveAdoptions(adoptions);
   if (!ok) notify('Não foi possível salvar. Os documentos podem estar grandes demais.');
@@ -484,6 +499,7 @@ function changeStage(to) {
     ({ animals, adoptions } = JSON.parse(backup));
     return;
   }
+  if (to === 'Concluída') registrarAdocaoNoServidor(animal, adopter, o);
   $('stageNote').value = '';
   render();
   renderProcess();

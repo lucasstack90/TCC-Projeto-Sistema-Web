@@ -119,9 +119,9 @@ Resgates:
 
 ## Como migrar uma página do `localStorage` para a API
 
-Hoje as páginas leem e gravam no `localStorage` via `PawData` (protótipo). Ao
-integrar um módulo, troque essas chamadas por `Api` (`js/api.js`). O módulo de
-Animais é o primeiro a ser migrado e serve de exemplo.
+As páginas ainda não migradas leem e gravam no `localStorage` via `PawData`
+(protótipo). Ao integrar um módulo, troque essas chamadas por `Api` (`js/api.js`).
+O módulo de **Animais já foi migrado** (`public/js/animais.js`) e serve de exemplo.
 
 Antes (protótipo, síncrono):
 
@@ -220,6 +220,47 @@ movimentação de estoque registra o nome do usuário logado que a fez.
 > bloqueio desses módulos é feito na interface. Quando cada um migrar para a API,
 > basta proteger as rotas dele com a permissão correspondente.
 
+## Módulo de Animais e ficha clínica (já no servidor)
+
+A tela de Animais usa só a API. Rotas (em `routes/web.php`):
+
+| Rota | Permissão | O que faz |
+|---|---|---|
+| `GET /api/animais` | `pagina.animais` | Lista, já com vacinas, histórico e pesagens |
+| `GET /api/animais/{id}` · `/{id}/foto` | `pagina.animais` | Um animal · a foto enviada |
+| `POST`, `PUT`, `DELETE /api/animais[/{id}]` | `animais.cadastrar` | Cadastra, edita, exclui |
+| `PATCH /api/animais/{id}/status` | `animais.cadastrar` | Muda o status (usado ao concluir uma adoção) |
+| `POST /api/animais/{id}/{tipo}` | `animais.registros` | Registra vacina, evento ou pesagem |
+| `PUT`, `DELETE /api/animais/{id}/{tipo}/{registro}` | `animais.registros` | Corrige ou remove um registro |
+
+`{tipo}` = `vacinas`, `historico` ou `pesagens` (model `RegistroClinico`).
+
+Regras que valem no servidor:
+
+- **Auditoria:** cada registro clínico guarda quem registrou, quem corrigiu por
+  último e quem removeu (`registrado_por`, `atualizado_por`, `removido_por`, com
+  as datas). A ficha mostra "Registrado por… · corrigido por…".
+- **Nada é apagado de verdade:** remover um registro ou excluir um animal só
+  marca a data (`removido_em`, `excluido_em`). As chaves estrangeiras não usam
+  mais `ON DELETE CASCADE`, então o histórico clínico nunca some junto.
+- **Peso atual** = pesagem mais recente; corrigir ou remover uma pesagem
+  recalcula. Mudar o peso em "Editar ficha" vira uma pesagem nova.
+- **Vacinado** passa a "sim" quando há vacina registrada. Um evento do tipo
+  **Castração** marca o animal como castrado.
+- **Veterinário** escolhido da lista é guardado por id (`veterinario_id`, com
+  chave estrangeira); o nome digitado fica como alternativa. Para o perfil
+  veterinário, o próprio nome já vem selecionado quando existe no cadastro de
+  Veterinários com o mesmo nome do login.
+- **Foto** enviada fica em `storage/uploads/animais/` (fora da pasta pública),
+  com o tipo conferido pelo conteúdo do arquivo, e é entregue pela rota
+  `/foto`, que exige login.
+
+As outras páginas (Dashboard, Adoções, Resgates, Estoque, Relatório) ainda leem
+os animais do `localStorage`. Para os números baterem, a tela de Animais e o
+`js/auth.js` (a cada página aberta) copiam a lista do servidor para lá
+(`PawData.syncAnimalsFromServer`). Concluir uma adoção também avisa o servidor
+(status "Adotado" e evento no histórico).
+
 ## Cadastros de apoio (veterinários e contribuintes)
 
 Dois cadastros já seguem este padrão no back-end e servem de exemplo prático,
@@ -235,9 +276,9 @@ além do módulo de Animais:
   além da validação no navegador.
 
 Os dois têm tela de gestão na página **Cadastros** (`public/Pages/cadastros.html`,
-no menu lateral). Os registros de animal e de doação continuam no `localStorage`
-por enquanto, mas guardam o `id` do cadastro escolhido (`vetId`, `contributorId`),
-prontos para quando esses módulos migrarem para a API.
+no menu lateral). Os registros clínicos dos animais já guardam o `id` do
+veterinário no banco; as doações continuam no `localStorage` por enquanto, mas
+guardam o `id` do contribuinte (`contributorId`), prontas para a migração.
 
 As três melhorias pedidas foram feitas aqui: cadastro de veterinários, cadastro
 de contribuintes e a assinatura dupla (responsável legal + veterinário) no

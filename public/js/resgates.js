@@ -325,7 +325,9 @@ $('deleteRescue').addEventListener('click', () => {
 });
 
 // O cadastro do animal usa o formulário do módulo de Animais, já preenchido com os dados do resgate.
+// Só aparece para quem cadastra animais (CSS em base.css); a tela de Animais confere de novo.
 $('registerAnimal').addEventListener('click', () => {
+  if (typeof PawAuth !== 'undefined' && !PawAuth.pode('animais.cadastrar')) return;
   window.location.href = `animais.html?resgate=${openRescueId}`;
 });
 

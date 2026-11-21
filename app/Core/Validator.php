@@ -32,7 +32,8 @@ final class Validator
         return is_string($v) ? trim($v) : $v;
     }
 
-    private function marcar(string $campo, string $msg): void
+    /** Marca um erro num campo (também usado para regras próprias de cada controller). */
+    public function marcar(string $campo, string $msg): void
     {
         // Mantém só o primeiro erro de cada campo.
         $this->erros[$campo] ??= $msg;
@@ -105,7 +106,8 @@ final class Validator
         if (!$v) {
             return $this;
         }
-        $d = \DateTime::createFromFormat('Y-m-d', (string) $v);
+        // "!" zera a hora: sem ele a data de hoje (com a hora atual) contaria como futura.
+        $d = \DateTime::createFromFormat('!Y-m-d', (string) $v);
         if (!$d || $d->format('Y-m-d') !== $v) {
             $this->marcar($campo, 'Data inválida (use AAAA-MM-DD).');
             return $this;

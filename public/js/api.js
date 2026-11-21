@@ -73,6 +73,7 @@ const Api = (() => {
     get:  (rota) => pedir('GET', rota),
     post: (rota, corpo) => pedir('POST', rota, corpo ?? {}),
     put:  (rota, corpo) => pedir('PUT', rota, corpo ?? {}),
+    patch: (rota, corpo) => pedir('PATCH', rota, corpo ?? {}),
     del:  (rota) => pedir('DELETE', rota),
     garantirCsrf,
     // Após o login, o servidor já devolve o token; guarde-o para evitar uma ida extra.
