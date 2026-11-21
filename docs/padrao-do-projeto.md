@@ -151,44 +151,53 @@ Pontos de atenção na migração:
 
 ## Perfis de usuário e permissões
 
-O sistema tem quatro perfis. O que cada um pode fazer está em **um único arquivo**,
+O sistema tem cinco perfis. O que cada um pode fazer está em **um único arquivo**,
 `app/Core/Permissoes.php`. Para mudar uma regra, altere só ele: o servidor passa
 a recusar a ação e a interface se ajusta sozinha no próximo carregamento.
 
 Os perfis descrevem a **função** da pessoa na ONG, não o vínculo de trabalho:
 um voluntário de confiança que conduz adoções pode receber o perfil **Equipe**.
 
-| O que | Administrador | Equipe | Veterinário | Voluntário |
-|---|:---:|:---:|:---:|:---:|
-| Dashboard (todos os indicadores) | ✓ | ✓ | ✓ sem o nome dos adotantes | ✓ sem o nome dos adotantes |
-| Animais — consultar fichas | ✓ | ✓ | ✓ | ✓ |
-| Animais — cadastrar, editar, excluir | ✓ | ✓ | — | — |
-| Animais — vacinas, histórico, pesagens | ✓ | ✓ | ✓ | — |
-| Adoções | ✓ | ✓ | — | — |
-| Resgates | ✓ | ✓ | ✓ | ✓ |
-| Voluntários — aprovar ou arquivar inscrições | ✓ | ✓ | — | — |
-| Voluntários — cadastrar, editar, inativar, excluir | ✓ | consulta | — | — |
-| Doações — registrar doações recebidas | ✓ | ✓ | — | — |
-| Financeiro — saldo, despesas, orçamento | ✓ | — | — | — |
-| Estoque — entradas, itens, inventário, estornos | ✓ | ✓ | ✓ | — |
-| Estoque — saída por consumo / uso em animal | ✓ | ✓ | ✓ | ✓ |
-| Relatório — gerar, imprimir | ✓ | ✓ | ✓ | — |
-| Relatório — preencher a análise da equipe | ✓ | ✓ | — | — |
-| Relatório — configurar e ver a execução financeira | ✓ | — | — | — |
-| Cadastros (veterinários, contribuintes) | ✓ | — | — | — |
-| Usuários do sistema | ✓ | — | — | — |
+| O que | Administrador | Financeiro | Equipe | Veterinário | Voluntário |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Dashboard (indicadores gerais) | ✓ | ✓ | ✓ | ✓ sem o nome dos adotantes | ✓ sem o nome dos adotantes |
+| Dashboard — doações arrecadadas no mês (R$) | ✓ | ✓ | — | — | — |
+| Animais — consultar fichas | ✓ | — | ✓ | ✓ | ✓ |
+| Animais — cadastrar, editar, excluir | ✓ | — | ✓ | — | — |
+| Animais — vacinas, histórico, pesagens | ✓ | — | ✓ | ✓ | — |
+| Adoções | ✓ | — | ✓ | — | — |
+| Resgates | ✓ | — | ✓ | ✓ | ✓ |
+| Voluntários — aprovar ou arquivar inscrições | ✓ | — | ✓ | — | — |
+| Voluntários — cadastrar, editar, inativar, excluir | ✓ | — | consulta | — | — |
+| Doações materiais (ração, remédios, utensílios) | ✓ | consulta | ✓ | — | — |
+| Caixa — doações em dinheiro, despesas, saldo, orçamento | ✓ | ✓ | — | — | — |
+| Estoque — entradas, itens, inventário, estornos | ✓ | — | ✓ | ✓ | — |
+| Estoque — saída por consumo / uso em animal | ✓ | — | ✓ | ✓ | ✓ |
+| Relatório — gerar, imprimir | ✓ | ✓ | ✓ | ✓ | — |
+| Relatório — preencher a análise da equipe | ✓ | ✓ | ✓ | — | — |
+| Relatório — execução financeira | ✓ | ✓ | — | — | — |
+| Relatório — configurar (dados da ONG, metas, responsáveis) | ✓ | — | — | — | — |
+| Cadastros — veterinários | ✓ | — | ✓ | — | — |
+| Cadastros — contribuintes | ✓ | ✓ | ✓ | — | — |
+| Usuários do sistema | ✓ | — | — | — | — |
 
 Critérios usados:
 
 - **O dia a dia não depende do administrador**, que muitas vezes é da diretoria
-  e não está no abrigo todo dia: a equipe registra doações, aprova voluntários e
-  preenche o relatório.
-- **Caixa e contas de acesso ficam com a coordenação**, que responde pela
-  prestação de contas.
+  e não está no abrigo todo dia: a equipe registra doações materiais, cuida dos
+  cadastros de apoio, aprova voluntários e preenche o relatório.
+- **Segregação de funções no caixa:** doações em dinheiro, despesas, saldo e
+  orçamento ficam com o perfil **Financeiro** (o responsável pela prestação de
+  contas). Ver e registrar são uma permissão só (`financeiro.gerenciar`), porque
+  quem cuida do caixa faz as duas coisas. Doações materiais continuam com a
+  equipe, que as recebe no abrigo e dá entrada no estoque.
+- **Contas de acesso ficam com a coordenação** (administrador).
 - **Mínimo necessário (LGPD):** o voluntário não vê dados pessoais de terceiros
-  (CPF de adotantes e contribuintes) nem finanças.
+  (CPF de adotantes e contribuintes) nem finanças; o valor arrecadado no mês só
+  aparece no dashboard para quem cuida do caixa, e nem é colocado na página dos
+  outros perfis.
 - **Recomendação:** ter pelo menos dois administradores (ex.: presidente e
-  tesoureiro), para ninguém ficar sem acesso se um faltar.
+  vice), para ninguém ficar sem acesso se um faltar.
 
 **Como funciona por dentro**
 

@@ -13,10 +13,13 @@ namespace Core;
  * Os perfis descrevem a FUNÇÃO da pessoa na ONG, não o vínculo de trabalho:
  * um voluntário de confiança que conduz adoções pode receber o perfil "equipe".
  *
- *   administrador  coordenação/diretoria — tudo, inclusive usuários, caixa e a
+ *   administrador  coordenação/diretoria — tudo, inclusive usuários e a
  *                  configuração do relatório para a prefeitura
+ *   financeiro     responsável pelo caixa — doações em dinheiro, despesas, saldo,
+ *                  orçamento, contribuintes e a execução financeira do relatório
  *   equipe         operação do dia a dia — animais, adoções, resgates, estoque,
- *                  registra doações recebidas, aprova voluntários, preenche o relatório
+ *                  doações materiais, cadastros de veterinários e contribuintes,
+ *                  aprova voluntários, preenche o relatório; não mexe no caixa
  *   veterinario    parte clínica — vacinas, histórico, pesagens, resgates,
  *                  estoque e consulta ao relatório
  *   voluntario     apoio no abrigo — consulta animais, registra resgates e dá
@@ -25,15 +28,17 @@ namespace Core;
 final class Permissoes
 {
     public const ADMINISTRADOR = 'administrador';
+    public const FINANCEIRO    = 'financeiro';
     public const EQUIPE        = 'equipe';
     public const VETERINARIO   = 'veterinario';
     public const VOLUNTARIO    = 'voluntario';
 
-    public const PERFIS = [self::ADMINISTRADOR, self::EQUIPE, self::VETERINARIO, self::VOLUNTARIO];
+    public const PERFIS = [self::ADMINISTRADOR, self::FINANCEIRO, self::EQUIPE, self::VETERINARIO, self::VOLUNTARIO];
 
     /** Nome para exibir na interface. */
     public const ROTULOS = [
         self::ADMINISTRADOR => 'Administrador(a)',
+        self::FINANCEIRO    => 'Financeiro',
         self::EQUIPE        => 'Equipe',
         self::VETERINARIO   => 'Veterinário(a)',
         self::VOLUNTARIO    => 'Voluntário(a)',
@@ -50,10 +55,12 @@ final class Permissoes
         'animais.registros',     // vacinas, histórico e pesagens
         'veterinarios.ver',      // lista de veterinários (para registrar vacinas)
         'contribuintes.ver',     // lista de contribuintes, com CPF/CNPJ (LGPD)
-        'cadastros.gerenciar',   // criar/editar veterinários e contribuintes
+        'veterinarios.gerenciar',  // criar/editar/excluir veterinários
+        'contribuintes.gerenciar', // criar/editar/excluir contribuintes
         'usuarios.gerenciar',    // contas de acesso ao sistema
-        'financeiro.ver',        // saldo, despesas, orçamento (inclusive no dashboard e no relatório)
-        'doacoes.registrar',     // registrar doações recebidas
+        'financeiro.gerenciar',  // caixa: doações em dinheiro, despesas, saldo, orçamento
+                                 // (ver e registrar; inclusive no dashboard e no relatório)
+        'doacoes.material',      // registrar doações materiais (ração, remédios, utensílios)
         'voluntarios.aprovar',   // aprovar ou arquivar inscrições
         'voluntarios.gerenciar', // cadastrar, editar, inativar e excluir voluntários
         'estoque.movimentar',    // entradas, saídas, inventário e estornos
@@ -66,11 +73,19 @@ final class Permissoes
     private const MAPA = [
         self::ADMINISTRADOR => ['*'],
 
+        self::FINANCEIRO => [
+            'pagina.dashboard', 'pagina.doacoes', 'pagina.relatorios', 'pagina.cadastros',
+            'financeiro.gerenciar', 'contribuintes.ver', 'contribuintes.gerenciar',
+            'relatorio.preencher',
+        ],
+
         self::EQUIPE => [
             'pagina.dashboard', 'pagina.animais', 'pagina.adocoes', 'pagina.resgates',
             'pagina.voluntarios', 'pagina.doacoes', 'pagina.estoque', 'pagina.relatorios',
+            'pagina.cadastros',
             'animais.cadastrar', 'animais.registros', 'veterinarios.ver', 'contribuintes.ver',
-            'doacoes.registrar', 'voluntarios.aprovar',
+            'veterinarios.gerenciar', 'contribuintes.gerenciar',
+            'doacoes.material', 'voluntarios.aprovar',
             'estoque.movimentar', 'estoque.consumo', 'relatorio.preencher',
         ],
 

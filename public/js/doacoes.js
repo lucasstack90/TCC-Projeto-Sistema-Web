@@ -65,6 +65,12 @@ function notify(message, detail = '') {
 
 // ================= Totais (topo da página) =================
 function renderStats() {
+  // Sem acesso ao caixa: os totais em dinheiro nem são montados na página.
+  if (!veFinanceiro) {
+    $('financeStats').innerHTML = '';
+    $('donationText').textContent = plural(visibleDonations().length, 'doação registrada', 'doações registradas');
+    return;
+  }
   const { initial, received, spent, balance, materials } = F.totals(donations, expenses, opening);
 
   // Depois de registrar/editar/excluir uma despesa, o card mostra de onde o saldo veio
@@ -86,7 +92,7 @@ function renderStats() {
       <div><small>${c.label}</small><strong class="${c.negative ? 'negative' : ''}">${c.value}</strong><span>${c.foot}</span></div>
     </div>`).join('');
 
-  $('donationText').textContent = plural(donations.length, 'doação registrada', 'doações registradas');
+  $('donationText').textContent = plural(visibleDonations().length, 'doação registrada', 'doações registradas');
   $('expenseText').textContent = plural(expenses.length, 'despesa registrada', 'despesas registradas');
 }
 
@@ -257,24 +263,35 @@ function renderMonthOptions() {
     .map(k => `<option value="${k}"${k === month ? ' selected' : ''}>${F.capitalize(F.monthName(k))}</option>`).join('');
 }
 
+// ================= Perfil =================
+// Caixa (doações em dinheiro, despesas, saldo, orçamento): administrador e financeiro.
+// Doações materiais: administrador e equipe. A regra está em app/Core/Permissoes.php.
+const podePerfil = (permissao) => typeof PawAuth === 'undefined' || PawAuth.pode(permissao);
+const veFinanceiro = podePerfil('financeiro.gerenciar');
+const podeMaterial = podePerfil('doacoes.material');
+const podeTipo = (type) => (type === 'Financeira' ? veFinanceiro : podeMaterial);
+const tiposPermitidos = PawData.DONATION_TYPES.filter(podeTipo);
+// Quem não cuida do caixa não vê as doações em dinheiro (nem os valores).
+const visibleDonations = () => donations.filter(d => veFinanceiro || d.type !== 'Financeira');
+
 // ================= Listas =================
 function donationRows() {
   const term = normalize($('donationSearch').value.trim());
   const type = $('typeFilter').value;
   const origin = $('originFilter').value;
-  const list = donations
+  const list = visibleDonations()
     .filter(d => !type || d.type === type)
     .filter(d => !origin || d.origin === origin)
     .filter(d => !term || normalize([d.donor, d.item, d.notes, d.method].join(' ')).includes(term))
     .sort(byDateDesc);
 
   $('donationRows').innerHTML = list.map(d => `
-    <tr class="clickable-row" data-donation="${d.id}">
+    <tr${podeTipo(d.type) ? ` class="clickable-row" data-donation="${d.id}"` : ''}>
       <td>${formatDate(d.date)}</td>
       <td><strong>${escapeHtml(donorName(d))}</strong><small>${d.origin}</small></td>
       <td><span class="status-badge type-${d.type === 'Financeira' ? 'financeira' : 'material'}">${d.type}</span></td>
       <td>${d.type === 'Financeira' ? escapeHtml(d.method) : `${escapeHtml(d.item)} — ${d.quantity} ${d.unit}`}</td>
-      <td class="text-end amount">${d.type === 'Financeira' ? money(d.amount) : '—'}</td>
+      <td class="text-end amount col-valor">${d.type === 'Financeira' ? money(d.amount) : '—'}</td>
     </tr>`).join('');
   return list.length;
 }
@@ -332,13 +349,14 @@ function toggleDonationFields() {
 }
 
 function openDonation(d = null) {
+  if (d && !podeTipo(d.type)) return; // doação de outro perfil (ex.: dinheiro para a equipe)
   $('donationForm').reset();
   $('donationId').value = d?.id ?? '';
   $('dDate').max = today();
   $('dDate').value = d?.date ?? today();
   $('dOrigin').value = d?.origin ?? 'Pessoa física';
   $('dDonor').value = d?.donor ?? '';
-  $('dType').value = d?.type ?? 'Financeira';
+  $('dType').value = d?.type ?? tiposPermitidos[0];
   $('dAmount').value = d?.amount ?? '';
   $('dMethod').value = d?.method || 'PIX';
   $('dItem').value = d?.item ?? '';
@@ -358,6 +376,9 @@ $('donationForm').addEventListener('submit', (event) => {
   event.preventDefault();
   const financial = $('dType').value === 'Financeira';
   const existing = donations.find(d => d.id === Number($('donationId').value));
+  if (!podeTipo($('dType').value) || (existing && !podeTipo(existing.type))) {
+    return notify('Seu perfil não pode registrar este tipo de doação.');
+  }
   const before = F.totals(donations, expenses, opening).balance;
   const data = {
     date: $('dDate').value,
@@ -388,6 +409,8 @@ $('donationForm').addEventListener('submit', (event) => {
 
 $('deleteDonation').addEventListener('click', () => {
   const id = Number($('donationId').value);
+  const alvo = donations.find(d => d.id === id);
+  if (!alvo || !podeTipo(alvo.type)) return notify('Seu perfil não pode excluir este tipo de doação.');
   if (!window.confirm('Excluir esta doação? O total doado e o saldo serão recalculados.')) return;
   const before = F.totals(donations, expenses, opening).balance;
   donations = donations.filter(d => d.id !== id);
@@ -569,11 +592,12 @@ $('exportCsv').addEventListener('click', exportCsv);
 
 // Opções vindas de dados.js
 const options = (list) => list.map(item => `<option>${item}</option>`).join('');
-$('typeFilter').innerHTML += options(PawData.DONATION_TYPES);
+if (veFinanceiro) $('typeFilter').innerHTML += options(PawData.DONATION_TYPES);
+else $('typeFilter').innerHTML = '<option value="">Doações materiais</option>';
 $('originFilter').innerHTML += options(PawData.ORIGINS);
 $('categoryFilter').innerHTML += options(PawData.EXPENSE_CATEGORIES);
 $('dOrigin').innerHTML = options(PawData.ORIGINS);
-$('dType').innerHTML = options(PawData.DONATION_TYPES);
+$('dType').innerHTML = options(tiposPermitidos);
 $('dMethod').innerHTML = options(PawData.PAYMENT_METHODS);
 $('dUnit').innerHTML = options(PawData.UNITS);
 $('eCategory').innerHTML = options(PawData.EXPENSE_CATEGORIES);
@@ -582,6 +606,5 @@ $('eAnimal').innerHTML = '<option value="">Nenhum (despesa geral)</option>' + [.
   .map(a => `<option value="${a.id}">${escapeHtml(a.name)} — ${escapeHtml(a.species)}</option>`).join('');
 
 renderMonthOptions();
-// Quem não vê o caixa (perfil equipe) só registra doações: abre direto nessa aba.
-const veFinanceiro = typeof PawAuth === 'undefined' || PawAuth.pode('financeiro.ver');
+// Quem não cuida do caixa (perfil equipe) só registra doações materiais: abre direto nessa aba.
 setView(veFinanceiro ? 'summary' : 'donations');

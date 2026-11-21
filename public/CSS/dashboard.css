@@ -95,6 +95,14 @@
 .area-species   { grid-area: species; }
 .area-status    { grid-area: status; }
 
+/* Sem o card de doações (perfis sem acesso ao caixa): a taxa de adoção ocupa o espaço. */
+html.sem-financeiro-gerenciar .dash-grid {
+  grid-template-areas:
+    "chart   chart   focus  adopt"
+    "rescue  rescue  gauge  gauge"
+    "species species status status";
+}
+
 .panel {
   min-width: 0;
   background: var(--surface);
@@ -345,6 +353,16 @@
       "species status";
   }
 }
+@media (max-width: 1280px) {
+  html.sem-financeiro-gerenciar .dash-grid {
+    grid-template-areas:
+      "chart   chart"
+      "focus   adopt"
+      "rescue  rescue"
+      "gauge   gauge"
+      "species status";
+  }
+}
 
 @media (max-width: 1100px) {
   .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -354,6 +372,9 @@
   .dash-grid {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "chart" "focus" "adopt" "rescue" "gauge" "money" "species" "status";
+  }
+  html.sem-financeiro-gerenciar .dash-grid {
+    grid-template-areas: "chart" "focus" "adopt" "rescue" "gauge" "species" "status";
   }
   .status-bar { grid-template-columns: 110px minmax(0, 1fr) 24px; }
 }

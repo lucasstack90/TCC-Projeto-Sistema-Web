@@ -1,5 +1,5 @@
 /* PAWSAFE — gestão dos usuários do sistema (só o perfil administrador).
-   Cada usuário tem um perfil: administrador, equipe, veterinário ou voluntário. O que cada
+   Cada usuário tem um perfil: administrador, financeiro, equipe, veterinário ou voluntário. O que cada
    perfil pode fazer está em app/Core/Permissoes.php (servidor).
    Dados pela API /api/usuarios. Depende de: Bootstrap 5, js/utils.js, js/api.js, js/auth.js.
 
@@ -16,11 +16,12 @@ const PawUsers = (() => {
 
   const meuId = () => PawAuth.usuario()?.id;
   const find = (id) => usuarios.find(u => u.id === Number(id)) || null;
-  const BADGE = { administrador: 'status-disponivel', equipe: 'volunteer-ativo', veterinario: 'status-temporario', voluntario: 'status-tratamento' };
+  const BADGE = { administrador: 'status-disponivel', financeiro: 'status-resgatado', equipe: 'volunteer-ativo', veterinario: 'status-temporario', voluntario: 'status-tratamento' };
   // Resumo de cada perfil (a regra completa está em app/Core/Permissoes.php).
   const DESCRICAO = {
     administrador: 'Coordenação: acesso total, inclusive usuários, caixa (saldo e despesas) e configuração do relatório.',
-    equipe: 'Operação do dia a dia: animais, adoções, resgates, estoque, registra doações, aprova voluntários e preenche o relatório.',
+    financeiro: 'Responsável pelo caixa: doações em dinheiro, despesas, saldo, orçamento, contribuintes e a execução financeira do relatório.',
+    equipe: 'Operação do dia a dia: animais, adoções, resgates, estoque, doações materiais, cadastros de veterinários e contribuintes, aprova voluntários e preenche o relatório.',
     veterinario: 'Parte clínica: vacinas, histórico e pesagens, resgates, estoque e consulta ao relatório.',
     voluntario: 'Apoio no abrigo: consulta animais, registra resgates e o consumo no estoque. Não vê dados pessoais nem finanças.'
   };

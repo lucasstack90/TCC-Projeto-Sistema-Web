@@ -570,12 +570,14 @@ html.pagina-animais.sem-animais-cadastrar [data-edit],
 html.pagina-animais.sem-animais-cadastrar [data-delete],
 html.pagina-animais.sem-animais-registros [data-add-record],
 
-/* Doações: quem não vê o caixa só registra doações (sem resumo, saldo e despesas). */
-html.pagina-doacoes.sem-financeiro-ver #addExpense,
-html.pagina-doacoes.sem-financeiro-ver #financeStats,
-html.pagina-doacoes.sem-financeiro-ver [data-view="summary"],
-html.pagina-doacoes.sem-financeiro-ver [data-view="expenses"],
-html.pagina-doacoes.sem-doacoes-registrar #addDonation,
+/* Doações: quem não cuida do caixa (equipe) só registra doações materiais
+   (sem resumo, saldo, despesas e doações em dinheiro). */
+html.pagina-doacoes.sem-financeiro-gerenciar #addExpense,
+html.pagina-doacoes.sem-financeiro-gerenciar #financeStats,
+html.pagina-doacoes.sem-financeiro-gerenciar [data-view="summary"],
+html.pagina-doacoes.sem-financeiro-gerenciar [data-view="expenses"],
+html.pagina-doacoes.sem-financeiro-gerenciar .col-valor,
+html.pagina-doacoes.sem-doacoes-material.sem-financeiro-gerenciar #addDonation,
 
 /* Voluntários: a equipe consulta e aprova inscrições; o resto é do administrador. */
 html.pagina-voluntarios.sem-voluntarios-gerenciar #addVolunteer,
@@ -593,15 +595,18 @@ html.pagina-estoque.sem-estoque-movimentar #detailIn,
 html.pagina-estoque.sem-estoque-movimentar [data-move-in],
 html.pagina-estoque.sem-estoque-movimentar [data-reverse],
 
-/* Dashboard: todos veem; a coluna com o nome do adotante (LGPD) só para quem trabalha com adoções. */
+/* Dashboard: a coluna com o nome do adotante (LGPD) só para quem trabalha com adoções;
+   o valor arrecadado no mês só para quem cuida do caixa (administrador e financeiro). */
 html.pagina-dashboard.sem-pagina-adocoes .col-adotante,
+html.pagina-dashboard.sem-financeiro-gerenciar .area-money,
 
 /* Relatório: só o administrador configura (dados da ONG, metas, responsáveis). */
 html.pagina-relatorios.sem-relatorio-configurar #openConfig { display: none !important; }
 
 /* Aviso do modo do perfil: aparece quando falta a permissão em data-sem (js/auth.js). */
 .aviso-perfil:not([hidden]) { display: flex; align-items: center; gap: 4px; }
-.so-perfil-equipe, .so-perfil-veterinario, .so-perfil-voluntario { display: none; }
+.so-perfil-financeiro, .so-perfil-equipe, .so-perfil-veterinario, .so-perfil-voluntario { display: none; }
+html.perfil-financeiro .so-perfil-financeiro,
 html.perfil-equipe .so-perfil-equipe,
 html.perfil-veterinario .so-perfil-veterinario,
 html.perfil-voluntario .so-perfil-voluntario { display: inline; }

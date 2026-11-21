@@ -32,7 +32,7 @@
     <div class="topbar-title">
       <div class="eyebrow">Gestão financeira</div>
       <h1>Doações / Financeiro</h1>
-      <p class="page-subtitle"><span id="donationText"></span> <span data-requer="financeiro.ver"><span class="subtitle-dot" aria-hidden="true">•</span> <span id="expenseText"></span></span></p>
+      <p class="page-subtitle"><span id="donationText"></span> <span data-requer="financeiro.gerenciar"><span class="subtitle-dot" aria-hidden="true">•</span> <span id="expenseText"></span></span></p>
     </div>
     <div class="topbar-actions">
       <button class="btn btn-outline-green" id="addExpense" type="button"><i class="bi bi-dash-circle me-2"></i>Registrar despesa</button>
@@ -40,10 +40,14 @@
     </div>
   </header>
 
-  <!-- Aviso do modo do perfil: aparece só quando falta a permissão "financeiro.ver" (js/auth.js) -->
-  <div class="alert-soft aviso-perfil mb-3" role="note" data-sem="financeiro.ver" hidden>
+  <!-- Avisos do modo do perfil: aparecem só quando falta a permissão em data-sem (js/auth.js) -->
+  <div class="alert-soft aviso-perfil mb-3" role="note" data-sem="financeiro.gerenciar" hidden>
     <i class="bi bi-info-circle me-2"></i>
-    <span class="so-perfil-equipe">Perfil equipe: você registra as doações recebidas. Saldo, despesas e orçamento ficam com a coordenação (administrador).</span>
+    <span class="so-perfil-equipe">Perfil equipe: você registra as doações materiais (ração, remédios, utensílios). Doações em dinheiro, despesas e saldo ficam com o financeiro.</span>
+  </div>
+  <div class="alert-soft aviso-perfil mb-3" role="note" data-sem="doacoes.material" hidden>
+    <i class="bi bi-info-circle me-2"></i>
+    <span class="so-perfil-financeiro">Perfil financeiro: você cuida das doações em dinheiro, despesas, saldo e orçamento. As doações materiais são registradas pela equipe.</span>
   </div>
 
   <!-- Totais: o artigo pede o total doado e o registro dos recursos usados (despesas).
@@ -111,7 +115,7 @@
     <div class="table-card">
       <div class="table-responsive">
         <table class="table data-table align-middle mb-0">
-          <thead><tr><th>Data</th><th>Doador</th><th>Categoria</th><th>Recurso</th><th class="text-end">Valor</th></tr></thead>
+          <thead><tr><th>Data</th><th>Doador</th><th>Categoria</th><th>Recurso</th><th class="text-end col-valor">Valor</th></tr></thead>
           <tbody id="donationRows"></tbody>
         </table>
       </div>

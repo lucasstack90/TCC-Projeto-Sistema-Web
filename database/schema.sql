@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     email        VARCHAR(150)  NOT NULL,
     senha_hash   VARCHAR(255)  NOT NULL,
     -- Perfis e o que cada um pode fazer: app/Core/Permissoes.php
-    perfil       ENUM('administrador', 'equipe', 'veterinario', 'voluntario') NOT NULL DEFAULT 'voluntario',
+    perfil       ENUM('administrador', 'financeiro', 'equipe', 'veterinario', 'voluntario') NOT NULL DEFAULT 'voluntario',
     ativo        TINYINT(1)    NOT NULL DEFAULT 1,
     criado_em    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     atualizado_em TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -49,10 +49,10 @@ CREATE TABLE IF NOT EXISTS usuarios (
 --   'admin' e 'funcionario' -> 'administrador' (ninguém perde acesso).
 -- Em banco novo estes comandos não mudam nada; pode rodar sempre.
 ALTER TABLE usuarios MODIFY perfil
-    ENUM('admin', 'funcionario', 'administrador', 'equipe', 'veterinario', 'voluntario') NOT NULL DEFAULT 'voluntario';
+    ENUM('admin', 'funcionario', 'administrador', 'financeiro', 'equipe', 'veterinario', 'voluntario') NOT NULL DEFAULT 'voluntario';
 UPDATE usuarios SET perfil = 'administrador' WHERE perfil IN ('admin', 'funcionario');
 ALTER TABLE usuarios MODIFY perfil
-    ENUM('administrador', 'equipe', 'veterinario', 'voluntario') NOT NULL DEFAULT 'voluntario';
+    ENUM('administrador', 'financeiro', 'equipe', 'veterinario', 'voluntario') NOT NULL DEFAULT 'voluntario';
 
 -- ---------------------------------------------------------------------
 -- Animais abrigados
@@ -193,18 +193,23 @@ CREATE TABLE IF NOT EXISTS contribuintes (
 -- Usuários de cada perfil para o primeiro acesso e para a apresentação.
 -- Senha de todos: pawsafe123   (TROQUE depois do primeiro login)
 --   admin@pawsafe.local        Administrador(a) — coordenação: tudo, usuários, caixa, relatório
---   tesouraria@pawsafe.local   Administrador(a) — segundo administrador (ex.: tesoureiro)
+--   tesouraria@pawsafe.local   Financeiro       — caixa: doações em dinheiro, despesas, saldo, orçamento
 --   equipe@pawsafe.local       Equipe           — operação do dia a dia
 --   veterinario@pawsafe.local  Veterinário(a)   — fichas clínicas, resgates, estoque
 --   voluntario@pawsafe.local   Voluntário(a)    — consulta animais, resgates, consumo no estoque
 -- O hash abaixo foi gerado com password_hash('pawsafe123', PASSWORD_BCRYPT).
 INSERT INTO usuarios (nome, email, senha_hash, perfil, ativo) VALUES
 ('Administrador',     'admin@pawsafe.local',       '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.', 'administrador', 1),
-('Tesouraria',        'tesouraria@pawsafe.local',  '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.', 'administrador', 1),
+('Tesouraria',        'tesouraria@pawsafe.local',  '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.', 'financeiro',    1),
 ('Equipe do Abrigo',  'equipe@pawsafe.local',      '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.', 'equipe',        1),
 ('Dra. Marina Lopes', 'veterinario@pawsafe.local', '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.', 'veterinario',   1),
 ('Voluntário Teste',  'voluntario@pawsafe.local',  '$2y$10$RLEeeR/uNXNV79HI1mARAOxuTT.v84iSwILru9oHIbRj2XxwABtI.', 'voluntario',    1)
 ON DUPLICATE KEY UPDATE id = id;
+
+-- Bancos importados antes do perfil Financeiro: a conta de teste da tesouraria
+-- era administrador e passa a ser financeiro (só esta conta do seed).
+UPDATE usuarios SET perfil = 'financeiro'
+ WHERE email = 'tesouraria@pawsafe.local' AND perfil = 'administrador';
 
 -- Dois animais de exemplo (equivalentes ao seed do protótipo) — só se a tabela estiver vazia.
 INSERT INTO animais (nome, especie, raca, cor, idade, data_chegada, sexo, porte, status, peso, vacinado, castrado, microchip, observacoes)

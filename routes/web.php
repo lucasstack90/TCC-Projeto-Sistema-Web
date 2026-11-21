@@ -50,17 +50,17 @@ return function (Router $r): void {
         $r->put('/api/animais/{id}', [AnimalController::class, 'update'], $grava('animais.cadastrar'));
         $r->delete('/api/animais/{id}', [AnimalController::class, 'destroy'], $grava('animais.cadastrar'));
 
-        // Veterinários: lista para quem registra vacinas; gestão só do administrador.
+        // Veterinários: lista para quem registra vacinas; gestão do administrador e da equipe.
         $r->get('/api/veterinarios', [VeterinarioController::class, 'index'], $pode('veterinarios.ver'));
-        $r->post('/api/veterinarios', [VeterinarioController::class, 'store'], $grava('cadastros.gerenciar'));
-        $r->put('/api/veterinarios/{id}', [VeterinarioController::class, 'update'], $grava('cadastros.gerenciar'));
-        $r->delete('/api/veterinarios/{id}', [VeterinarioController::class, 'destroy'], $grava('cadastros.gerenciar'));
+        $r->post('/api/veterinarios', [VeterinarioController::class, 'store'], $grava('veterinarios.gerenciar'));
+        $r->put('/api/veterinarios/{id}', [VeterinarioController::class, 'update'], $grava('veterinarios.gerenciar'));
+        $r->delete('/api/veterinarios/{id}', [VeterinarioController::class, 'destroy'], $grava('veterinarios.gerenciar'));
 
-        // Contribuintes: têm CPF/CNPJ (LGPD) — equipe vê para registrar doações; gestão só do administrador.
+        // Contribuintes: têm CPF/CNPJ (LGPD) — gestão do administrador, do financeiro e da equipe.
         $r->get('/api/contribuintes', [ContribuinteController::class, 'index'], $pode('contribuintes.ver'));
-        $r->post('/api/contribuintes', [ContribuinteController::class, 'store'], $grava('cadastros.gerenciar'));
-        $r->put('/api/contribuintes/{id}', [ContribuinteController::class, 'update'], $grava('cadastros.gerenciar'));
-        $r->delete('/api/contribuintes/{id}', [ContribuinteController::class, 'destroy'], $grava('cadastros.gerenciar'));
+        $r->post('/api/contribuintes', [ContribuinteController::class, 'store'], $grava('contribuintes.gerenciar'));
+        $r->put('/api/contribuintes/{id}', [ContribuinteController::class, 'update'], $grava('contribuintes.gerenciar'));
+        $r->delete('/api/contribuintes/{id}', [ContribuinteController::class, 'destroy'], $grava('contribuintes.gerenciar'));
 
         // Usuários do sistema: só administrador.
         $r->get('/api/usuarios', [UsuarioController::class, 'index'], $pode('usuarios.gerenciar'));

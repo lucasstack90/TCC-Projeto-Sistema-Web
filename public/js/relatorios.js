@@ -38,7 +38,7 @@ const SECTIONS = [
   { id: 'pendencias', label: 'Pendências e pontos de atenção', models: ['gestao', 'completo'] },
   { id: 'analise', label: 'Análise da equipe', models: ['prefeitura', 'gestao', 'completo'] },
   { id: 'assinatura', label: 'Declaração e assinatura', models: ['prefeitura', 'completo'] }
-].filter(s => s.id !== 'financeiro' || podePerfil('financeiro.ver')); // caixa só para quem pode ver
+].filter(s => s.id !== 'financeiro' || podePerfil('financeiro.gerenciar')); // caixa só para quem cuida dele
 
 let config = PawData.loadReportConfig();
 let enabled = new Set();

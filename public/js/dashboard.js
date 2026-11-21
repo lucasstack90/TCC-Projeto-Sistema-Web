@@ -38,6 +38,10 @@ const stats = {
   pendingVolunteers: PawUtils.plural(volunteers.filter(v => v.status === 'Interessado').length, 'interessado aguardando', 'interessados aguardando')
 };
 stats.availableFoot = `${PawUtils.plural(stats.available, 'disponível', 'disponíveis')} para adoção`;
+// Valor arrecadado no mês: só para quem cuida do caixa (administrador e financeiro).
+// Para os demais o valor nem é colocado na página (o card some pelo CSS em base.css).
+const veCaixa = typeof PawAuth === 'undefined' || PawAuth.pode('financeiro.gerenciar');
+if (!veCaixa) { stats.monthDonations = ''; stats.monthDonationsFoot = ''; }
 document.querySelectorAll('[data-stat]').forEach(el => { el.textContent = stats[el.dataset.stat]; });
 document.querySelectorAll('[data-species]').forEach(el => { el.textContent = speciesCount[el.dataset.species]; });
 
