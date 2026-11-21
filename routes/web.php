@@ -50,13 +50,13 @@ return function (Router $r): void {
         $r->put('/api/animais/{id}', [AnimalController::class, 'update'], $grava('animais.cadastrar'));
         $r->delete('/api/animais/{id}', [AnimalController::class, 'destroy'], $grava('animais.cadastrar'));
 
-        // Veterinários: lista para quem registra vacinas; gestão do administrador e da equipe.
+        // Veterinários: lista para quem registra vacinas; gestão só do administrador (módulo Cadastros).
         $r->get('/api/veterinarios', [VeterinarioController::class, 'index'], $pode('veterinarios.ver'));
         $r->post('/api/veterinarios', [VeterinarioController::class, 'store'], $grava('veterinarios.gerenciar'));
         $r->put('/api/veterinarios/{id}', [VeterinarioController::class, 'update'], $grava('veterinarios.gerenciar'));
         $r->delete('/api/veterinarios/{id}', [VeterinarioController::class, 'destroy'], $grava('veterinarios.gerenciar'));
 
-        // Contribuintes: têm CPF/CNPJ (LGPD) — gestão do administrador, do financeiro e da equipe.
+        // Contribuintes: têm CPF/CNPJ (LGPD) — equipe e financeiro consultam para registrar doações; gestão só do administrador.
         $r->get('/api/contribuintes', [ContribuinteController::class, 'index'], $pode('contribuintes.ver'));
         $r->post('/api/contribuintes', [ContribuinteController::class, 'store'], $grava('contribuintes.gerenciar'));
         $r->put('/api/contribuintes/{id}', [ContribuinteController::class, 'update'], $grava('contribuintes.gerenciar'));

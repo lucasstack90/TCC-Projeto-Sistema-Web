@@ -19,9 +19,9 @@ const PawUsers = (() => {
   const BADGE = { administrador: 'status-disponivel', financeiro: 'status-resgatado', equipe: 'volunteer-ativo', veterinario: 'status-temporario', voluntario: 'status-tratamento' };
   // Resumo de cada perfil (a regra completa está em app/Core/Permissoes.php).
   const DESCRICAO = {
-    administrador: 'Coordenação: acesso total, inclusive usuários, caixa (saldo e despesas) e configuração do relatório.',
-    financeiro: 'Responsável pelo caixa: doações em dinheiro, despesas, saldo, orçamento, contribuintes e a execução financeira do relatório.',
-    equipe: 'Operação do dia a dia: animais, adoções, resgates, estoque, doações materiais, cadastros de veterinários e contribuintes, aprova voluntários e preenche o relatório.',
+    administrador: 'Coordenação: acesso total, inclusive Cadastros (usuários, veterinários, contribuintes), caixa e configuração do relatório.',
+    financeiro: 'Responsável pelo caixa: doações em dinheiro, despesas, saldo, orçamento e a execução financeira do relatório.',
+    equipe: 'Operação do dia a dia: animais, adoções, resgates, estoque, doações materiais, aprova voluntários e preenche o relatório.',
     veterinario: 'Parte clínica: vacinas, histórico e pesagens, resgates, estoque e consulta ao relatório.',
     voluntario: 'Apoio no abrigo: consulta animais, registra resgates e o consumo no estoque. Não vê dados pessoais nem finanças.'
   };

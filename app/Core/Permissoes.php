@@ -13,13 +13,14 @@ namespace Core;
  * Os perfis descrevem a FUNÇÃO da pessoa na ONG, não o vínculo de trabalho:
  * um voluntário de confiança que conduz adoções pode receber o perfil "equipe".
  *
- *   administrador  coordenação/diretoria — tudo, inclusive usuários e a
- *                  configuração do relatório para a prefeitura
+ *   administrador  coordenação/diretoria — tudo, inclusive o módulo de Cadastros
+ *                  (usuários, veterinários, contribuintes) e a configuração do
+ *                  relatório para a prefeitura
  *   financeiro     responsável pelo caixa — doações em dinheiro, despesas, saldo,
- *                  orçamento, contribuintes e a execução financeira do relatório
+ *                  orçamento e a execução financeira do relatório
  *   equipe         operação do dia a dia — animais, adoções, resgates, estoque,
- *                  doações materiais, cadastros de veterinários e contribuintes,
- *                  aprova voluntários, preenche o relatório; não mexe no caixa
+ *                  doações materiais, aprova voluntários, preenche o relatório;
+ *                  não mexe no caixa
  *   veterinario    parte clínica — vacinas, histórico, pesagens, resgates,
  *                  estoque e consulta ao relatório
  *   voluntario     apoio no abrigo — consulta animais, registra resgates e dá
@@ -74,17 +75,14 @@ final class Permissoes
         self::ADMINISTRADOR => ['*'],
 
         self::FINANCEIRO => [
-            'pagina.dashboard', 'pagina.doacoes', 'pagina.relatorios', 'pagina.cadastros',
-            'financeiro.gerenciar', 'contribuintes.ver', 'contribuintes.gerenciar',
-            'relatorio.preencher',
+            'pagina.dashboard', 'pagina.doacoes', 'pagina.relatorios',
+            'financeiro.gerenciar', 'contribuintes.ver', 'relatorio.preencher',
         ],
 
         self::EQUIPE => [
             'pagina.dashboard', 'pagina.animais', 'pagina.adocoes', 'pagina.resgates',
             'pagina.voluntarios', 'pagina.doacoes', 'pagina.estoque', 'pagina.relatorios',
-            'pagina.cadastros',
             'animais.cadastrar', 'animais.registros', 'veterinarios.ver', 'contribuintes.ver',
-            'veterinarios.gerenciar', 'contribuintes.gerenciar',
             'doacoes.material', 'voluntarios.aprovar',
             'estoque.movimentar', 'estoque.consumo', 'relatorio.preencher',
         ],

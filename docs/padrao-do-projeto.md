@@ -177,21 +177,21 @@ um voluntário de confiança que conduz adoções pode receber o perfil **Equipe
 | Relatório — preencher a análise da equipe | ✓ | ✓ | ✓ | — | — |
 | Relatório — execução financeira | ✓ | ✓ | — | — | — |
 | Relatório — configurar (dados da ONG, metas, responsáveis) | ✓ | — | — | — | — |
-| Cadastros — veterinários | ✓ | — | ✓ | — | — |
-| Cadastros — contribuintes | ✓ | ✓ | ✓ | — | — |
-| Usuários do sistema | ✓ | — | — | — | — |
+| Cadastros — usuários, veterinários e contribuintes | ✓ | — | — | — | — |
 
 Critérios usados:
 
 - **O dia a dia não depende do administrador**, que muitas vezes é da diretoria
-  e não está no abrigo todo dia: a equipe registra doações materiais, cuida dos
-  cadastros de apoio, aprova voluntários e preenche o relatório.
+  e não está no abrigo todo dia: a equipe registra doações materiais, aprova
+  voluntários e preenche o relatório.
 - **Segregação de funções no caixa:** doações em dinheiro, despesas, saldo e
   orçamento ficam com o perfil **Financeiro** (o responsável pela prestação de
   contas). Ver e registrar são uma permissão só (`financeiro.gerenciar`), porque
   quem cuida do caixa faz as duas coisas. Doações materiais continuam com a
   equipe, que as recebe no abrigo e dá entrada no estoque.
-- **Contas de acesso ficam com a coordenação** (administrador).
+- **Cadastros ficam com a coordenação** (administrador): contas de acesso,
+  veterinários e contribuintes. Equipe e financeiro só consultam as listas de
+  veterinários e contribuintes onde precisam delas (vacinas, doações, despesas).
 - **Mínimo necessário (LGPD):** o voluntário não vê dados pessoais de terceiros
   (CPF de adotantes e contribuintes) nem finanças; o valor arrecadado no mês só
   aparece no dashboard para quem cuida do caixa, e nem é colocado na página dos
