@@ -18,9 +18,9 @@ return [
         'nome'      => 'PAWSAFE',
         // 'dev' mostra os erros na tela; 'prod' esconde e grava em storage/logs.
         'ambiente'  => getenv('PAWSAFE_ENV') ?: 'dev',
-        // Caminho base da URL. No XAMPP, se o projeto está em
-        // htdocs/pawsafe/public, o site abre em /pawsafe/public.
-        // Deixe '' quando a pasta public/ for a raiz do site (vhost).
+        // Caminho base da URL. Deixe '' : o sistema descobre sozinho a pasta
+        // do projeto no htdocs (ex.: /TCC-Projeto-Sistema-Web), com qualquer
+        // nome. Só preencha se o servidor for configurado de um jeito diferente.
         'base_url'  => getenv('PAWSAFE_BASE_URL') ?: '',
         'fuso'      => 'America/Sao_Paulo',
     ],

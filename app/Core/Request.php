@@ -33,6 +33,35 @@ final class Request
         $this->cabecalhos = $cabecalhos;
     }
 
+    /**
+     * Tira do caminho a pasta onde o projeto está (ex.: /TCC-Projeto-Sistema-Web).
+     *
+     * Se "app.base_url" estiver preenchido no config, usa ele. Senão, descobre
+     * sozinho pela pasta do public/index.php: funciona com qualquer nome de pasta
+     * no htdocs do XAMPP, abrindo pela raiz do projeto ou pela pasta public/.
+     */
+    private static function semBase(string $uri): string
+    {
+        $bases = [];
+        $config = rtrim((string) Config::get('app.base_url', ''), '/');
+        if ($config !== '') {
+            $bases[] = $config;
+        }
+        $publica = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/index.php')), '/');
+        if ($publica !== '') {
+            $bases[] = $publica;                       // .../projeto/public
+            if (str_ends_with($publica, '/public')) {
+                $bases[] = substr($publica, 0, -7);    // .../projeto (via .htaccess da raiz)
+            }
+        }
+        foreach ($bases as $base) {
+            if ($base !== '' && ($uri === $base || str_starts_with($uri, $base . '/'))) {
+                return substr($uri, strlen($base));
+            }
+        }
+        return $uri;
+    }
+
     /** Monta a requisição a partir das variáveis globais do PHP. */
     public static function capturar(): self
     {
@@ -40,10 +69,7 @@ final class Request
 
         // Caminho sem a query string e sem a base_url do projeto.
         $uri     = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
-        $base    = Config::get('app.base_url', '');
-        if ($base !== '' && str_starts_with($uri, $base)) {
-            $uri = substr($uri, strlen($base));
-        }
+        $uri     = self::semBase(rawurldecode($uri));
         $caminho = '/' . trim($uri, '/');
 
         $cabecalhos = [];
