@@ -652,8 +652,29 @@ const PawData = (() => {
     const pendente = load(KEYS.adopters, SEED_ADOPTERS).some(local =>
       !list.some(s => digitos(s.cpf) === digitos(local.cpf))
       || (local.documents || []).some(d => d.data && !d.id));
-    if (!pendente) save(KEYS.adopters, list);
+    if (!pendente) saveServerAdopters(list);
     return list;
+  }
+
+  // Adotantes têm dados pessoais (CPF, contatos, endereço — LGPD). A cópia local
+  // serve só a quem trabalha com adoções. Num computador compartilhado, quando
+  // entra um perfil sem esse acesso (ex.: voluntário), a cópia é esvaziada para
+  // não ficar legível pelo console. A marca ORIGEM diz que a cópia veio inteira
+  // do servidor: só nesse caso ela é esvaziada, porque o servidor tem tudo e a
+  // equipe recebe de volta ao entrar. Cópias antigas, que ainda não foram
+  // enviadas ao servidor, nunca são apagadas (a tela de Adoções as envia antes).
+  const ADOPTERS_ORIGIN = 'pawsafe_adotantes_origem';
+  function saveServerAdopters(list) {
+    const ok = save(KEYS.adopters, list);
+    if (ok) {
+      try { localStorage.setItem(ADOPTERS_ORIGIN, 'servidor'); } catch (_) { /* aba privada etc. */ }
+    }
+    return ok;
+  }
+  function forgetServerAdopters() {
+    try {
+      if (localStorage.getItem(ADOPTERS_ORIGIN) === 'servidor') save(KEYS.adopters, []);
+    } catch (_) { /* aba privada etc. */ }
   }
 
   return {
@@ -665,7 +686,7 @@ const PawData = (() => {
     loadAnimals: () => load(KEYS.animals, SEED),
     saveAnimals: (list) => save(KEYS.animals, list),
     normalizeServerAnimal, syncAnimalsFromServer,
-    normalizeServerAdopter, syncAdoptersFromServer,
+    normalizeServerAdopter, syncAdoptersFromServer, saveServerAdopters, forgetServerAdopters,
     loadAdopters: () => load(KEYS.adopters, SEED_ADOPTERS),
     saveAdopters: (list) => save(KEYS.adopters, list),
     loadAdoptions: () => load(KEYS.adoptions, SEED_ADOPTIONS),

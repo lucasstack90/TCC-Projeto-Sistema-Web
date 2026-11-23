@@ -20,10 +20,18 @@ final class Session
         session_set_cookie_params([
             'httponly' => true,   // o cookie não fica acessível pelo JavaScript
             'samesite' => 'Lax',
-            'secure'   => false,  // em produção com HTTPS, troque para true
+            // Com HTTPS o cookie só trafega criptografado; no XAMPP (http) segue como antes.
+            'secure'   => self::conexaoSegura(),
         ]);
         session_start();
         self::checarExpiracao();
+    }
+
+    /** O site foi aberto por HTTPS? */
+    private static function conexaoSegura(): bool
+    {
+        return (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off')
+            || (int) ($_SERVER['SERVER_PORT'] ?? 0) === 443;
     }
 
     /** Expira a sessão após o tempo de inatividade configurado. */

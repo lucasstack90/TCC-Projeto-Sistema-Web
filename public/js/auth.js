@@ -99,6 +99,11 @@ const PawAuth = (() => {
           if (paginaAtual !== 'adocoes' && pode('adotantes.gerenciar') && typeof PawData !== 'undefined') {
             PawData.syncAdoptersFromServer().catch(() => { /* segue com a cópia */ });
           }
+          // Perfil sem acesso a adotantes (LGPD): não deixa neste navegador a cópia
+          // que outro usuário trouxe do servidor (computador compartilhado).
+          if (!pode('adotantes.gerenciar') && typeof PawData !== 'undefined') {
+            PawData.forgetServerAdopters();
+          }
           document.dispatchEvent(new CustomEvent('pawsafe:sessao', { detail: usuario() }));
         }).catch((erro) => {
           // Sem resposta (servidor desligado) mantém a tela; sessão inválida volta ao login.

@@ -48,7 +48,40 @@ final class Database
             );
         }
 
+        // Respostas de erro (Response::erro) encerram o script com exit, sem passar
+        // pelo commit. Se uma transação ficou aberta, ela é desfeita aqui, para
+        // nunca gravar só metade de uma operação.
+        register_shutdown_function([self::class, 'desfazerPendente']);
+
         return self::$pdo;
+    }
+
+    /**
+     * Executa $operacao numa transação: grava tudo ou nada. Se a operação
+     * encerrar com erro (exceção ou resposta de erro), nada é gravado.
+     */
+    public static function transacao(callable $operacao): mixed
+    {
+        $db = self::conexao();
+        $db->beginTransaction();
+        try {
+            $resultado = $operacao();
+        } catch (\Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            throw $e;
+        }
+        $db->commit();
+        return $resultado;
+    }
+
+    /** Desfaz uma transação que ficou aberta no fim da requisição. */
+    public static function desfazerPendente(): void
+    {
+        if (self::$pdo instanceof PDO && self::$pdo->inTransaction()) {
+            self::$pdo->rollBack();
+        }
     }
 
     /** Usado só nos testes, para injetar uma conexão (ex.: SQLite em memória). */

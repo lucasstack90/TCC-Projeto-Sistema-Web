@@ -71,34 +71,34 @@ final class AnimalController extends Controller
         $dados = $this->req->todos();
         $this->validar($dados);
 
-        $db = Database::conexao();
-        $db->beginTransaction();
-        $id = $this->animais->criar($this->animais->doApi($dados));
-        $this->gravarFoto($id, null, $dados);
+        $id = Database::transacao(function () use ($dados): int {
+            $id = $this->animais->criar($this->animais->doApi($dados));
+            $this->gravarFoto($id, null, $dados);
 
-        $uid = $this->usuarioId();
-        $hoje = date('Y-m-d');
-        $this->registros->inserir('historico', $id, [
-            'tipo' => 'Cadastro', 'data' => $hoje, 'descricao' => 'Animal cadastrado no sistema',
-            'veterinario' => 'Equipe PAWSAFE',
-        ], $uid);
-        if (!empty($dados['weight'])) {
-            $this->registros->inserir('pesagens', $id, [
-                'peso' => $dados['weight'], 'data' => $dados['arrival'] ?: $hoje, 'nota' => 'Peso inicial',
-            ], $uid);
-        }
-        // Cadastro vindo de um resgate: registra a origem no histórico.
-        $resgate = $dados['rescue'] ?? null;
-        if (is_array($resgate) && !empty($resgate['code'])) {
+            $uid = $this->usuarioId();
+            $hoje = date('Y-m-d');
             $this->registros->inserir('historico', $id, [
-                'tipo' => 'Resgate',
-                'data' => $this->dataValidaOuHoje($resgate['date'] ?? ''),
-                'descricao' => mb_substr('Resgate ' . $resgate['code'] . ' — ' . ($resgate['district'] ?? ''), 0, 255),
-                'veterinario' => mb_substr((string) ($resgate['responsible'] ?? ''), 0, 120) ?: null,
-                'observacoes' => mb_substr((string) ($resgate['description'] ?? ''), 0, 2000) ?: null,
+                'tipo' => 'Cadastro', 'data' => $hoje, 'descricao' => 'Animal cadastrado no sistema',
+                'veterinario' => 'Equipe PAWSAFE',
             ], $uid);
-        }
-        $db->commit();
+            if (!empty($dados['weight'])) {
+                $this->registros->inserir('pesagens', $id, [
+                    'peso' => $dados['weight'], 'data' => $dados['arrival'] ?: $hoje, 'nota' => 'Peso inicial',
+                ], $uid);
+            }
+            // Cadastro vindo de um resgate: registra a origem no histórico.
+            $resgate = $dados['rescue'] ?? null;
+            if (is_array($resgate) && !empty($resgate['code'])) {
+                $this->registros->inserir('historico', $id, [
+                    'tipo' => 'Resgate',
+                    'data' => $this->dataValidaOuHoje($resgate['date'] ?? ''),
+                    'descricao' => mb_substr('Resgate ' . $resgate['code'] . ' — ' . ($resgate['district'] ?? ''), 0, 255),
+                    'veterinario' => mb_substr((string) ($resgate['responsible'] ?? ''), 0, 120) ?: null,
+                    'observacoes' => mb_substr((string) ($resgate['description'] ?? ''), 0, 2000) ?: null,
+                ], $uid);
+            }
+            return $id;
+        });
         $this->ok($this->animais->comDetalhes($id), 201);
     }
 
@@ -108,15 +108,18 @@ final class AnimalController extends Controller
         $dados = $this->req->todos();
         $this->validar($dados);
 
-        // Peso mudado na edição da ficha vira uma pesagem (o peso atual sai dela).
-        $novoPeso = isset($dados['weight']) && $dados['weight'] !== '' && $dados['weight'] !== null ? (float) $dados['weight'] : null;
-        if ($novoPeso !== null && ($atual['peso'] === null || abs((float) $atual['peso'] - $novoPeso) > 0.001)) {
-            $this->registros->inserir('pesagens', (int) $id, [
-                'peso' => $novoPeso, 'data' => date('Y-m-d'), 'nota' => 'Peso atualizado na ficha',
-            ], $this->usuarioId());
-        }
-        $this->animais->atualizar((int) $id, $this->animais->doApi($dados));
-        $this->gravarFoto((int) $id, $atual, $dados);
+        // Pesagem, ficha e foto são gravadas juntas: se algo falhar, nada muda.
+        Database::transacao(function () use ($id, $atual, $dados): void {
+            // Peso mudado na edição da ficha vira uma pesagem (o peso atual sai dela).
+            $novoPeso = isset($dados['weight']) && $dados['weight'] !== '' && $dados['weight'] !== null ? (float) $dados['weight'] : null;
+            if ($novoPeso !== null && ($atual['peso'] === null || abs((float) $atual['peso'] - $novoPeso) > 0.001)) {
+                $this->registros->inserir('pesagens', (int) $id, [
+                    'peso' => $novoPeso, 'data' => date('Y-m-d'), 'nota' => 'Peso atualizado na ficha',
+                ], $this->usuarioId());
+            }
+            $this->animais->atualizar((int) $id, $this->animais->doApi($dados));
+            $this->gravarFoto((int) $id, $atual, $dados);
+        });
         $this->ok($this->animais->comDetalhes((int) $id));
     }
 
@@ -150,6 +153,7 @@ final class AnimalController extends Controller
         }
         header('Content-Type: ' . ((new \finfo(FILEINFO_MIME_TYPE))->file($arquivo) ?: 'image/jpeg'));
         header('Content-Length: ' . filesize($arquivo));
+        header('X-Content-Type-Options: nosniff');
         header('Cache-Control: private, max-age=86400');
         readfile($arquivo);
         exit;
@@ -167,11 +171,13 @@ final class AnimalController extends Controller
         $colunas = $this->validarRegistro($tipo, $dados);
         $colunas = $this->responsavelDoVeterinario($tipo, $colunas, novo: true);
 
-        $this->registros->inserir($tipo, (int) $id, $colunas, $this->usuarioId());
-        if ($tipo === 'historico' && ($colunas['tipo'] ?? '') === 'Castração') {
-            $this->animais->marcarCastrado((int) $id);
-        }
-        $this->animais->sincronizarComRegistros((int) $id);
+        Database::transacao(function () use ($tipo, $id, $colunas): void {
+            $this->registros->inserir($tipo, (int) $id, $colunas, $this->usuarioId());
+            if ($tipo === 'historico' && ($colunas['tipo'] ?? '') === 'Castração') {
+                $this->animais->marcarCastrado((int) $id);
+            }
+            $this->animais->sincronizarComRegistros((int) $id);
+        });
         $this->ok($this->animais->comDetalhes((int) $id), 201);
     }
 
@@ -184,8 +190,10 @@ final class AnimalController extends Controller
         }
         $colunas = $this->validarRegistro($tipo, $this->req->todos());
         $colunas = $this->responsavelDoVeterinario($tipo, $colunas, novo: false);
-        $this->registros->corrigir($tipo, (int) $registroId, $colunas, $this->usuarioId());
-        $this->animais->sincronizarComRegistros((int) $id);
+        Database::transacao(function () use ($tipo, $id, $registroId, $colunas): void {
+            $this->registros->corrigir($tipo, (int) $registroId, $colunas, $this->usuarioId());
+            $this->animais->sincronizarComRegistros((int) $id);
+        });
         $this->ok($this->animais->comDetalhes((int) $id));
     }
 
@@ -196,8 +204,10 @@ final class AnimalController extends Controller
         if (!$this->registros->encontrarDoAnimal($tipo, (int) $id, (int) $registroId)) {
             $this->erro('Registro não encontrado.', 404);
         }
-        $this->registros->removerRegistro($tipo, (int) $registroId, $this->usuarioId());
-        $this->animais->sincronizarComRegistros((int) $id);
+        Database::transacao(function () use ($tipo, $id, $registroId): void {
+            $this->registros->removerRegistro($tipo, (int) $registroId, $this->usuarioId());
+            $this->animais->sincronizarComRegistros((int) $id);
+        });
         $this->ok($this->animais->comDetalhes((int) $id));
     }
 

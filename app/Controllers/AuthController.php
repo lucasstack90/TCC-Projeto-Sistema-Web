@@ -4,6 +4,7 @@ namespace Controllers;
 
 use Core\Controller;
 use Core\Csrf;
+use Core\LimiteTentativas;
 use Core\Permissoes;
 use Core\Session;
 use Core\Validator;
@@ -28,8 +29,17 @@ final class AuthController extends Controller
             $this->erro('Confira o e-mail e a senha.', 422, $v->erros());
         }
 
+        $email = (string) $this->req->input('email');
+
+        // Muitas senhas erradas seguidas: bloqueia por alguns minutos (Core\LimiteTentativas).
+        $espera = LimiteTentativas::segundosBloqueado($email);
+        if ($espera > 0) {
+            $minutos = (int) ceil($espera / 60);
+            $this->erro("Muitas tentativas de login. Aguarde {$minutos} minuto(s) e tente novamente.", 429);
+        }
+
         $model   = new Usuario();
-        $usuario = $model->porEmail((string) $this->req->input('email'));
+        $usuario = $model->porEmail($email);
 
         $ok = $usuario
             && (int) ($usuario['ativo'] ?? 0) === 1
@@ -37,10 +47,12 @@ final class AuthController extends Controller
             && $model->senhaConfere($usuario, (string) $this->req->input('senha'));
 
         if (!$ok) {
+            LimiteTentativas::registrarErro($email);
             // Mensagem única para e-mail inexistente, senha errada ou conta inativa.
             $this->erro('E-mail ou senha incorretos.', 401);
         }
 
+        LimiteTentativas::limpar($email);
         Session::logar($usuario);
         $this->ok($this->dadosDaSessao());
     }

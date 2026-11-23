@@ -79,7 +79,7 @@ async function carregarAdotantes() {
   }
   lista = await migrarAdotantesLocais(lista);
   adopters = lista;
-  PawData.saveAdopters(adopters);
+  PawData.saveServerAdopters(adopters);
   render();
 }
 

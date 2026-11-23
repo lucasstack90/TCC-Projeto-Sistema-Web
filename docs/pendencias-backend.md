@@ -72,3 +72,12 @@ Precisam ser repetidas no servidor, senão qualquer pessoa contorna pelo console
 - [ ] Login real com senha criptografada (hash) e sessão; todas as páginas internas
       exigem usuário autenticado.
 - [ ] Dados pessoais (CPF, documentos, contatos) visíveis só para usuários da equipe.
+- [x] Limite de tentativas de login: 5 senhas erradas em 15 minutos bloqueiam aquele
+      e-mail naquele IP por 15 minutos (`Core\LimiteTentativas`, contadores em `storage/tentativas/`).
+- [x] Cookie de sessão com `secure` automático quando o site é aberto por HTTPS.
+- [x] Cópia local dos adotantes esvaziada quando entra um perfil sem acesso a eles
+      (computador compartilhado). Os módulos que ainda vivem só no `localStorage`
+      (resgates, voluntários, doações, estoque) continuam legíveis pelo console até
+      irem para o servidor.
+- [x] Gravações em mais de uma tabela (animal + pesagem + foto, registro clínico +
+      ficha) feitas numa transação (`Database::transacao`): grava tudo ou nada.
