@@ -4,10 +4,10 @@ namespace Controllers;
 
 use Core\Controller;
 use Core\Csrf;
-use Core\LimiteTentativas;
 use Core\Permissoes;
 use Core\Session;
 use Core\Validator;
+use Models\TentativaLogin;
 use Models\Usuario;
 
 /**
@@ -31,8 +31,10 @@ final class AuthController extends Controller
 
         $email = (string) $this->req->input('email');
 
-        // Muitas senhas erradas seguidas: bloqueia por alguns minutos (Core\LimiteTentativas).
-        $espera = LimiteTentativas::segundosBloqueado($email);
+        // Muitas senhas erradas seguidas: bloqueia por alguns minutos (Models\TentativaLogin).
+        $tentativas = new TentativaLogin();
+        $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+        $espera = $tentativas->segundosBloqueado($ip, $email);
         if ($espera > 0) {
             $minutos = (int) ceil($espera / 60);
             $this->erro("Muitas tentativas de login. Aguarde {$minutos} minuto(s) e tente novamente.", 429);
@@ -47,12 +49,12 @@ final class AuthController extends Controller
             && $model->senhaConfere($usuario, (string) $this->req->input('senha'));
 
         if (!$ok) {
-            LimiteTentativas::registrarErro($email);
+            $tentativas->registrarErro($ip, $email);
             // Mensagem única para e-mail inexistente, senha errada ou conta inativa.
             $this->erro('E-mail ou senha incorretos.', 401);
         }
 
-        LimiteTentativas::limpar($email);
+        $tentativas->limpar($ip, $email);
         Session::logar($usuario);
         $this->ok($this->dadosDaSessao());
     }

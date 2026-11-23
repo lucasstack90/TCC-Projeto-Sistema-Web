@@ -73,7 +73,7 @@ Precisam ser repetidas no servidor, senão qualquer pessoa contorna pelo console
       exigem usuário autenticado.
 - [ ] Dados pessoais (CPF, documentos, contatos) visíveis só para usuários da equipe.
 - [x] Limite de tentativas de login: 5 senhas erradas em 15 minutos bloqueiam aquele
-      e-mail naquele IP por 15 minutos (`Core\LimiteTentativas`, contadores em `storage/tentativas/`).
+      e-mail naquele IP por 15 minutos (`Models\TentativaLogin`, tabela `tentativas_login`).
 - [x] Cookie de sessão com `secure` automático quando o site é aberto por HTTPS.
 - [x] Cópia local dos adotantes esvaziada quando entra um perfil sem acesso a eles
       (computador compartilhado). Os módulos que ainda vivem só no `localStorage`

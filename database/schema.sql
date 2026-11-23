@@ -272,6 +272,20 @@ CREATE TABLE IF NOT EXISTS documentos_adotante (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------
+-- Tentativas de login (proteção contra adivinhação de senha)
+-- ---------------------------------------------------------------------
+-- Conta as senhas erradas por IP + e-mail (Models\TentativaLogin). A chave é
+-- um hash: a tabela não guarda o e-mail nem o IP em texto (LGPD). O login
+-- certo apaga a linha; linhas antigas são limpas sozinhas.
+CREATE TABLE IF NOT EXISTS tentativas_login (
+    chave      CHAR(64)          NOT NULL,              -- sha256 de IP + e-mail
+    erros      SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    inicio     DATETIME          NOT NULL,              -- primeiro erro da janela atual
+    PRIMARY KEY (chave),
+    KEY idx_tentativas_inicio (inicio)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
 -- Atualização de bancos criados em versões anteriores (ficha do animal)
 -- ---------------------------------------------------------------------
 -- Pode rodar sempre: em banco novo não muda nada. Usa a sintaxe IF EXISTS /
