@@ -31,7 +31,12 @@ final class Veterinario extends Model
         'active'      => 'ativo',
     ];
 
-    public function paraApi(array $linha): array
+    /**
+     * Formato da API. "uses" = quantas vacinas e atendimentos apontam para este
+     * cadastro (inclusive os removidos, que ficam guardados). Com uso, o
+     * veterinário não pode ser excluído, só inativado.
+     */
+    public function paraApi(array $linha, ?int $usos = null): array
     {
         $out = ['id' => (int) $linha['id']];
         foreach (self::MAPA as $api => $col) {
@@ -43,7 +48,36 @@ final class Veterinario extends Model
         }
         // Rótulo pronto para exibir, ex.: "CRMV-PR 12345".
         $out['registry'] = 'CRMV-' . ($linha['crmv_uf'] ?? '') . ' ' . ($linha['crmv'] ?? '');
+        $out['uses'] = $usos ?? $this->usosDe((int) $linha['id']);
         return $out;
+    }
+
+    /** Quantas vacinas e atendimentos usam este cadastro (0 = pode ser excluído). */
+    public function usosDe(int $id): int
+    {
+        $stmt = $this->db()->prepare(
+            'SELECT (SELECT COUNT(*) FROM vacinas WHERE veterinario_id = :v1)
+                  + (SELECT COUNT(*) FROM atendimentos WHERE veterinario_id = :v2)'
+        );
+        $stmt->execute([':v1' => $id, ':v2' => $id]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    /** @return array<int,int> id do veterinário => usos (uma consulta só, para a lista). */
+    private function usosPorVeterinario(): array
+    {
+        $linhas = $this->db()->query(
+            'SELECT veterinario_id AS id, COUNT(*) AS total FROM (
+                 SELECT veterinario_id FROM vacinas WHERE veterinario_id IS NOT NULL
+                 UNION ALL
+                 SELECT veterinario_id FROM atendimentos WHERE veterinario_id IS NOT NULL
+             ) AS usos GROUP BY veterinario_id'
+        )->fetchAll();
+        $mapa = [];
+        foreach ($linhas as $l) {
+            $mapa[(int) $l['id']] = (int) $l['total'];
+        }
+        return $mapa;
     }
 
     public function doApi(array $dados): array
@@ -68,7 +102,11 @@ final class Veterinario extends Model
 
     public function listarParaApi(): array
     {
-        return array_map([$this, 'paraApi'], $this->todos('nome ASC'));
+        $usos = $this->usosPorVeterinario();
+        return array_map(
+            fn ($linha) => $this->paraApi($linha, $usos[(int) $linha['id']] ?? 0),
+            $this->todos('nome ASC')
+        );
     }
 
     /** Checa se já existe o mesmo CRMV+UF em outro registro (unicidade). */

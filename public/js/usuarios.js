@@ -52,6 +52,7 @@ const PawUsers = (() => {
         <div class="col-12"><div class="alert-soft" id="uPerfilDescricao"></div></div>
         <div class="col-12 d-none" id="uAtivoWrap">
           <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="uAtivo"><label class="form-check-label" for="uAtivo">Conta ativa (pode entrar no sistema)</label></div>
+          <small class="text-secondary d-none" id="uHistorico"></small>
         </div>
       </div>
       <div id="uErro" class="alert-soft warning d-none mt-3 mb-0" role="alert"></div>
@@ -136,7 +137,13 @@ const PawUsers = (() => {
     // A própria conta não muda de perfil, não se desativa e não se exclui (o servidor também barra).
     el('uPerfil').disabled = Boolean(souEu);
     el('uAtivo').disabled = Boolean(souEu);
-    el('uExcluir').classList.toggle('d-none', !u || souEu);
+    // Quem já registrou algo fica como autor no histórico: só desativa (o servidor também barra).
+    const registros = Number(u?.registros || 0);
+    el('uExcluir').classList.toggle('d-none', !u || souEu || registros > 0);
+    el('uHistorico').classList.toggle('d-none', !u || souEu || registros === 0);
+    el('uHistorico').textContent = registros > 0
+      ? `Esta conta tem ${registros} registro(s) no sistema e não pode ser excluída, para o histórico não perder quem fez cada registro. Para bloquear o acesso, desmarque "Conta ativa".`
+      : '';
     el('uErro').classList.add('d-none');
     descreverPerfil();
     setTimeout(() => el('uNome').focus(), 50);

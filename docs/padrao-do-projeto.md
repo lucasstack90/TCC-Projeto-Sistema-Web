@@ -314,6 +314,17 @@ As três melhorias pedidas foram feitas aqui: cadastro de veterinários, cadastr
 de contribuintes e a assinatura dupla (responsável legal + veterinário) no
 relatório técnico.
 
+**Excluir só sem histórico (auditoria).** Nos cadastros que aparecem como autor
+ou responsável em outros registros, a exclusão é barrada no servidor (422) e a
+tela troca o botão "Excluir" por um aviso para inativar:
+
+- **Usuário** que já registrou algo (animais, vacinas, histórico, pesagens,
+  adotantes, documentos) só pode ser desativado. A API devolve `registros` com a
+  contagem (`Usuario::registrosDe`); as colunas de autoria ficam na constante
+  `Usuario::AUTORIA`. Ao criar uma tabela nova com coluna `..._por`, inclua-a lá.
+- **Veterinário** que aparece em vacinas ou atendimentos só pode ser inativado.
+  A API devolve `uses` com a contagem (`Veterinario::usosDe`).
+
 ## Rodando e testando
 
 Veja o `README.md` (seção "Executar"). Para um teste rápido de que o back-end

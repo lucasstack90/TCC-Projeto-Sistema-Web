@@ -49,9 +49,19 @@ final class VeterinarioController extends Controller
 
     public function destroy(string $id): void
     {
-        if ($this->vets->remover((int) $id) === 0) {
+        if (!$this->vets->encontrar((int) $id)) {
             $this->erro('Veterinário não encontrado.', 404);
         }
+        // Quem já atendeu fica no histórico das fichas: só pode ser inativado.
+        $usos = $this->vets->usosDe((int) $id);
+        if ($usos > 0) {
+            $this->erro(
+                "Este veterinário aparece em {$usos} registro(s) das fichas e não pode ser excluído. "
+                . 'Desmarque "Cadastro ativo" para tirá-lo das listas de seleção.',
+                422
+            );
+        }
+        $this->vets->remover((int) $id);
         $this->ok(['removido' => (int) $id]);
     }
 

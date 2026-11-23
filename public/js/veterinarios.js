@@ -83,6 +83,7 @@ const PawVets = (() => {
         <div class="col-12"><label class="form-label" for="vtNotes">Observações</label><textarea id="vtNotes" class="form-control" rows="2" maxlength="1000" placeholder="Dias de atendimento, valores combinados..."></textarea></div>
         <div class="col-12" id="vtActiveWrap">
           <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="vtActive"><label class="form-check-label" for="vtActive">Cadastro ativo (aparece para seleção nas vacinas, no histórico e no relatório)</label></div>
+          <small class="text-secondary d-none" id="vtHistorico"></small>
         </div>
       </div>
       <div id="vtError" class="alert-soft warning d-none mt-3 mb-0" role="alert"></div>
@@ -159,6 +160,10 @@ const PawVets = (() => {
     el('vtActiveWrap').classList.toggle('d-none', !vet);
     // Excluir só quem nunca foi usado; quem já atendeu fica no histórico e é inativado.
     el('vtDelete').classList.toggle('d-none', !vet || usos(vet) > 0);
+    el('vtHistorico').classList.toggle('d-none', !vet || usos(vet) === 0);
+    el('vtHistorico').textContent = vet && usos(vet) > 0
+      ? `Aparece em ${usos(vet)} registro(s) das fichas e não pode ser excluído. Para tirá-lo das listas de seleção, desmarque "Cadastro ativo".`
+      : '';
     el('vtError').classList.add('d-none');
     setTimeout(() => el('vtName').focus(), 50);
   }

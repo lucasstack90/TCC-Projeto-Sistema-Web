@@ -14,8 +14,9 @@ use Models\Usuario;
  *   PUT    /api/usuarios/{id}   update   (senha opcional: em branco mantém a atual)
  *   DELETE /api/usuarios/{id}   destroy
  *
- * Travas: ninguém exclui, desativa ou rebaixa a própria conta, e o sistema nunca
- * fica sem pelo menos um administrador ativo.
+ * Travas: ninguém exclui, desativa ou rebaixa a própria conta, o sistema nunca
+ * fica sem pelo menos um administrador ativo, e quem já registrou algo no
+ * sistema não é excluído (só desativado), para o histórico não perder o autor.
  */
 final class UsuarioController extends Controller
 {
@@ -102,6 +103,15 @@ final class UsuarioController extends Controller
         if ($atual['perfil'] === Permissoes::ADMINISTRADOR && (int) $atual['ativo'] === 1
             && $this->usuarios->administradoresAtivos($id) === 0) {
             $this->erro('O sistema precisa de pelo menos um administrador ativo.', 422);
+        }
+        // Auditoria: quem já registrou algo fica como autor no histórico.
+        $registros = $this->usuarios->registrosDe($id);
+        if ($registros > 0) {
+            $this->erro(
+                "Este usuário já tem {$registros} registro(s) no sistema e não pode ser excluído, "
+                . 'para o histórico não perder quem fez cada registro. Desmarque "Conta ativa" para bloquear o acesso.',
+                422
+            );
         }
         $this->usuarios->remover($id);
         $this->ok(['removido' => $id]);
